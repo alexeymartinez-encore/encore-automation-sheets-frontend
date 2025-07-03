@@ -1,0 +1,114 @@
+/* Adjust the size of the cells */
+.fc-daygrid-day {
+  height: 0px;
+  /* min-height: 10px; */
+}
+
+/* Adjust the text alignment and size */
+.fc-daygrid-day-frame {
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Optional: Adjust events' appearance */
+.fc-event {
+  font-size: 10px; /* Make event text smaller */
+  padding: 2px;
+  /* background-color: blue; */
+}
+
+/* Adjust the text for the Sun, Mon, Tue, etc. header */
+.fc-col-header-cell-cushion {
+  font-size: 0.8rem; /* Adjust the size here */
+  font-weight: bold; /* Make them bold if you want */
+  padding: 5px; /* Space inside each day name */
+}
+
+.fc-toolbar {
+  padding: 4px;
+}
+
+/* Title text like "April 2025" */
+.fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* All buttons */
+.fc-button,
+.fc-button-primary,
+.fc-button-active {
+  background-color: #3b82f6 !important; /* force smaller font */
+  border: none !important;
+}
+
+@media (max-width: 768px) {
+  /* Adjust the size of the cells */
+  .fc-daygrid-day {
+    height: 0px;
+    /* min-height: 10px; */
+  }
+
+  /* Adjust the text alignment and size */
+  .fc-daygrid-day-frame {
+    /* display: flex;
+  align-items: center;
+  justify-content: center; */
+    text-align: center;
+    font-size: 7px;
+  }
+
+  /* Optional: Adjust events' appearance */
+  .fc-event {
+    font-size: 5px; /* Make event text smaller */
+    padding: 0px;
+  }
+
+  /* Adjust the text for the Sun, Mon, Tue, etc. header */
+  .fc-col-header-cell-cushion {
+    font-size: 0.5rem; /* Adjust the size here */
+    font-weight: bold; /* Make them bold if you want */
+    padding: 5px; /* Space inside each day name */
+  }
+
+  /* Shrink title on mobile */
+  .fc-toolbar-title {
+    font-size: 16px !important;
+  }
+
+  /* Shrink buttons on mobile */
+  .fc-button,
+  .fc-button-primary {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  /* Shrink button group gaps */
+  .fc-button-group {
+    gap: 2px;
+  }
+
+  /* Reduce toolbar padding */
+  .fc-toolbar {
+    padding: 4px 0;
+  }
+
+  /* All buttons */
+  .fc-button,
+  .fc-button-primary,
+  .fc-button-active {
+    font-size: 0.7rem !important; /* force smaller font */
+    padding: 2px 6px !important; /* smaller padding */
+    height: auto !important; /* remove forced button height */
+    min-height: 0 !important; /* remove min height */
+    line-height: 1 !important; /* tighten vertical alignment */
+  }
+
+  /* Button text */
+  .fc-button span {
+    font-size: inherit !important; /* span inside button inherit size */
+  }
+}
