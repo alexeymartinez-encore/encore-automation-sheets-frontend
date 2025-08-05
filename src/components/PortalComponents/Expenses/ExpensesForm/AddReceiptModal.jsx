@@ -13,15 +13,7 @@ export default function AddReceiptModal({
   const [receiptFiles, setReceiptFiles] = useState([]);
   const [receiptPreviewUrls, setReceiptPreviewUrls] = useState([]);
   const [newSavedFiles, setNewSavedFiles] = useState(savedFiles);
-  // useEffect(() => {
-  //   if (initialReceiptFiles?.length) {
-  //     setReceiptFiles(initialReceiptFiles);
 
-  //     // Regenerate preview URLs
-  //     const urls = initialReceiptFiles.map((file) => URL.createObjectURL(file));
-  //     setReceiptPreviewUrls(urls);
-  //   }
-  // }, [initialReceiptFiles]);
   console.log(savedFiles);
   const fileSelectedHandler = (event, setFiles, setPreviewUrls) => {
     const files = Array.from(event.target.files);

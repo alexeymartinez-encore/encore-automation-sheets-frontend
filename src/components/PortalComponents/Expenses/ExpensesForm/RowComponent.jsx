@@ -148,7 +148,7 @@ export default function RowComponent({
           />
           <input
             type="decimal"
-            value={(row.miles * 0.57).toFixed(2)}
+            value={(row.miles * 0.58).toFixed(2)}
             onChange={(e) => onValueChange(index, "miles_cost", e.target.value)}
             className="w-full text-center  px-2"
             placeholder="$"
