@@ -31,12 +31,11 @@ export async function authRequest(requestBody, method, authType) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    // console.log(errorData);
     return errorData;
   }
 
   const data = await response.json();
-  console.log("Signup Successful: ", data);
+
   if (authType === "login") {
     // Store token in localStorage
     // localStorage.setItem("token", data.token);
@@ -69,7 +68,7 @@ export async function fetchTimesheetEntriesData(timesheetId) {
     );
 
     if (!response.ok) {
-      console.log("Something went wrong");
+      console.error("Error during fetching projects:", error);
       return;
     }
     const data = await response.json();
@@ -99,7 +98,6 @@ export async function deleteTimesheetEntryById(index, row) {
 
     const data = deleteResponse.json();
 
-    console.log(`Row with id ${row.id} deleted successfully from the server`);
     return data;
   } catch (error) {
     console.error("Error deleting row: ", error);
@@ -147,7 +145,6 @@ export async function saveExpenseSheet(
   expenseId = null
 ) {
   try {
-    console.log(receiptFiles);
     const formData = new FormData();
 
     formData.append("expenseData", JSON.stringify(expenseData));

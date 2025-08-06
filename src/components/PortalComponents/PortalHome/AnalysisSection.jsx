@@ -4,7 +4,7 @@ export default function AnalysisSection() {
   const percentage = 66;
 
   return (
-    <div className="bg-white  shadow-md rounded-lg p-5">
+    <div className="bg-white  shadow-xs rounded-lg p-5">
       <h1 className="text-2xl text-blue-500">Personal Analysis</h1>
       <CircularProgressbar
         className="h-[10rem] text-center mt-20"

@@ -19,10 +19,8 @@ export default function ProjectsManagement() {
 
     fetchProjects();
   }, [adminCtx]);
-  console.log(projects);
 
   async function handleDelete(id) {
-    // console.log(id);
     adminCtx.deleteProjectById(id);
   }
 

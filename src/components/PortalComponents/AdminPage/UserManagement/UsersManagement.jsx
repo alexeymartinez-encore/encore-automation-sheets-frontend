@@ -17,7 +17,6 @@ export default function UsersManagement() {
 
     fetchEmployees();
   }, [adminCtx]);
-  console.log(employees);
   return (
     <div className="bg-white rounded-md shadow-sm my-5 w-full overflow-x-scroll">
       <div className="flex justify-between p-5 ">

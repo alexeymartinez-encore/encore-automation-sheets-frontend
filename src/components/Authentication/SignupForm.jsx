@@ -40,16 +40,12 @@ export default function SignupForm({ mode }) {
     message: "",
   });
   useEffect(() => {
-    console.log("Calling getAllEmployees...");
     async function fetchAllEmployees() {
       const users = await userCtx.getAllEmployees();
-      console.log("Fetched employees:", users);
       setEmployees(users);
     }
     fetchAllEmployees();
   }, []);
-
-  console.log("CREDS: ", credentials);
 
   function inputChangeHandler(inputIdentifier, event) {
     setCredentials((currentInputValues) => {
@@ -89,7 +85,6 @@ export default function SignupForm({ mode }) {
 
     try {
       const data = await authCtx.signup(credentials);
-      console.log(data, "HEREEE");
       // redirect here
       if (data.status === 201) {
         setSucess({
@@ -107,8 +102,6 @@ export default function SignupForm({ mode }) {
     }
 
     setCredentials(initialCredentials);
-
-    console.log("Submitted");
   }
 
   return (

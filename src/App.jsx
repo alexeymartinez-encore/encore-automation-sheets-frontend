@@ -9,7 +9,6 @@ import TimesheetContextProvider from "./store/timesheet-context";
 import ExpenseDetail from "./pages/ExpenseDetail";
 import CreateExpensePage from "./pages/CreateExpense";
 import LoginPage from "./pages/Login";
-import SignupPage from "./pages/Signup";
 import Events from "./components/PortalComponents/Events/Events";
 import PortalPage from "./pages/Portal";
 import TimesheetPage from "./pages/Timesheet";
@@ -29,14 +28,15 @@ import ResetPasswordForm from "./components/Authentication/ResetPasswordForm";
 import AuthCheck from "./components/Authentication/AuthCheck";
 import UserContextProvider from "./store/user-context";
 import { checkIfAdmin, checkIfManager } from "./util/loaders";
+import ErrorPage from "./pages/Error";
 
 const router = createBrowserRouter([
   {
     path: "/employee-portal",
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <LoginPage /> },
-      { path: "signup", element: <SignupPage /> },
       { path: "reset-password-request", element: <PasswordResetPage /> },
       { path: "reset-password/:token", element: <ResetPasswordForm /> },
       {

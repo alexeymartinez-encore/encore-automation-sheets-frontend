@@ -47,7 +47,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      // console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -73,7 +72,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -99,7 +97,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -125,7 +122,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -148,7 +144,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      // console.log(data.data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -171,7 +166,7 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      // console.log(data.data);
+
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -181,7 +176,6 @@ export default function AdminContextProvider({ children }) {
 
   async function createNewProject(projectData) {
     try {
-      // console.log(projectData);
       const response = await fetch(`${BASE_URL}/admin/projects/create`, {
         method: "POST",
         headers: {
@@ -194,7 +188,6 @@ export default function AdminContextProvider({ children }) {
         throw new Error("Error getting projects server");
       }
       const data = await response.json();
-      console.log(data);
       triggerUpdate();
       triggerSucessOrFailMessage(data.internalStatus, `${data.message}`);
       return data.data || [];
@@ -256,7 +249,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      // console.log(data);
       triggerUpdate();
       triggerSucessOrFailMessage(data.internalStatus, data.message);
       return data;
@@ -283,7 +275,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -333,7 +324,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       triggerUpdate();
       triggerSucessOrFailMessage("success", "Saved Changes Successfuly");
 
@@ -361,7 +351,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
       triggerUpdate();
       triggerSucessOrFailMessage("success", "Saved Changes Successfuly");
       return data;

@@ -23,7 +23,6 @@ export default function UserContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log("here", data.data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);

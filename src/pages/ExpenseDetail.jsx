@@ -24,12 +24,11 @@ export default function ExpenseDetail() {
         );
 
         if (!response.ok) {
-          console.log("Something went wrong");
+          console.error("Error during fetching projects:", error);
           return;
         }
 
         const data = await response.json();
-        // console.log(data);
         setExpenseEntriesData(data.data);
       } catch (error) {
         console.error("Error during fetching projects:", error);
@@ -38,7 +37,6 @@ export default function ExpenseDetail() {
 
     fetchExpenseEntriesData();
   }, [expenseCtx.data]);
-  console.log(expenseEntriesData);
 
   return (
     <div className="my-5 bg-white shadow-md rounded-lg overflow-x-scroll">

@@ -10,8 +10,6 @@ export default function EditProjectButton({ project }) {
     setShowModal((prev) => !prev);
   }
 
-  console.log(project);
-
   return (
     <div>
       <TableActionButton onClick={toggleModal} color={"blue"}>

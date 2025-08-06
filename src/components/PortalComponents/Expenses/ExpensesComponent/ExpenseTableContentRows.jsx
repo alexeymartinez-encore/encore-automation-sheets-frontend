@@ -29,8 +29,6 @@ export default function ExpenseTableContentRows({ expense }) {
     expensetCtx.deleteExpenseById(id);
   }
 
-  console.log("FORMATTED (MONTH) DATE: ", formattedMonthStartingDate);
-
   return (
     <TableContainerCard>
       <TableCellRegItem>{formattedMonthStartingDate}</TableCellRegItem>

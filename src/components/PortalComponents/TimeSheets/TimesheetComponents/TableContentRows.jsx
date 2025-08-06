@@ -29,8 +29,6 @@ export default function TableContentRows({ timesheet }) {
     timesheetCtx.deleteTimesheetById(id);
   }
 
-  console.log("FORMATTED DATE: ", formattedWeekEndingDate);
-
   return (
     <TableContainerCard>
       <TableCellRegItem>{formattedWeekEndingDate}</TableCellRegItem>

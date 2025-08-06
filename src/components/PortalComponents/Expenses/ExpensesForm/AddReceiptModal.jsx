@@ -7,33 +7,46 @@ export default function AddReceiptModal({
   toggleModal,
   onSaveReceipts,
   savedFiles = [],
+  receiptFiles,
+  setReceiptFiles,
 }) {
   const expenseCtx = useContext(ExpensesContext);
 
-  const [receiptFiles, setReceiptFiles] = useState([]);
+  // const {receiptFiles, setReceiptFiles} = props
   const [receiptPreviewUrls, setReceiptPreviewUrls] = useState([]);
   const [newSavedFiles, setNewSavedFiles] = useState(savedFiles);
 
-  console.log(savedFiles);
-  const fileSelectedHandler = (event, setFiles, setPreviewUrls) => {
-    const files = Array.from(event.target.files);
-    setFiles(files);
-
+  // Generate previews from receiptFiles
+  useEffect(() => {
     const fileReaders = [];
     const urls = [];
-    files.forEach((file) => {
+
+    receiptFiles.forEach((file) => {
       const fileReader = new FileReader();
       fileReaders.push(fileReader);
 
       fileReader.onload = () => {
         urls.push(fileReader.result);
-        if (urls.length === files.length) {
-          setPreviewUrls(urls);
+        if (urls.length === receiptFiles.length) {
+          setReceiptPreviewUrls(urls);
         }
       };
 
       fileReader.readAsDataURL(file);
     });
+
+    return () => {
+      fileReaders.forEach((reader) => {
+        if (reader.readyState === 1) {
+          reader.abort();
+        }
+      });
+    };
+  }, [receiptFiles]);
+
+  const fileSelectedHandler = (event) => {
+    const newFiles = Array.from(event.target.files);
+    setReceiptFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
   function handleSave() {
@@ -52,7 +65,6 @@ export default function AddReceiptModal({
 
   async function handleDeleteSavedFile(fileId) {
     const BASE_URL = import.meta.env.VITE_BASE_URL || "";
-    console.log(fileId);
 
     try {
       const res = await fetch(`${BASE_URL}/expenses/files/${fileId}`, {
@@ -76,14 +88,14 @@ export default function AddReceiptModal({
 
   return (
     <div
-      className="bg-white py-5 px-20 rounded-md text-center shadow-md w-[30rem] relative"
+      className=" bg-white py-5 md:px-20 rounded-md text-center shadow-md w-[15rem] md:w-[30rem] relative"
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
     >
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col items-start">
-          <p className="font-semibold text-sm text-gray-600 mb-2">Receipts</p>
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center ">
+          <p className="font-semibold text-sm text-gray-600 mb-2 ">Receipts</p>
           <label
-            className="flex items-center justify-center w-[20rem] h-[3rem] 
+            className="flex items-center justify-center w-[10rem] md:w-[20rem] h-[3rem] 
                           rounded-md bg-transparent text-black border border-blue-500 cursor-pointer
                          hover:bg-blue-500 hover:text-white transition-all duration-300 text-center"
           >
@@ -150,7 +162,7 @@ export default function AddReceiptModal({
 
         <button
           onClick={handleSave}
-          className="bg-blue-500 text-white py-2 px-3 rounded-sm hover:bg-blue-400 transition duration-400"
+          className="bg-blue-500 w-[10rem] md:w-[20rem] text-white py-2 px-3 rounded-sm hover:bg-blue-400 transition duration-400"
         >
           Save Receipts
         </button>

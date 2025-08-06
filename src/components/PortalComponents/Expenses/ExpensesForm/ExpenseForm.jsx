@@ -166,7 +166,6 @@ export default function ExpenseForm({
       setRowData(expenseEntriesData);
     }
   }, [selectedDate]);
-  // console.log("ROW DATA", rowData);
 
   function handleValueChange(rowIndex, field, value) {
     setRowData((prevRows) =>
@@ -238,6 +237,7 @@ export default function ExpenseForm({
         }
         expenseCtx.triggerUpdate();
         expenseCtx.triggerSucessOrFailMessage("success", res.message);
+        setReceiptFiles([]);
       } else {
         expenseCtx.triggerSucessOrFailMessage(
           "fail",
@@ -255,7 +255,6 @@ export default function ExpenseForm({
       ...prevExpense, // Keep all other fields unchanged
       signed: !prevExpense.signed, // Toggle the signed field
     }));
-    console.log(expense);
   }
 
   function handleAddSubRow(index) {
@@ -282,9 +281,6 @@ export default function ExpenseForm({
     setReceiptFiles(files);
   }
 
-  console.log(expense);
-  console.log(expenseCtx.expenses);
-
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3">
@@ -293,9 +289,15 @@ export default function ExpenseForm({
             onChange={(date) => setSelectedDate(date)}
             selected={selectedDate}
           />
-          <div>
-            <button onClick={toggleModal} title="Import Receipts">
-              <FaReceipt className="text-blue-500" size={24} />
+          <div className="flex">
+            <button
+              onClick={toggleModal}
+              title="Import Receipts"
+              className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
+                          hover:bg-blue-400 transition duration-300"
+            >
+              <FaReceipt color="white" size={18} />
+              <span>Attach Receipts</span>
             </button>
             {showModal && (
               <div
@@ -306,6 +308,8 @@ export default function ExpenseForm({
                   toggleModal={toggleModal}
                   onSaveReceipts={handleSaveReceipts}
                   savedFiles={expense.files || []}
+                  receiptFiles={receiptFiles}
+                  setReceiptFiles={setReceiptFiles}
                 />
               </div>
             )}
@@ -316,6 +320,7 @@ export default function ExpenseForm({
           handleSave={handleSave}
           handleSign={handleSign}
           signed={expense.signed}
+          href={"/employee-portal/dashboard/expenses/create-expense"}
         />
       </div>
       <table className="w-full border-collapse border ">

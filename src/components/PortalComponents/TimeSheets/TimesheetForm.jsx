@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { TimesheetContext } from "../../../store/timesheet-context";
@@ -219,7 +219,7 @@ export default function TimesheetForm({
 
   return (
     <div className="pb-20">
-      <div className="relative flex gap-5 justify-between px-10 md:px-20 pb-10 ">
+      <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 ">
         <DatePickerComponent
           onChange={(date) => setSelectedDate(date)}
           selected={formatWeekendDate(selectedDate)}
@@ -228,7 +228,8 @@ export default function TimesheetForm({
           handleSave={handleSave}
           handleSign={handleSign}
           signed={timesheet.signed}
-        />
+          href={"/employee-portal/dashboard/timesheets/create-timesheet"}
+        />{" "}
       </div>
       <FormTable
         data={rowData}

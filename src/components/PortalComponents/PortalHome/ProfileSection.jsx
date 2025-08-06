@@ -5,14 +5,13 @@ import { Link } from "react-router-dom";
 
 export default function ProfileSection() {
   const user = fetchUser();
-  console.log(user);
 
   if (!user) {
     return <p>Loading user data...</p>;
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-5">
+    <div className="bg-white shadow-xs rounded-lg p-5">
       <h1 className="md:text-2xl text-blue-500">Profile</h1>
       <div className="py-5 text-xs md:text-md">
         <ProfileItem desc={"Name:"}>

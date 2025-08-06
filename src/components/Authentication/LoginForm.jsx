@@ -68,9 +68,9 @@ export default function LoginForm() {
       <ButtonUI type="submit" disabled={loading}>
         {loading ? "Logging in..." : "Login"}
       </ButtonUI>
-      <FormLink to="/employee-portal/signup" text={"Don't have an account? "}>
+      {/* <FormLink to="/employee-portal/signup" text={"Don't have an account? "}>
         Sign Up
-      </FormLink>
+      </FormLink> */}
     </AuthForm>
   );
 }

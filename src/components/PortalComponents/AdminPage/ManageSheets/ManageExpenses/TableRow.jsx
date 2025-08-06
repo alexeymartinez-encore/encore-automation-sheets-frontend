@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 export default function TableRow({ expense, index, onValueChange }) {
-  console.log(expense);
   return (
     <div className="flex justify-between items-center p-3 text-[0.5rem] md:text-[0.7rem] ">
       <Link

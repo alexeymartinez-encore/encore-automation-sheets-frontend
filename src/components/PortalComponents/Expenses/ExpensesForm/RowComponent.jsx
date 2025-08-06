@@ -88,6 +88,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "destination_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "destination_cost", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -102,6 +107,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "lodging_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "lodging_cost", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -116,6 +126,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "other_expense_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "other_expense_cost", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -130,6 +145,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "car_rental_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "car_rental_cost", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -164,6 +184,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "perdiem_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "perdiem_cost", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -178,6 +203,11 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "entertainment_cost", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "entertainment_cost", formatted);
+            }}
             className="w-full text-center  px-0"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
@@ -214,13 +244,18 @@ export default function RowComponent({
             onChange={(e) =>
               onValueChange(index, "miscellaneous_amount", e.target.value)
             }
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const formatted = value.toFixed(2);
+              onValueChange(index, "miscellaneous_amount", formatted);
+            }}
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
           />
         </div>
       </td>
-      <th className="border  px-2 text-center">{totalAmount}</th>
+      <th className="border  px-2 text-center">{totalAmount.toFixed(2)}</th>
     </tr>
   );
 }

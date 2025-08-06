@@ -5,7 +5,7 @@ import { useState } from "react";
 
 export default function DashboardRootLayout() {
   const location = useLocation();
-  const [isNavExpanded, setIsNavExpanded] = useState(false); // shared state
+  const [isNavExpanded, setIsNavExpanded] = useState(true); // shared state
 
   const noHeaderRoutes = [
     "/employee-portal/dashboard/timesheets/create-timesheet",

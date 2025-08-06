@@ -44,14 +44,11 @@ export default function EventContextProvider({ children }) {
     // Convert month number to month abbreviation
     const formattedMonth = `${year}${monthNames[parseInt(month) - 1]}`;
 
-    console.log(formattedMonth); // Example output: "2025Jan"
     eventData.formatted_month = formattedMonth;
     const startDate = new Date(eventData.start);
     const endDate = new Date(eventData.end_date);
     eventData.start = startDate.toISOString().split("T")[0]; // Formats as YYYY-MM-DD
     eventData.end_date = endDate.toISOString().split("T")[0]; // Formats as YYYY-MM-DD
-
-    // console.log(eventData);
 
     try {
       const response = await fetch(`${BASE_URL}/events/new-event`, {
@@ -69,7 +66,6 @@ export default function EventContextProvider({ children }) {
       triggerUpdate();
       triggerSucessOrFailMessage("success", "Saved Event Successfuly");
       const data = await response.json();
-      console.log(data);
 
       return data;
     } catch (error) {
@@ -142,7 +138,6 @@ export default function EventContextProvider({ children }) {
       }
 
       const data = await response.json();
-      // console.log(data);
       triggerUpdate();
       triggerSucessOrFailMessage(data.internalStatus, data.message);
       return data;

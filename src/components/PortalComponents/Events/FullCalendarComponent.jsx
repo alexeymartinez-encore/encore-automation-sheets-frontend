@@ -19,12 +19,10 @@ export default function FullCalendarComponent({ eventsData = [] }) {
   const myEvents = events.filter(
     (event) => Number(localStorage.getItem("userId")) === event.employee_id
   );
-  // console.log(events, localStorage.getItem("userId"), myEvents);
   const [currentMonth, setCurrentMonth] = useState("");
 
   // Handle date click
   function handleDateClick(info) {
-    console.log("Clicked date:", info.dateStr);
     setSelectedDate(info.dateStr);
   }
 
@@ -34,7 +32,6 @@ export default function FullCalendarComponent({ eventsData = [] }) {
       .toISOString()
       .split("T")[0];
     setCurrentMonth(currentMonth);
-    // console.log("Current month starts at:", currentMonth);
   }
 
   // Fetch events only once
@@ -92,12 +89,9 @@ export default function FullCalendarComponent({ eventsData = [] }) {
 
   function handleEditEvent(eventId) {
     const event = events.filter((event) => eventId === event.id);
-    console.log(event);
     eventCtx.updateEventById(eventId, event);
-    // console.log("EVENT TO UPDATE: ", event);
   }
   function handleDeleteEvent(eventId) {
-    console.log(eventId);
     eventCtx.deleteEventById(eventId);
   }
 
