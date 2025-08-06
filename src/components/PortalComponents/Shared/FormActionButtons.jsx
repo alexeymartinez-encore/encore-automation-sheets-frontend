@@ -6,7 +6,7 @@ export default function FormActionsButtons({
   handleSave,
   handleSign,
   signed,
-  saved,
+  disabled,
   href,
 }) {
   const signed_text = signed ? "Unsign" : "Sign";
@@ -15,7 +15,7 @@ export default function FormActionsButtons({
       <FormActionButton
         onClick={handleSave}
         icon={faFloppyDisk}
-        // signed={saved}
+        disabled={disabled}
         text={"Save"}
       />
       <FormActionButton
@@ -23,6 +23,7 @@ export default function FormActionsButtons({
         icon={faSignature}
         signed={signed}
         text={signed_text}
+        disabled={disabled}
       />
       <Link
         to={href}

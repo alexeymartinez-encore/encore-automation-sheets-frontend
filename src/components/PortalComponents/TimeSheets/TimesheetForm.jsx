@@ -91,6 +91,7 @@ export default function TimesheetForm({
           signed: filteredTimesheet.signed, // Toggle the signed field
           total_reg_hours: filteredTimesheet.total_reg_hours,
           total_overtime: filteredTimesheet.total_overtime,
+          approved: filteredTimesheet.approved,
         }));
         // setSigned(filteredTimesheet.signed);
       }
@@ -216,7 +217,6 @@ export default function TimesheetForm({
       })
     );
   }
-
   return (
     <div className="pb-20">
       <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 ">
@@ -228,6 +228,7 @@ export default function TimesheetForm({
           handleSave={handleSave}
           handleSign={handleSign}
           signed={timesheet.signed}
+          disabled={timesheet.approved}
           href={"/employee-portal/dashboard/timesheets/create-timesheet"}
         />{" "}
       </div>

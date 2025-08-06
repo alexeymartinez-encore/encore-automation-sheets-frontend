@@ -141,31 +141,54 @@ export default function ExpenseForm({
     // expenseCtx.triggerUpdate,
   ]);
 
-  // Function to populate rowData based on the number of days in the selected month
   useEffect(() => {
-    if (!expenseId) {
-      const realDate = new Date(selectedDate);
+    const realDate = new Date(selectedDate);
+    const daysInMonth = getDaysInMonth(realDate);
+    const fullRows = [];
 
-      const daysInMonth = getDaysInMonth(realDate);
-      const rows = Array.from({ length: daysInMonth }, (_, index) => {
-        // Clone the initial entries data for each row
-        const baseEntry = {
-          ...expenseEntriesData[0], // Clone the first entry
-          // Unique identifier for each row
-          day: index + 1, // Day of the month
-          date: new Date(
-            realDate.getFullYear(),
-            realDate.getMonth(),
-            index + 1
-          ),
-        };
-        return baseEntry;
-      });
-      setRowData(rows);
-    } else {
-      setRowData(expenseEntriesData);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const existingEntry = expenseEntriesData.find(
+        (entry) => entry.day === day
+      );
+
+      if (existingEntry) {
+        fullRows.push(existingEntry);
+      } else {
+        fullRows.push({
+          ...intitialEntriesData[0],
+          day: day,
+          date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
+        });
+      }
     }
-  }, [selectedDate]);
+
+    setRowData(fullRows);
+  }, [selectedDate, expenseEntriesData]);
+
+  // Function to populate rowData based on the number of days in the selected month
+  // useEffect(() => {
+  //   if (!expenseId) {
+  //     const realDate = new Date(selectedDate);
+  //     const daysInMonth = getDaysInMonth(realDate);
+  //     const rows = Array.from({ length: daysInMonth }, (_, index) => {
+  //       // Clone the initial entries data for each row
+  //       const baseEntry = {
+  //         ...expenseEntriesData[0], // Clone the first entry
+  //         // Unique identifier for each row
+  //         day: index + 1, // Day of the month
+  //         date: new Date(
+  //           realDate.getFullYear(),
+  //           realDate.getMonth(),
+  //           index + 1
+  //         ),
+  //       };
+  //       return baseEntry;
+  //     });
+  //     setRowData(rows);
+  //   } else {
+  //     setRowData(expenseEntriesData);
+  //   }
+  // }, [selectedDate]);
 
   function handleValueChange(rowIndex, field, value) {
     setRowData((prevRows) =>
@@ -280,7 +303,6 @@ export default function ExpenseForm({
   function handleSaveReceipts(files) {
     setReceiptFiles(files);
   }
-
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3">
@@ -320,6 +342,7 @@ export default function ExpenseForm({
           handleSave={handleSave}
           handleSign={handleSign}
           signed={expense.signed}
+          disabled={expense.approved}
           href={"/employee-portal/dashboard/expenses/create-expense"}
         />
       </div>

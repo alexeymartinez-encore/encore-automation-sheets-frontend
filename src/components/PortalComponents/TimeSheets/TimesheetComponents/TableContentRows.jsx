@@ -17,8 +17,6 @@ export default function TableContentRows({ timesheet }) {
   const timesheetCtx = useContext(TimesheetContext);
 
   const formattedWeekEndingDate = formatWeekendDate(timesheet.week_ending);
-  // console.log("TIMESHEET ID: " + timesheet.id);
-  // console.log(timesheet);
   const navigate = useNavigate();
 
   function handleEdit() {
@@ -49,8 +47,13 @@ export default function TableContentRows({ timesheet }) {
         <TableActionButton
           onClick={() => handleDelete(timesheet.id)}
           color={"red"}
+          disabled={timesheet.approved}
         >
-          <MdDeleteForever className="text-red-500 size-3 md:size-5" />
+          <MdDeleteForever
+            className={`${
+              timesheet.approved ? "text-red-300" : "text-red-500"
+            } size-3 md:size-5`}
+          />
         </TableActionButton>
       </ButtonsContainerCard>
     </TableContainerCard>

@@ -15,9 +15,6 @@ export default function ExpenseTableContentRows({ expense }) {
   const expensetCtx = useContext(ExpensesContext);
 
   const formattedMonthStartingDate = formatMonthDate(expense.date_start);
-
-  // console.log("Expense ID: " + expense.id);
-  // console.log(expense);
   const navigate = useNavigate();
 
   function handleEdit() {
@@ -25,7 +22,6 @@ export default function ExpenseTableContentRows({ expense }) {
   }
 
   async function handleDelete(id) {
-    // console.log(id);
     expensetCtx.deleteExpenseById(id);
   }
 
@@ -48,7 +44,11 @@ export default function ExpenseTableContentRows({ expense }) {
           onClick={() => handleDelete(expense.id)}
           color={"red"}
         >
-          <MdDeleteForever className="text-red-500 size-3 md:size-5" />
+          <MdDeleteForever
+            className={`${
+              expense.approved ? "text-red-300" : "text-red-500"
+            } size-3 md:size-5`}
+          />
         </TableActionButton>
       </ButtonsContainerCard>
     </TableContainerCard>
