@@ -13,7 +13,9 @@ export default function FormActionButton({
   }  rounded-md  duration-500`;
 
   if (signed === null || signed === undefined) {
-    style = "bg-blue-500 hover:bg-blue-400  rounded-md  duration-500";
+    style = ` ${
+      disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400"
+    } rounded-md  duration-500`;
   }
 
   return (
