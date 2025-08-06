@@ -26,7 +26,7 @@ export default function ProfileSection() {
         <ProfileItem desc={"Reports to:"}>
           {user.manager_name !== "null" ? user.manager_name : "-"}
         </ProfileItem>
-        <div className="flex p-3 justify-between">
+        {/* <div className="flex p-3 justify-between">
           <p>Password:</p>
           <Link
             to="/employee-portal/reset-password-request"
@@ -34,7 +34,7 @@ export default function ProfileSection() {
           >
             Change Password
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   );
