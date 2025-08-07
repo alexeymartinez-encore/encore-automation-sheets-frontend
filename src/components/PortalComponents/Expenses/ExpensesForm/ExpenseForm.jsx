@@ -16,6 +16,7 @@ import MonthlyDatePicker from "../../Shared/MonthlyDatePicker";
 import { useNavigate } from "react-router-dom";
 import { FaReceipt } from "react-icons/fa";
 import AddReceiptModal from "./AddReceiptModal";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 const initialExpenseData = {
   approved: false,
@@ -82,64 +83,212 @@ export default function ExpenseForm({
   const expenseCtx = useContext(ExpensesContext);
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   console.log("=========expenseId=================");
+  //   console.log(expenseId);
+  //   console.log("==========================");
+  //   console.log(expenseEntriesData);
+  //   console.log("==========================");
+  //   console.log(expenseCtx.expenses);
+  //   let filteredExpense = null;
+  //   if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
+  //     filteredExpense = expenseCtx.expenses.find(
+  //       (expense) => expense.id === parseInt(expenseId)
+  //       // (expense) => expense.id === parseInt(expenseEntriesData.id)
+  //     );
+  //     console.log(filteredExpense);
+  //     if (filteredExpense === null || filteredExpense === undefined) {
+  //       const roleId = localStorage.getItem("role_id");
+  //       async function fetchExpenseById() {
+  //         try {
+  //           const response = await fetch(
+  //             `${BASE_URL}/admin/expense/expenseId=${expenseId}?roleId=${roleId}`,
+  //             {
+  //               headers: {
+  //                 "Content-Type": "application/json",
+  //               },
+  //               credentials: "include",
+  //             }
+  //           );
+
+  //           const data = await response.json();
+  //           if (response.ok) {
+  //             // console.log(data);
+  //             return data.data;
+  //           } else {
+  //             console.log("Error fetching timesheets");
+  //           }
+  //         } catch (error) {
+  //           console.error("Error fetching timesheets:", error);
+  //         }
+  //       }
+  //       filteredExpense = fetchExpenseById();
+  //     }
+
+  //     console.log(filteredExpense);
+  //     if (filteredExpense) {
+  //       const filteredDate = formatMonthDate(
+  //         new Date(filteredExpense.date_start)
+  //       );
+  //       console.log(filteredExpense);
+  //       setSelectedDate(filteredDate);
+  //       setExpense((prevExpense) => ({
+  //         ...prevExpense,
+  //         ...filteredExpense, // bring all fields (including id, approved, etc.)
+  //         employee_id: localStorage.getItem("userId"),
+  //         files: filteredExpense.ExpenseFiles || [], // make sure files are available
+  //         signed: filteredExpense.signed, // ensure explicit override
+  //         total: filteredExpense.total, // ensure explicit override
+  //         // approved: filteredExpense.approved,
+  //       }));
+  //       // setExpense((prevExpense) => ({
+  //       //   ...prevExpense,
+  //       //   ...filteredExpense,
+  //       //   files: filteredExpense.ExpenseFiles || [],
+  //       //   signed: filteredExpense.signed,
+  //       //   total: filteredExpense.total,
+  //       // }));
+  //     }
+
+  //     const realDate = new Date(selectedDate);
+  //     const daysInMonth = getDaysInMonth(realDate);
+  //     const fullRows = [];
+
+  //     for (let day = 1; day <= daysInMonth; day++) {
+  //       const matchingEntries = expenseEntriesData.filter(
+  //         (entry) => entry.day === day
+  //       );
+  //       if (matchingEntries.length > 0) {
+  //         fullRows.push(...matchingEntries);
+  //       } else {
+  //         fullRows.push({
+  //           ...intitialEntriesData[0],
+  //           day: day,
+  //           date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
+  //         });
+  //       }
+  //     }
+
+  //     setRowData(fullRows);
+  //     const filesMap = {};
+  //     expenseEntriesData.forEach((entry) => {
+  //       if (entry.files && entry.files.length > 0) {
+  //         filesMap[entry.id] = entry.files.map((file) => ({
+  //           id: file.id,
+  //           url: file.url,
+  //           upload_date: file.upload_date,
+  //         }));
+  //       }
+  //     });
+  //     setSavedFilesByEntry(filesMap);
+  //   }
+  // }, [
+  //   expenseEntriesData,
+  //   expenseId,
+  //   expenseCtx.expenses,
+  //   // expenseCtx.triggerUpdate,
+  // ]);
+
   useEffect(() => {
-    if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
-      const filteredExpense = expenseCtx.expenses.find(
-        (expense) => expense.id === parseInt(expenseId)
-      );
-      if (filteredExpense) {
-        const filteredDate = formatMonthDate(
-          new Date(filteredExpense.date_start)
-        );
-        setSelectedDate(filteredDate);
-        setExpense((prevExpense) => ({
-          ...prevExpense,
-          ...filteredExpense, // bring all fields (including id, approved, etc.)
-          employee_id: localStorage.getItem("userId"),
-          files: filteredExpense.ExpenseFiles || [], // make sure files are available
-          signed: filteredExpense.signed, // ensure explicit override
-          total: filteredExpense.total, // ensure explicit override
-        }));
-      }
+    async function init() {
+      console.log("=========expenseId=================");
+      console.log(expenseId);
+      console.log("==========================");
+      console.log(expenseEntriesData);
+      console.log("==========================");
+      console.log(expenseCtx.expenses);
 
-      const realDate = new Date(selectedDate);
-      const daysInMonth = getDaysInMonth(realDate);
-      const fullRows = [];
+      let filteredExpense = null;
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const matchingEntries = expenseEntriesData.filter(
-          (entry) => entry.day === day
+      if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
+        filteredExpense = expenseCtx.expenses.find(
+          (expense) => expense.id === parseInt(expenseId)
         );
-        if (matchingEntries.length > 0) {
-          fullRows.push(...matchingEntries);
-        } else {
-          fullRows.push({
-            ...intitialEntriesData[0],
-            day: day,
-            date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
-          });
+
+        if (!filteredExpense) {
+          try {
+            const response = await fetch(
+              `${BASE_URL}/admin/expense/${expenseId}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+              }
+            );
+
+            const data = await response.json();
+            if (response.ok) {
+              console.log(data.data[0]);
+              filteredExpense = data.data[0];
+            } else {
+              console.log("Error fetching expense");
+              return;
+            }
+          } catch (error) {
+            console.error("Error fetching expense:", error);
+            return;
+          }
         }
-      }
+        console.log(filteredExpense);
 
-      setRowData(fullRows);
-      const filesMap = {};
-      expenseEntriesData.forEach((entry) => {
-        if (entry.files && entry.files.length > 0) {
-          filesMap[entry.id] = entry.files.map((file) => ({
-            id: file.id,
-            url: file.url,
-            upload_date: file.upload_date,
+        if (filteredExpense) {
+          console.log(filteredExpense.date_start);
+          const filteredDate = formatMonthDate(
+            new Date(filteredExpense.date_start)
+          );
+
+          console.log(filteredDate);
+
+          console.log(filteredExpense);
+          setSelectedDate(filteredDate);
+          setExpense((prevExpense) => ({
+            ...prevExpense,
+            ...filteredExpense,
+            employee_id: localStorage.getItem("userId"),
+            files: filteredExpense.ExpenseFiles || [],
+            signed: filteredExpense.signed,
+            total: filteredExpense.total,
           }));
         }
-      });
-      setSavedFilesByEntry(filesMap);
+
+        const realDate = new Date(selectedDate);
+        const daysInMonth = getDaysInMonth(realDate);
+        const fullRows = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const matchingEntries = expenseEntriesData.filter(
+            (entry) => entry.day === day
+          );
+          if (matchingEntries.length > 0) {
+            fullRows.push(...matchingEntries);
+          } else {
+            fullRows.push({
+              ...intitialEntriesData[0],
+              day: day,
+              date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
+            });
+          }
+        }
+
+        setRowData(fullRows);
+
+        const filesMap = {};
+        expenseEntriesData.forEach((entry) => {
+          if (entry.files && entry.files.length > 0) {
+            filesMap[entry.id] = entry.files.map((file) => ({
+              id: file.id,
+              url: file.url,
+              upload_date: file.upload_date,
+            }));
+          }
+        });
+        setSavedFilesByEntry(filesMap);
+      }
     }
-  }, [
-    expenseEntriesData,
-    expenseId,
-    expenseCtx.expenses,
-    // expenseCtx.triggerUpdate,
-  ]);
+
+    init(); // 🔁 call the async wrapper
+  }, [expenseEntriesData, expenseId, expenseCtx.expenses]);
 
   useEffect(() => {
     const realDate = new Date(selectedDate);
@@ -164,31 +313,6 @@ export default function ExpenseForm({
 
     setRowData(fullRows);
   }, [selectedDate, expenseEntriesData]);
-
-  // Function to populate rowData based on the number of days in the selected month
-  // useEffect(() => {
-  //   if (!expenseId) {
-  //     const realDate = new Date(selectedDate);
-  //     const daysInMonth = getDaysInMonth(realDate);
-  //     const rows = Array.from({ length: daysInMonth }, (_, index) => {
-  //       // Clone the initial entries data for each row
-  //       const baseEntry = {
-  //         ...expenseEntriesData[0], // Clone the first entry
-  //         // Unique identifier for each row
-  //         day: index + 1, // Day of the month
-  //         date: new Date(
-  //           realDate.getFullYear(),
-  //           realDate.getMonth(),
-  //           index + 1
-  //         ),
-  //       };
-  //       return baseEntry;
-  //     });
-  //     setRowData(rows);
-  //   } else {
-  //     setRowData(expenseEntriesData);
-  //   }
-  // }, [selectedDate]);
 
   function handleValueChange(rowIndex, field, value) {
     setRowData((prevRows) =>
@@ -234,6 +358,7 @@ export default function ExpenseForm({
       approved_by: expense.approved_by,
       date_paid: expense.date_paid,
       employee_id: localStorage.getItem("userId"),
+      // employee_id: expense.employee_id || localStorage.getItem("userId"),
       id: Number(expense.id) || expenseId,
       message: expense.message,
       paid: expense.paid,
@@ -303,6 +428,9 @@ export default function ExpenseForm({
   function handleSaveReceipts(files) {
     setReceiptFiles(files);
   }
+
+  // console.log(rowData);
+
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3">
@@ -324,7 +452,7 @@ export default function ExpenseForm({
                 disabled={expense.approved}
               >
                 <FaReceipt color="white" size={18} />
-                <span>Attach Receipts</span>
+                <span>Receipts</span>
               </button>
             )}
             {showModal && (

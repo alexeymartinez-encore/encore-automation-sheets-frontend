@@ -62,9 +62,9 @@ export default function LoginForm() {
         value={credentials.password}
         onChange={credentialChangeHandler.bind(this, "password")}
       />
-      {/* <FormLink to="/employee-portal/reset-password-request">
+      <FormLink to="/employee-portal/reset-password-request">
         Forgot Password?
-      </FormLink> */}
+      </FormLink>
       <ButtonUI type="submit" disabled={loading}>
         {loading ? "Logging in..." : "Login"}
       </ButtonUI>

@@ -38,7 +38,7 @@ export default function RowComponent({
     }
   }
 
-  console.log(miscCtx.projects);
+  // console.log(miscCtx.projects);
 
   return (
     <tr className="bg-white text-xs overflow-scroll">

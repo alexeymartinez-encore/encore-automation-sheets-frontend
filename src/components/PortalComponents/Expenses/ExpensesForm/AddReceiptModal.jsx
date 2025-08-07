@@ -85,7 +85,7 @@ export default function AddReceiptModal({
       alert("Failed to delete receipt file");
     }
   }
-
+  console.log(newSavedFiles);
   return (
     <div
       className=" bg-white py-5 md:px-20 rounded-md text-center shadow-md w-[15rem] md:w-[30rem] relative"

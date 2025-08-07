@@ -9,6 +9,7 @@ export default function ExpenseDetail() {
 
   const expenseCtx = useContext(ExpensesContext);
   const baseUrl = import.meta.env.VITE_BASE_URL;
+
   useEffect(() => {
     async function fetchExpenseEntriesData() {
       try {
