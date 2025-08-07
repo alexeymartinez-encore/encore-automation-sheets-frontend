@@ -223,6 +223,7 @@ export default function TimesheetForm({
         <DatePickerComponent
           onChange={(date) => setSelectedDate(date)}
           selected={formatWeekendDate(selectedDate)}
+          disabled={timesheet.approved}
         />
         <FormActionsButtons
           handleSave={handleSave}
@@ -237,12 +238,21 @@ export default function TimesheetForm({
         onValueChange={handleValueChange}
         onDeleteRow={handleDeleteRow}
         timesheetId={timesheetId}
+        disabled={timesheet.approved}
         // onAddDescription={handleShowModal} // Pass row index to the modal handler
       />
-      <div className="flex justify-end gap-5 items-center px-3 md:px-10">
-        <div className="">
-          <AddEntryButton onClick={handleAddRow} />
-        </div>
+      <div
+        className={`flex ${
+          timesheet.approved ? "justify-end my-5" : "justify-between"
+        } gap-5 items-center px-3 md:px-5`}
+      >
+        {timesheet.approved ? (
+          <> </>
+        ) : (
+          <div className="">
+            <AddEntryButton onClick={handleAddRow} />
+          </div>
+        )}
         <div className="flex items-center justify-end gap-2">
           <FormHoursTotal description={"Reg:"} textColor="text-blue-500">
             {calculateHours(rowData).totalRegHours}

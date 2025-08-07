@@ -1,6 +1,6 @@
 import DatePicker from "react-datepicker";
 
-export default function MonthlyDatePicker({ onChange, selected }) {
+export default function MonthlyDatePicker({ onChange, selected, disabled }) {
   // Allow only the first day of the month
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
 
@@ -16,6 +16,7 @@ export default function MonthlyDatePicker({ onChange, selected }) {
           filterDate={isFirstDayOfMonth} // Allow only the first day
           dateFormat="dd MMMM yyyy" // Display as Month Year
           showMonthYearPicker // Optional: pick by month
+          disabled={disabled}
         />
       </div>
     </div>

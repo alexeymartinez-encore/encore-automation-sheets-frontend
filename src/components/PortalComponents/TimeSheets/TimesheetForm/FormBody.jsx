@@ -4,6 +4,7 @@ export default function FormBody({
   data,
   onValueChange,
   onDeleteRow,
+  disabled,
   // onAddDescription,
 }) {
   return (
@@ -15,6 +16,7 @@ export default function FormBody({
           index={index}
           onValueChange={onValueChange}
           onDeleteRow={onDeleteRow} // Pass delete handler
+          disabled={disabled}
           // onAddDescription={onAddDescription}
         />
       ))}

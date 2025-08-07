@@ -7,6 +7,7 @@ export default function FormTable({
   data,
   onValueChange,
   onDeleteRow,
+  disabled,
   timesheetId,
   onAddDescription,
 }) {
@@ -17,6 +18,7 @@ export default function FormTable({
         data={data}
         onValueChange={onValueChange}
         onDeleteRow={onDeleteRow}
+        disabled={disabled}
         // onAddDescription={onAddDescription}
       />
     </table>

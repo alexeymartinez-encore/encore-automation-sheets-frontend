@@ -310,17 +310,23 @@ export default function ExpenseForm({
           <MonthlyDatePicker
             onChange={(date) => setSelectedDate(date)}
             selected={selectedDate}
+            disabled={expense.approved}
           />
           <div className="flex">
-            <button
-              onClick={toggleModal}
-              title="Import Receipts"
-              className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
+            {expense.approved ? (
+              <></>
+            ) : (
+              <button
+                onClick={toggleModal}
+                title="Import Receipts"
+                className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
                           hover:bg-blue-400 transition duration-300"
-            >
-              <FaReceipt color="white" size={18} />
-              <span>Attach Receipts</span>
-            </button>
+                disabled={expense.approved}
+              >
+                <FaReceipt color="white" size={18} />
+                <span>Attach Receipts</span>
+              </button>
+            )}
             {showModal && (
               <div
                 className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
@@ -357,6 +363,7 @@ export default function ExpenseForm({
               index={index}
               onValueChange={handleValueChange}
               onAddSubRow={() => handleAddSubRow(index)}
+              disabled={expense.approved}
             />
           ))}
         </tbody>

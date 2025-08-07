@@ -12,6 +12,7 @@ export default function RowComponent({
   index,
   onValueChange,
   onDeleteRow,
+  disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
 
@@ -73,6 +74,7 @@ export default function RowComponent({
             }
           }}
           onKeyDown={handleEnterKeyFocus}
+          disabled={disabled}
         >
           {miscCtx.projects.map((project) => (
             <option key={project.id} value={project.id}>
@@ -106,6 +108,7 @@ export default function RowComponent({
           className="w-full text-center px-2"
           onChange={(e) => onValueChange(index, "cost_code_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
+          disabled={disabled}
         >
           {(() => {
             if (specialProject) {
@@ -144,6 +147,7 @@ export default function RowComponent({
           placeholder="Description"
           onChange={(e) => onValueChange(index, "description", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
+          disabled={disabled}
         />
       </td>
 
@@ -156,6 +160,7 @@ export default function RowComponent({
             placeholder="Reg"
             onChange={(e) => onValueChange(index, `${day}_reg`, e.target.value)}
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </td>
       ))}
@@ -168,18 +173,23 @@ export default function RowComponent({
           className="w-full text-center px-2"
           placeholder="Total"
           readOnly
+          disabled={disabled}
         />
       </td>
 
       {/* Delete Button */}
-      <td className="px-2">
-        <button>
-          <FontAwesomeIcon
-            icon={faTrashCan}
-            className="text-red-600"
-            onClick={() => onDeleteRow(index, row)}
-          />
-        </button>
+      <td className="px-2 text-center">
+        {!disabled ? (
+          <button>
+            <FontAwesomeIcon
+              icon={faTrashCan}
+              className="text-red-600"
+              onClick={() => onDeleteRow(index, row)}
+            />
+          </button>
+        ) : (
+          <></>
+        )}
       </td>
     </tr>
   );

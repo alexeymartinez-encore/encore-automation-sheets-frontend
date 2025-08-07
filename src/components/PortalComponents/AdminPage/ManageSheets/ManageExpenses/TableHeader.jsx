@@ -5,13 +5,13 @@ export default function TableHeader() {
       <p className="flex-1 text-center">First</p>
       {/* <p className="flex-1 text-center">Start Date</p> */}
       <p className="flex-1 text-center">Days</p>
-      <p className="flex-1 text-center hidden md:flex">Signed</p>
+      <p className="flex-1 text-center hidden md:block">Signed</p>
       <p className="flex-1 text-center md:hidden flex">Sign</p>
 
-      <p className="flex-1 text-center hidden md:flex">Approved</p>
+      <p className="flex-1 text-center hidden md:block">Approved</p>
       <p className="flex-1 text-center md:hidden flex">Appr</p>
       <p className="flex-1 text-center">Paid</p>
-      <p className="flex-1 text-center hidden md:flex">Signed By</p>
+      <p className="flex-1 text-center hidden md:block">Signed By</p>
       <p className="flex-1 text-center md:hidden flex justify-center">By</p>
       <p className="flex-1 text-center">Paid on</p>
       <p className="flex-1 text-center">Total</p>

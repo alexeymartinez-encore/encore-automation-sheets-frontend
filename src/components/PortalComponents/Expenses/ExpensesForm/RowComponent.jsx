@@ -6,6 +6,7 @@ export default function RowComponent({
   index,
   onValueChange,
   onAddSubRow,
+  disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
   const totalAmount =
@@ -37,10 +38,16 @@ export default function RowComponent({
     }
   }
 
+  console.log(miscCtx.projects);
+
   return (
     <tr className="bg-white text-xs overflow-scroll">
       <td className="border px-0 text-center">
-        <button className="text-indigo-600" onClick={onAddSubRow}>
+        <button
+          className="text-indigo-600"
+          onClick={onAddSubRow}
+          disabled={disabled}
+        >
           +
         </button>
       </td>
@@ -51,11 +58,12 @@ export default function RowComponent({
           className="w-full text-center px-0"
           onChange={(e) => onValueChange(index, "project_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
+          disabled={disabled}
         >
           <option value="Nothing"></option>
           {miscCtx.projects.map((project) => (
             <option key={project.id} value={project.id}>
-              {project.number}
+              {project.number} - {project.description}
             </option>
           ))}
         </select>
@@ -68,6 +76,7 @@ export default function RowComponent({
           className="w-full text-center"
           onChange={(e) => onValueChange(index, "purpose", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
+          disabled={disabled}
         />
       </td>
       <td className="border items-center px-2">
@@ -81,6 +90,7 @@ export default function RowComponent({
               onValueChange(index, "destination_name", e.target.value)
             }
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
           <input
             type="decimal"
@@ -96,6 +106,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -115,6 +126,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -134,6 +146,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -153,6 +166,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -165,6 +179,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="miles"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
           <input
             type="decimal"
@@ -173,6 +188,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -192,6 +208,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -211,6 +228,7 @@ export default function RowComponent({
             className="w-full text-center  px-0"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>
@@ -230,6 +248,7 @@ export default function RowComponent({
               )
             }
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           >
             <option value="Nothing"></option>
             {miscCtx.miscellaneous.map((project) => (
@@ -252,6 +271,7 @@ export default function RowComponent({
             className="w-full text-center  px-2"
             placeholder="$"
             onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
           />
         </div>
       </td>

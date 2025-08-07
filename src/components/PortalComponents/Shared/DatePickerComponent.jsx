@@ -1,6 +1,6 @@
 import DatePicker from "react-datepicker";
 
-export default function DatePickerComponent({ onChange, selected }) {
+export default function DatePickerComponent({ onChange, selected, disabled }) {
   const isSunday = (date) => date.getDay() === 0;
 
   return (
@@ -15,6 +15,7 @@ export default function DatePickerComponent({ onChange, selected }) {
           className="border text-center rounded-md py-1 md:text-sm text-[0.7rem]"
           placeholderText="Select date"
           filterDate={isSunday} // Allow only Sundays
+          disabled={disabled}
         />
       </div>
     </div>

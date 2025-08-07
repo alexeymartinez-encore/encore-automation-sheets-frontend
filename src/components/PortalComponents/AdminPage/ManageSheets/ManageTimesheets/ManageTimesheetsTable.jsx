@@ -5,8 +5,6 @@ import TaskBar from "./TaskBar";
 import { getEndOfWeek } from "../../../../../util/helper";
 import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
-import { time } from "framer-motion/client";
-import { MiscellaneousContext } from "../../../../../store/miscellaneous-context";
 
 export default function ManageTimesheetsTable({ onViewOvertime }) {
   const [timesheets, setTimesheets] = useState([]);
@@ -198,7 +196,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   }
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col text-center w-full">
       <TaskBar
         onChange={(date) => setSelectedDate(date)}
         selectedDate={selectedDate}
