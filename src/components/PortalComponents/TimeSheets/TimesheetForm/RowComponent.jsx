@@ -15,7 +15,7 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
-
+  console.log(miscCtx.projects);
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -78,7 +78,7 @@ export default function RowComponent({
         >
           {miscCtx.projects.map((project) => (
             <option key={project.id} value={project.id}>
-              {project.number}
+              {project.number} - {project.description}
             </option>
           ))}
         </select>
