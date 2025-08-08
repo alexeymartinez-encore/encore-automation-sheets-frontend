@@ -44,7 +44,31 @@ export default function ManageExpensesTable() {
     const filtered = (res ?? []).filter(
       (ts) => Number(ts.manager_id) === userId
     );
+    console.log(res);
+    console.log(filtered);
     setExpenses(filtered);
+  }
+
+  async function handleToggle2() {
+    setIsToggled((prevState) => {
+      const newState = !prevState;
+      const isoDate = new Date(selectedDate).toISOString();
+      const userId = Number(localStorage.getItem("userId"));
+      let res;
+      if (newState) {
+        // Going to Open Expenses
+        res = adminCtx.getOpenExpenses();
+      } else {
+        // Going back to Expenses By Date
+        res = adminCtx.getUsersExpensesByDate(isoDate);
+      }
+      const filtered = (res ?? []).filter(
+        (ts) => Number(ts.manager_id) === userId
+      );
+      setExpenses(filtered);
+
+      return newState;
+    });
   }
 
   function handleValueChange(index, field, value) {
