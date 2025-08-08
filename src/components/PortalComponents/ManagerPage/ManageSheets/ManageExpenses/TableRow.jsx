@@ -1,7 +1,14 @@
+import { Link } from "react-router-dom";
+
 export default function TableRow({ expense, index, onValueChange }) {
   return (
     <div className="flex justify-between items-center p-3 text-[0.5rem] md:text-[0.7rem] ">
-      <p className="flex-1 text-center">{expense.last_name}</p>
+      <Link
+        to={`/employee-portal/dashboard/expenses/${expense.id}`}
+        className="flex-1 text-center underline text-blue-500"
+      >
+        {expense.last_name}
+      </Link>
       <p className="flex-1 text-center">{expense.first_name}</p>
       {/* <p className="flex-1 text-center">{expense.date_start}</p>  */}
       <p className="flex-1 text-center">{expense.num_of_days}</p>
@@ -33,7 +40,7 @@ export default function TableRow({ expense, index, onValueChange }) {
       <p className="flex-1 text-center">
         {expense.date_paid ? expense.date_paid : "-"}
       </p>
-      <p className="flex-1 text-center">$ {expense.total}</p>
+      <p className="flex-1 text-center">$ {expense.total.toFixed(2)}</p>
     </div>
   );
 }

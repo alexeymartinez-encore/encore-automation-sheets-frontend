@@ -1,7 +1,14 @@
+import { Link } from "react-router-dom";
+
 export default function TableRow({ timesheet, index, onValueChange }) {
   return (
     <div className="flex justify-between p-3 items-center text-[0.5rem] md:text-[0.7rem] rounded-b-md">
-      <p className="flex-1 text-center">{timesheet.last_name}</p>
+      <Link
+        to={`/employee-portal/dashboard/timesheets/${timesheet.id}`}
+        className="flex-1 text-center underline text-blue-500"
+      >
+        {timesheet.last_name}
+      </Link>
       <p className="flex-1 text-center">{timesheet.first_name}</p>
       <p className="flex-1 text-center hidden md:flex">{timesheet.message}</p>
       <input
