@@ -44,8 +44,7 @@ export default function ManageExpensesTable() {
     const filtered = (res ?? []).filter(
       (ts) => Number(ts.manager_id) === userId
     );
-    console.log(res);
-    console.log(filtered);
+
     setExpenses(filtered);
   }
 
