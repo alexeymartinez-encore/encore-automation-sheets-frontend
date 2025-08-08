@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 export default function TableRow({ expense, index, onValueChange }) {
+  const expenseTotal = expense.total;
   return (
     <div className="flex justify-between items-center p-3 text-[0.5rem] md:text-[0.7rem] ">
       <Link
@@ -40,7 +41,7 @@ export default function TableRow({ expense, index, onValueChange }) {
       <p className="flex-1 text-center">
         {expense.date_paid ? expense.date_paid : "-"}
       </p>
-      <p className="flex-1 text-center">$ {expense.total}</p>
+      <p className="flex-1 text-center">$ {expense.total.toFixed(2)}</p>
     </div>
   );
 }

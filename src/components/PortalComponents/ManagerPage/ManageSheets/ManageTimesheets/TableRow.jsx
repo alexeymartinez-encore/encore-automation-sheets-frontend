@@ -26,7 +26,7 @@ export default function TableRow({ timesheet, index, onValueChange }) {
         onChange={() => onValueChange(index, "processed")}
       />
       <p className="flex-1 text-center">{timesheet.submitted_by}</p>
-      <p className="flex-1 text-center hidden md:flex">
+      <p className="flex-1 text-center hidden md:block">
         {timesheet.date_processed ? timesheet.date_processed : "-"}
       </p>
       <p className="flex-1 text-center">{timesheet.total_reg_hours}</p>

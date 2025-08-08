@@ -16,7 +16,22 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   useEffect(() => {
     async function getTimesheets() {
       // console.log(selectedDate);
-      const res = await adminCtx.getUsersTimesheetsByDate(selectedDate);
+      // Convert to ISO 8601
+      const d = new Date(selectedDate);
+      d.setHours(0, 0, 0, 0); // local midnight
+
+      // Convert local midnight to a UTC ISO string (no 4-hour drift)
+      const utcLocalMidnightISO = new Date(
+        d.getTime() - d.getTimezoneOffset() * 60000
+      ).toISOString();
+      console.log("=========TIMESHEETS utcLocalMidnightISO 1===========");
+
+      console.log(utcLocalMidnightISO); // 2025-08-11T00:59:42.000Z (UTC time)
+      console.log("=========TIMESHEETS ISO 2===========");
+
+      const isoDate = new Date(selectedDate).toISOString();
+      console.log(isoDate); // 2025-08-11T00:59:42.000Z (UTC time)
+      const res = await adminCtx.getUsersTimesheetsByDate(isoDate);
       setTimesheets(res || []);
     }
     getTimesheets();

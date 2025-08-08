@@ -55,7 +55,7 @@ export default function PasswordResetRequestForm() {
       <ButtonUI type="submit" disabled={loading}>
         {loading ? "Submitting Request..." : "Send Reset Link"}
       </ButtonUI>
-      <Link className="text-blue-600 text-sm" to="/employee-portal/login">
+      <Link className="text-blue-600 text-sm" to="/employee-portal/">
         Back to Login Page
       </Link>
 

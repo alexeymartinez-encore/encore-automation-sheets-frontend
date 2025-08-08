@@ -14,12 +14,13 @@ export default function ManageExpensesTable() {
   const expenseCtx = useContext(ExpensesContext);
 
   const [isToggled, setIsToggled] = useState(false);
-  const expenseMode = isToggled ? "Open Expenses" : "Expenses By Date";
+  const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
   // const isSunday = (date) => date.getDay() === 0;
   async function handleToggle() {
     setIsToggled((prevState) => {
       const newState = !prevState;
+      const isoDate = new Date(selectedDate).toISOString();
 
       if (newState) {
         // Going to Open Expenses
@@ -27,7 +28,7 @@ export default function ManageExpensesTable() {
       } else {
         // Going back to Expenses By Date
         adminCtx
-          .getUsersExpensesByDate(selectedDate)
+          .getUsersExpensesByDate(isoDate)
           .then((res) => setExpenses(res || []));
       }
 
@@ -73,7 +74,12 @@ export default function ManageExpensesTable() {
 
   useEffect(() => {
     async function getExpenses() {
-      const res = await adminCtx.getUsersExpensesByDate(selectedDate);
+      console.log("=========EXPENSES REGULAR DATE===========");
+      console.log(selectedDate);
+      const isoDate = new Date(selectedDate).toISOString();
+      console.log("=========EXPENSES ISO DATE===========");
+      console.log(isoDate); // 2025-08-11T00:59:42.000Z (UTC time)
+      const res = await adminCtx.getUsersExpensesByDate(isoDate);
       setExpenses(res || []);
     }
     getExpenses();

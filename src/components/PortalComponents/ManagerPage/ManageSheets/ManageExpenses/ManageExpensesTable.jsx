@@ -14,18 +14,37 @@ export default function ManageExpensesTable() {
   const expenseCtx = useContext(ExpensesContext);
 
   const [isToggled, setIsToggled] = useState(false);
-  const expenseMode = isToggled ? "Open Expenses" : "Expenses By Date";
+  const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
-  // const isSunday = (date) => date.getDay() === 0;
+  // // const isSunday = (date) => date.getDay() === 0;
+  // async function handleToggle() {
+
+  //   setIsToggled((prevState) => !prevState);
+  //   const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
+
+  //   const res = await adminCtx.getOpenExpenses();
+  //   const filtered = (res || []).filter((ts) => ts.manager_id === userId);
+
+  //   setExpenses(filtered || []);
+  // }
   async function handleToggle() {
-    setIsToggled((prevState) => !prevState);
-    const userId = localStorage.getItem("user_id"); // Fetch user_name from localStorage
+    const nextState = !isToggled; // what we're switching to
+    setIsToggled(nextState);
 
-    const res = await adminCtx.getOpenExpenses();
-    const filtered = (res || []).filter((ts) => ts.manager_id !== userId);
-    console.log(filtered);
+    const userId = Number(localStorage.getItem("userId"));
+    const isoDate = new Date(selectedDate).toISOString();
 
-    setExpenses(filtered || []);
+    // Same logic as your first snippet:
+    // true  -> getOpenExpenses
+    // false -> getUsersExpensesByDate(selectedDate)
+    const res = nextState
+      ? await adminCtx.getOpenExpenses()
+      : await adminCtx.getUsersExpensesByDate(isoDate);
+
+    const filtered = (res ?? []).filter(
+      (ts) => Number(ts.manager_id) === userId
+    );
+    setExpenses(filtered);
   }
 
   function handleValueChange(index, field, value) {
@@ -66,17 +85,30 @@ export default function ManageExpensesTable() {
 
   useEffect(() => {
     async function getExpenses() {
-      const userId = localStorage.getItem("user_id"); // Fetch user_name from localStorage
+      const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
+      const isoDate = new Date(selectedDate).toISOString();
 
-      const res = await adminCtx.getUsersExpensesByDate(selectedDate);
-      const filtered = (res || []).filter((ts) => ts.manager_id !== userId);
-      console.log(filtered);
-
+      const res = await adminCtx.getUsersExpensesByDate(isoDate);
+      const filtered = (res || []).filter(
+        (ts) => Number(ts.manager_id) === userId
+      );
       setExpenses(filtered || []);
     }
     getExpenses();
   }, [selectedDate]);
 
+  //   useEffect(() => {
+  //   async function getExpenses() {
+  //     console.log("=========EXPENSES REGULAR DATE===========");
+  //     console.log(selectedDate);
+  //     const isoDate = new Date(selectedDate).toISOString();
+  //     console.log("=========EXPENSES ISO DATE===========");
+  //     console.log(isoDate); // 2025-08-11T00:59:42.000Z (UTC time)
+  //     const res = await adminCtx.getUsersExpensesByDate(isoDate);
+  //     setExpenses(res || []);
+  //   }
+  //   getExpenses();
+  // }, [selectedDate]);
   async function handleSaveStatusChanges() {
     const res = await adminCtx.saveExpensesStatusChanges(expenses);
     if (res.internalStatus === "success") {

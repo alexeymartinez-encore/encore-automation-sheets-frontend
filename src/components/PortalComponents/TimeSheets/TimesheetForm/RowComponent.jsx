@@ -15,7 +15,6 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
-  console.log(miscCtx.projects);
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();

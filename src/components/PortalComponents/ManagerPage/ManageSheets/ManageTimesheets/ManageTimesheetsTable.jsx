@@ -18,11 +18,12 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       // console.log(selectedDate);
       const res = await adminCtx.getUsersTimesheetsByDate(selectedDate);
 
-      const userId = localStorage.getItem("user_id"); // Fetch user_name from localStorage
+      const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
 
       // Filter timesheets where manager_id matches userId
-      const filtered = (res || []).filter((ts) => ts.manager_id !== userId);
-      // console.log(filtered);
+      const filtered = (res || []).filter(
+        (ts) => Number(ts.manager_id) === userId
+      );
       setTimesheets(filtered || []);
     }
     getTimesheets();

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+// import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
+
 import "react-datepicker/dist/react-datepicker.css";
 import { startOfMonth, getDaysInMonth } from "date-fns";
 import HeaderComponent from "./HeaderComponent";
@@ -64,18 +66,14 @@ const getStartOfMonth = (date) => {
   return startOfMonth(date);
 };
 
-function toRealDate(date) {
-  return date instanceof Date ? date : new Date(date);
-}
-
 export default function ExpenseForm({
   expenseEntriesData = intitialEntriesData,
   expenseId = null,
+  isEditing = false,
 }) {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
   const [expense, setExpense] = useState(initialExpenseData);
   const [rowData, setRowData] = useState(expenseEntriesData);
-  const [saved, setSaved] = useState(expenseId ? true : false);
   const [showModal, setShowModal] = useState(false);
   const [receiptFiles, setReceiptFiles] = useState([]);
   const [savedFilesByEntry, setSavedFilesByEntry] = useState({});
@@ -83,124 +81,15 @@ export default function ExpenseForm({
   const expenseCtx = useContext(ExpensesContext);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   console.log("=========expenseId=================");
-  //   console.log(expenseId);
-  //   console.log("==========================");
-  //   console.log(expenseEntriesData);
-  //   console.log("==========================");
-  //   console.log(expenseCtx.expenses);
-  //   let filteredExpense = null;
-  //   if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
-  //     filteredExpense = expenseCtx.expenses.find(
-  //       (expense) => expense.id === parseInt(expenseId)
-  //       // (expense) => expense.id === parseInt(expenseEntriesData.id)
-  //     );
-  //     console.log(filteredExpense);
-  //     if (filteredExpense === null || filteredExpense === undefined) {
-  //       const roleId = localStorage.getItem("role_id");
-  //       async function fetchExpenseById() {
-  //         try {
-  //           const response = await fetch(
-  //             `${BASE_URL}/admin/expense/expenseId=${expenseId}?roleId=${roleId}`,
-  //             {
-  //               headers: {
-  //                 "Content-Type": "application/json",
-  //               },
-  //               credentials: "include",
-  //             }
-  //           );
-
-  //           const data = await response.json();
-  //           if (response.ok) {
-  //             // console.log(data);
-  //             return data.data;
-  //           } else {
-  //             console.log("Error fetching timesheets");
-  //           }
-  //         } catch (error) {
-  //           console.error("Error fetching timesheets:", error);
-  //         }
-  //       }
-  //       filteredExpense = fetchExpenseById();
-  //     }
-
-  //     console.log(filteredExpense);
-  //     if (filteredExpense) {
-  //       const filteredDate = formatMonthDate(
-  //         new Date(filteredExpense.date_start)
-  //       );
-  //       console.log(filteredExpense);
-  //       setSelectedDate(filteredDate);
-  //       setExpense((prevExpense) => ({
-  //         ...prevExpense,
-  //         ...filteredExpense, // bring all fields (including id, approved, etc.)
-  //         employee_id: localStorage.getItem("userId"),
-  //         files: filteredExpense.ExpenseFiles || [], // make sure files are available
-  //         signed: filteredExpense.signed, // ensure explicit override
-  //         total: filteredExpense.total, // ensure explicit override
-  //         // approved: filteredExpense.approved,
-  //       }));
-  //       // setExpense((prevExpense) => ({
-  //       //   ...prevExpense,
-  //       //   ...filteredExpense,
-  //       //   files: filteredExpense.ExpenseFiles || [],
-  //       //   signed: filteredExpense.signed,
-  //       //   total: filteredExpense.total,
-  //       // }));
-  //     }
-
-  //     const realDate = new Date(selectedDate);
-  //     const daysInMonth = getDaysInMonth(realDate);
-  //     const fullRows = [];
-
-  //     for (let day = 1; day <= daysInMonth; day++) {
-  //       const matchingEntries = expenseEntriesData.filter(
-  //         (entry) => entry.day === day
-  //       );
-  //       if (matchingEntries.length > 0) {
-  //         fullRows.push(...matchingEntries);
-  //       } else {
-  //         fullRows.push({
-  //           ...intitialEntriesData[0],
-  //           day: day,
-  //           date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
-  //         });
-  //       }
-  //     }
-
-  //     setRowData(fullRows);
-  //     const filesMap = {};
-  //     expenseEntriesData.forEach((entry) => {
-  //       if (entry.files && entry.files.length > 0) {
-  //         filesMap[entry.id] = entry.files.map((file) => ({
-  //           id: file.id,
-  //           url: file.url,
-  //           upload_date: file.upload_date,
-  //         }));
-  //       }
-  //     });
-  //     setSavedFilesByEntry(filesMap);
-  //   }
-  // }, [
-  //   expenseEntriesData,
-  //   expenseId,
-  //   expenseCtx.expenses,
-  //   // expenseCtx.triggerUpdate,
-  // ]);
+  const hydratedRef = useRef(null);
 
   useEffect(() => {
     async function init() {
-      console.log("=========expenseId=================");
-      console.log(expenseId);
-      console.log("==========================");
-      console.log(expenseEntriesData);
-      console.log("==========================");
-      console.log(expenseCtx.expenses);
+      if (hydratedRef.current === expenseId) return; // already hydrated for this expenseId
+      hydratedRef.current = expenseId;
 
       let filteredExpense = null;
-
-      if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
+      if (expenseEntriesData && expenseId) {
         filteredExpense = expenseCtx.expenses.find(
           (expense) => expense.id === parseInt(expenseId)
         );
@@ -210,19 +99,15 @@ export default function ExpenseForm({
             const response = await fetch(
               `${BASE_URL}/admin/expense/${expenseId}`,
               {
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 credentials: "include",
               }
             );
-
             const data = await response.json();
             if (response.ok) {
-              console.log(data.data[0]);
               filteredExpense = data.data[0];
             } else {
-              console.log("Error fetching expense");
+              console.error("Error fetching expense");
               return;
             }
           } catch (error) {
@@ -230,17 +115,11 @@ export default function ExpenseForm({
             return;
           }
         }
-        console.log(filteredExpense);
 
         if (filteredExpense) {
-          console.log(filteredExpense.date_start);
           const filteredDate = formatMonthDate(
             new Date(filteredExpense.date_start)
           );
-
-          console.log(filteredDate);
-
-          console.log(filteredExpense);
           setSelectedDate(filteredDate);
           setExpense((prevExpense) => ({
             ...prevExpense,
@@ -250,45 +129,51 @@ export default function ExpenseForm({
             signed: filteredExpense.signed,
             total: filteredExpense.total,
           }));
-        }
 
-        const realDate = new Date(selectedDate);
-        const daysInMonth = getDaysInMonth(realDate);
-        const fullRows = [];
+          // Use filteredDate here, not selectedDate (which hasn't updated yet)
+          const realDate = new Date(filteredDate);
+          const daysInMonth = getDaysInMonth(realDate);
+          const fullRows = [];
 
-        for (let day = 1; day <= daysInMonth; day++) {
-          const matchingEntries = expenseEntriesData.filter(
-            (entry) => entry.day === day
-          );
-          if (matchingEntries.length > 0) {
-            fullRows.push(...matchingEntries);
-          } else {
-            fullRows.push({
-              ...intitialEntriesData[0],
-              day: day,
-              date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
-            });
+          for (let day = 1; day <= daysInMonth; day++) {
+            const matchingEntries = expenseEntriesData.filter(
+              (entry) => entry.day === day
+            );
+            if (matchingEntries.length > 0) {
+              fullRows.push(...matchingEntries);
+            } else {
+              fullRows.push({
+                ...intitialEntriesData[0],
+                day,
+                date: new Date(
+                  realDate.getFullYear(),
+                  realDate.getMonth(),
+                  day
+                ),
+              });
+            }
           }
+
+          setRowData(fullRows);
+
+          const filesMap = {};
+          expenseEntriesData.forEach((entry) => {
+            if (entry.files && entry.files.length > 0) {
+              filesMap[entry.id] = entry.files.map((file) => ({
+                id: file.id,
+                url: file.url,
+                upload_date: file.upload_date,
+              }));
+            }
+          });
+          setSavedFilesByEntry(filesMap);
         }
-
-        setRowData(fullRows);
-
-        const filesMap = {};
-        expenseEntriesData.forEach((entry) => {
-          if (entry.files && entry.files.length > 0) {
-            filesMap[entry.id] = entry.files.map((file) => ({
-              id: file.id,
-              url: file.url,
-              upload_date: file.upload_date,
-            }));
-          }
-        });
-        setSavedFilesByEntry(filesMap);
       }
     }
 
-    init(); // 🔁 call the async wrapper
-  }, [expenseEntriesData, expenseId, expenseCtx.expenses]);
+    init();
+    // only depend on expenseId; do NOT depend on expenseCtx.expenses (that was causing re-hydrates)
+  }, [expenseId]);
 
   useEffect(() => {
     const realDate = new Date(selectedDate);
@@ -296,16 +181,17 @@ export default function ExpenseForm({
     const fullRows = [];
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const existingEntry = expenseEntriesData.find(
-        (entry) => entry.day === day
-      );
+      const dayEntries = expenseEntriesData
+        .filter((entry) => entry.day === day)
+        // optional: stable sort so duplicate-day entries have predictable order
+        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
-      if (existingEntry) {
-        fullRows.push(existingEntry);
+      if (dayEntries.length > 0) {
+        fullRows.push(...dayEntries); // keep ALL entries for that day
       } else {
         fullRows.push({
           ...intitialEntriesData[0],
-          day: day,
+          day,
           date: new Date(realDate.getFullYear(), realDate.getMonth(), day),
         });
       }
@@ -378,7 +264,7 @@ export default function ExpenseForm({
       );
 
       if (res.internalStatus === "success") {
-        if (!expenseId) {
+        if (!isEditing) {
           navigate(
             `/employee-portal/dashboard/expenses/${res.data.expense.id}`
           );
@@ -428,8 +314,6 @@ export default function ExpenseForm({
   function handleSaveReceipts(files) {
     setReceiptFiles(files);
   }
-
-  // console.log(rowData);
 
   return (
     <div>

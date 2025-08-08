@@ -57,7 +57,7 @@ export default function ResetPasswordForm() {
       <ButtonUI type="submit">
         {loading ? "Resetting..." : "Reset Password"}
       </ButtonUI>
-      <Link className="text-blue-600 text-sm" to="/employee-portal/login">
+      <Link className="text-blue-600 text-sm" to="/employee-portal/">
         Back to Login Page
       </Link>
       {status.statusOk === "success" ? (

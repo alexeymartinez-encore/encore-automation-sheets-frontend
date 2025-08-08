@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { MiscellaneousContext } from "../../../../store/miscellaneous-context";
 
 export default function RowComponent({
@@ -8,6 +8,8 @@ export default function RowComponent({
   onAddSubRow,
   disabled,
 }) {
+  const [isActive, setIsActive] = useState(false);
+
   const miscCtx = useContext(MiscellaneousContext);
   const totalAmount =
     Number(row.destination_cost || 0) +
@@ -18,9 +20,7 @@ export default function RowComponent({
     Number(row.perdiem_cost || 0) +
     Number(row.entertainment_cost || 0) +
     Number(row.miscellaneous_amount || 0);
-  // console.log(row);
 
-  // console.log("MISCELLANEOUS", miscCtx.miscellaneous);
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -38,10 +38,21 @@ export default function RowComponent({
     }
   }
 
-  // console.log(miscCtx.projects);
+  function handleRowFocus() {
+    setIsActive(true);
+  }
+  function handleRowBlur() {
+    setIsActive(false);
+  }
 
   return (
-    <tr className="bg-white text-xs overflow-scroll">
+    <tr
+      className={`text-xs overflow-scroll ${
+        isActive ? "bg-blue-200" : "bg-white"
+      }`}
+      onFocus={handleRowFocus}
+      onBlur={handleRowBlur}
+    >
       <td className="border px-0 text-center">
         <button
           className="text-indigo-600"

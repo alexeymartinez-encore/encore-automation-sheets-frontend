@@ -7,27 +7,75 @@ import { AdminContext } from "../../../../../store/admin-context";
 const PEOPLE = [
   {
     id: 1,
-    lastName: "Martinez",
-    firstName: "Alex",
-    total: "4.0",
+    last_name: "Martinez",
+    first_name: "Alex",
+    total_overtime: 4.0,
   },
   {
     id: 2,
-    lastName: "Moore",
-    firstName: "Cameron",
-    total: "11.0",
+    last_name: "Moore",
+    first_name: "Cameron",
+    total_overtime: "11.0",
   },
   {
     id: 3,
-    lastName: "Bhagat",
-    firstName: "Aeijaz",
-    total: "7.0",
+    last_name: "Bhagat",
+    first_name: "Aeijaz",
+    total_overtime: "7.0",
   },
   {
     id: 4,
-    lastName: "Selk",
-    firstName: "Randy",
-    total: "2.0",
+    last_name: "Selk",
+    first_name: "Randy",
+    total_overtime: "2.0",
+  },
+  {
+    id: 5,
+    last_name: "Martinez",
+    first_name: "Alex",
+    total_overtime: "4.0",
+  },
+  {
+    id: 6,
+    last_name: "Moore",
+    first_name: "Cameron",
+    total_overtime: "11.0",
+  },
+  {
+    id: 7,
+    last_name: "Bhagat",
+    first_name: "Aeijaz",
+    total_overtime: "7.0",
+  },
+  {
+    id: 8,
+    last_name: "Selk",
+    first_name: "Randy",
+    total_overtime: "2.0",
+  },
+  {
+    id: 9,
+    last_name: "Martinez",
+    first_name: "Alex",
+    total_overtime: "4.0",
+  },
+  {
+    id: 10,
+    last_name: "Moore",
+    first_name: "Cameron",
+    total_overtime: "11.0",
+  },
+  {
+    id: 11,
+    last_name: "Bhagat",
+    first_name: "Aeijaz",
+    total_overtime: "7.0",
+  },
+  {
+    id: 12,
+    last_name: "Selk",
+    first_name: "Randy",
+    total_overtime: "2.0",
   },
 ];
 
@@ -106,11 +154,11 @@ export default function OvertimeModalComponent() {
     });
   }
 
-  console.log(selectedDate);
+  console.log(timesheets);
 
   return (
     <div
-      className=" flex flex-col items-center justify-center bg-white w-[30rem] rounded-md p-10 shadow-sm"
+      className=" flex flex-col items-center justify-center bg-white w-[30rem] rounded-md p-10 shadow-sm md:h-[40rem]"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-center w-full">
@@ -138,29 +186,31 @@ export default function OvertimeModalComponent() {
           date={selectedDate}
         />
       </div>
-      <table className="w-full mx-10 text-xs border">
-        {/* Header */}
-        <thead>
-          <tr className="flex justify-between gap-20 text-blue-900 p-2">
-            <th className="">Last Name</th>
-            <th>First Name</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        {/* Body */}
-        <tbody>
-          {timesheets.map((person) => (
-            <tr
-              key={person.id}
-              className="flex justify-between gap-20 px-2 mb-2"
-            >
-              <td>{person.last_name}</td>
-              <td>{person.first_name}</td>
-              <td>{person.total_overtime}</td>
+      <div className=" overflow-y-auto max-h-[30rem] border">
+        <table className=" mx-10 text-xs  ">
+          {/* Header */}
+          <thead className="bg-white sticky top-0 z-10">
+            <tr className="grid grid-cols-3  gap-10 text-blue-900 p-2 text-center">
+              <th className="">Last Name</th>
+              <th>First Name</th>
+              <th>Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          {/* Body */}
+          <tbody className="">
+            {timesheets.map((person) => (
+              <tr
+                key={person.id}
+                className="grid grid-cols-3 gap-10 px-2 mb-2 text-center"
+              >
+                <td>{person.last_name}</td>
+                <td>{person.first_name}</td>
+                <td>{person.total_overtime}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <h1 className="text-xs self-end my-5">Total: {totalOvertime}</h1>
     </div>
   );

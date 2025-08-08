@@ -44,6 +44,7 @@ export default function ExpenseDetail() {
       <ExpenseForm
         expenseEntriesData={expenseEntriesData}
         expenseId={params.expenseId}
+        isEditing={true}
       />
     </div>
   );

@@ -38,16 +38,6 @@ export default function TaskBar({
   handleToggle,
   expenseMode,
 }) {
-  // Format the selectedDate for display (e.g., MM/DD/YYYY)
-  const formatDate = (date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   // const isSunday = (date) => date.getDay() === 0;
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
 

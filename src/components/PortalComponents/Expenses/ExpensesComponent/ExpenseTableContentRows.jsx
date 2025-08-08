@@ -34,7 +34,7 @@ export default function ExpenseTableContentRows({ expense }) {
       <TableCellStatusItem status={expense.paid} />
       <TableCellRegItem>{expense.submitted_by}</TableCellRegItem>
       <TableCellRegItem>-</TableCellRegItem>
-      <TableCellRegItem>{expense.total}</TableCellRegItem>
+      <TableCellRegItem>{expense.total.toFixed(2)}</TableCellRegItem>
       <ButtonsContainerCard>
         <TableActionButton onClick={handleEdit} color={"blue"}>
           <FaEdit className="text-blue-500 size-3 md:size-5" />

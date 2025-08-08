@@ -77,7 +77,7 @@ export default function TimesheetForm({
 
   let filteredTimesheet;
   useEffect(() => {
-    if (timesheetEntriesData && timesheetId && timesheetCtx.timesheets.length) {
+    if (timesheetEntriesData && timesheetId) {
       filteredTimesheet = timesheetCtx.timesheets.find(
         (timesheet) => timesheet.id === parseInt(timesheetId)
       );

@@ -2,13 +2,13 @@ export const phaseToAllowedCostCodes = {
   0: [0], // Nothing
   100: [50], // Project Management phase ➔ Cost Code 50
   200: [100, 200], // Engineering phase ➔ Control Eng / Mech Eng
-  300: [300, 400, 425], // Staging / Mod Build ➔ Software-related cost codes
+  300: [300, 400, 425, 475], // Staging / Mod Build ➔ Software-related cost codes
   400: [475, 500], // Install / Commission ➔ Install/Process Prog
   500: [600, 700], // System Debug ➔ Service, Training
-  600: [600, 700], // Startup ➔ Service, Training
+  600: [500, 600, 700], // Startup ➔ Service, Training
   700: [700, 800], // Prod Support ➔ Documentation, Admin
   800: [800, 825], // Closeout ➔ Admin, Product Development
-  900: [900, 925], // Sales/Administration ➔ Manufacturing, Shop Labor
+  900: [825, 900, 925], // Sales/Administration ➔ Manufacturing, Shop Labor
   950: [950], // Paid Time Off ➔ Paid Time Off
   960: [960], // Unpaid Time Off ➔ Unpaid Time Off
   999: [999], // Unallocated
