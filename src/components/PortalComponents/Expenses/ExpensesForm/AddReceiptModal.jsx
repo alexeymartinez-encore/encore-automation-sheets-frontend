@@ -15,7 +15,7 @@ export default function AddReceiptModal({
   // const {receiptFiles, setReceiptFiles} = props
   const [receiptPreviewUrls, setReceiptPreviewUrls] = useState([]);
   const [newSavedFiles, setNewSavedFiles] = useState(savedFiles);
-
+  console.log(receiptFiles);
   // Generate previews from receiptFiles
   useEffect(() => {
     const fileReaders = [];
@@ -136,25 +136,28 @@ export default function AddReceiptModal({
                 Already Uploaded Receipts:
               </p>
               <ul className="text-xs border border-gray-300 rounded p-2 max-h-32 overflow-y-auto">
-                {savedFiles.map((file, idx) => (
-                  <li
-                    key={file.id}
-                    className="flex justify-between items-center"
-                  >
-                    <a
-                      href={`${import.meta.env.VITE_BASE_URL}/${file.url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800"
+                {savedFiles.map((file) => {
+                  const fileName = file.url.split("/").pop().split("-").pop();
+                  return (
+                    <li
+                      key={file.id}
+                      className="flex justify-between items-center"
                     >
-                      Receipt {idx + 1} –{" "}
-                      {new Date(file.upload_date).toLocaleDateString()}
-                    </a>
-                    <button onClick={() => handleDeleteSavedFile(file.id)}>
-                      <MdDeleteForever className="text-red-500 cursor-pointer" />
-                    </button>
-                  </li>
-                ))}
+                      <a
+                        href={`${import.meta.env.VITE_BASE_URL}/${file.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {fileName} –{" "}
+                        {new Date(file.upload_date).toLocaleDateString()}
+                      </a>
+                      <button onClick={() => handleDeleteSavedFile(file.id)}>
+                        <MdDeleteForever className="text-red-500 cursor-pointer" />
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

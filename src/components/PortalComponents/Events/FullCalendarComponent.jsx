@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction"; // Import the interaction plugin
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
+import { FaPlus } from "react-icons/fa6";
 
 import "./custom-calendar.css"; // Import your custom CSS
 import AddNewEvent from "./AddNewEvent";
@@ -110,30 +111,33 @@ export default function FullCalendarComponent({ eventsData = [] }) {
   return (
     <div>
       {/* Add New Event Section */}
-      <div className="flex flex-col text-xs bg-white shadow-md rounded-md">
+      <div className="flex flex-col items-end text-xs bg-white shadow-sm rounded-md">
         <AddNewEvent
           newEvent={newEvent}
           setNewEvent={setNewEvent}
           addEvent={addEvent}
         />
-        <button
-          className=" bg-blue-500 text-white py-2 px-3 rounded-b-md hover:bg-blue-400 transition duration-400 mt-2"
-          onClick={addEvent}
-        >
-          Add Event
-        </button>
+        <div className="p-5">
+          <button
+            className="flex items-center gap-2 bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-400 transition duration-400 mt-2 "
+            onClick={addEvent}
+          >
+            <FaPlus />
+            Add Event
+          </button>
+        </div>
       </div>
 
       {/* List of Events for Selected Date */}
       <div className="bg-white p-2 my-5 rounded-md shadow-md text-xs">
-        <h3 className="text-center font-bold mb-3">
+        <h3 className="text-center text-lg font-bold mb-3">
           Events for {selectedDate}
         </h3>
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <div key={event.id}>
-              <div className="flex items-center px-10">
-                <div className="flex flex-col md:flex-row justify-around gap-5 items-center py-2 w-[95%]">
+              <div className="flex items-center px-10 border my-2 rounded-md">
+                <div className="flex flex-col md:flex-row justify-around gap-5 items-center py-2 w-full text-md ">
                   <input
                     className="flex-1 text-center w-[5rem]"
                     type="date"
@@ -209,7 +213,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                   {" "}
                   {event.employee_id ===
                     Number(localStorage.getItem("userId")) && (
-                    <div className="flex items-center justify-center gap-10 mx-10">
+                    <div className="flex items-center justify-center gap-10">
                       <button
                         type="button"
                         className="rounded-sm"
@@ -228,7 +232,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                   )}
                 </div>
               </div>
-              <hr />
+              {/* <hr /> */}
             </div>
           ))
         ) : (

@@ -30,6 +30,8 @@ export default function AdminContextProvider({ children }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
   async function getUsersTimesheetsByDate(weekEnding) {
+    console.log("==================== getUsersTimesheetsByDate ");
+    console.log(weekEnding);
     try {
       const response = await fetch(
         `${BASE_URL}/admin/timesheets/${weekEnding}`,
@@ -55,6 +57,8 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchOvertimeData(date) {
+    console.log("==================== fetchOvertimeData ");
+    console.log(date);
     try {
       const response = await fetch(
         `${BASE_URL}/admin/timesheets/overtime-report/${date}`,
@@ -80,6 +84,8 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchLaborData(date) {
+    console.log("==================== fetchLaborData ");
+    console.log(date);
     try {
       const response = await fetch(
         `${BASE_URL}/admin/timesheets/labor-report/${date}`,
@@ -105,6 +111,8 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchExpenseReportData(date) {
+    console.log("==================== fetchExpenseReportData ");
+    console.log(date);
     try {
       const response = await fetch(
         `${BASE_URL}/admin/timesheets/expense-report/${date}`,
@@ -261,6 +269,8 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function getUsersExpensesByDate(dateStart) {
+    console.log("==================== getUsersExpensesByDate ");
+    console.log(dateStart);
     try {
       const response = await fetch(`${BASE_URL}/admin/expenses/${dateStart}`, {
         method: "GET",

@@ -7,8 +7,8 @@ export default function EventInputField({
   inputStyles,
 }) {
   return (
-    <div className="flex flex-col justify-center items-center gap-0">
-      <label className="py-2 text-blue-500">{label}</label>
+    <div className="flex flex-col justify-center items-start gap-0">
+      <label className="py-2 text-black">{label}</label>
       <input
         className={`text-black text-center border  ${inputStyles}`}
         placeholder={placeholder}

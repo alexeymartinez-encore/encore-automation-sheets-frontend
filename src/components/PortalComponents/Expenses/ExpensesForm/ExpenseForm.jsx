@@ -66,6 +66,65 @@ const getStartOfMonth = (date) => {
   return startOfMonth(date);
 };
 
+function hasMeaningfulData(row) {
+  const num = (v) => Number(v || 0);
+  const str = (v) => (v ?? "").trim();
+
+  const anyPositiveAmount = [
+    "destination_cost",
+    "lodging_cost",
+    "other_expense_cost",
+    "car_rental_cost",
+    "miles",
+    "miles_cost",
+    "perdiem_cost",
+    "entertainment_cost",
+    "miscellaneous_amount",
+  ].some((k) => num(row[k]) > 0);
+
+  const anyText = str(row.purpose) !== "" || str(row.destination_name) !== "";
+
+  // IMPORTANT: Do NOT consider project_id alone as data (select defaults cause false positives)
+  return anyPositiveAmount || anyText;
+}
+
+function isFirstRowForDay(rows, idx) {
+  const day = rows[idx]?.day;
+  const firstIdx = rows.findIndex((r) => r.day === day);
+  return firstIdx === idx;
+}
+
+function clearedOriginalRow(row) {
+  return {
+    ...row,
+    id: null, // important: remove id locally since we deleted it in DB
+    project_id: "",
+    purpose: "",
+    destination_name: "",
+    destination_cost: 0,
+    lodging_cost: 0,
+    other_expense_cost: 0,
+    car_rental_cost: 0,
+    miles: 0,
+    miles_cost: 0,
+    perdiem_cost: 0,
+    entertainment_cost: 0,
+    miscellaneous_description_id: "",
+    miscellaneous_amount: 0,
+  };
+}
+
+async function safeParse(res) {
+  const ct = res.headers.get("content-type") || "";
+  const text = await res.text();
+  if (ct.includes("application/json")) {
+    try {
+      return JSON.parse(text);
+    } catch {}
+  }
+  return { message: text, internalStatus: "fail" };
+}
+
 export default function ExpenseForm({
   expenseEntriesData = intitialEntriesData,
   expenseId = null,
@@ -219,25 +278,12 @@ export default function ExpenseForm({
   }
 
   async function handleSave() {
-    const num_of_days = getDaysInMonth(selectedDate);
+    // ensure a Date instance goes to getDaysInMonth
+    const numDays = getDaysInMonth(new Date(selectedDate));
     const total = calculateColumnTotals(rowData);
 
-    // Filter only rows with data
-    const filteredRows = rowData.filter((row) => {
-      return (
-        row.project_id ||
-        row.purpose ||
-        row.destination_name ||
-        row.destination_cost ||
-        row.lodging_cost ||
-        row.other_expense_cost ||
-        row.car_rental_cost ||
-        row.miles ||
-        row.perdiem_cost ||
-        row.entertainment_cost ||
-        row.miscellaneous_amount
-      );
-    });
+    // use the new predicate (prevents blank sub-rows from being sent)
+    const filteredRows = rowData.filter(hasMeaningfulData);
 
     const expenseData = {
       approved: expense.approved,
@@ -251,7 +297,7 @@ export default function ExpenseForm({
       processed_by: expense.processed_by,
       signed: expense.signed,
       submitted_by: expense.signed ? localStorage.getItem("user_name") : "None",
-      num_of_days: Number(num_of_days),
+      num_of_days: Number(numDays), // ✱ CHANGED
       date_start: selectedDate,
       total: Number(total.grand_total.toFixed(2)),
     };
@@ -307,6 +353,77 @@ export default function ExpenseForm({
     });
   }
 
+  async function handleDeleteRow(index) {
+    const row = rowData[index];
+
+    // ORIGINAL ROW: delete from DB if persisted, keep row in UI (cleared)
+    if (isFirstRowForDay(rowData, index)) {
+      if (row.id) {
+        try {
+          const url = `${BASE_URL}/expenses/expense-entry/${row.id}`; // adjust if your mount path differs
+          const res = await fetch(url, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          });
+          const data = await safeParse(res);
+          if (!res.ok || data.internalStatus !== "success") {
+            throw new Error(data?.message || "Failed to delete row");
+          }
+
+          // Sync the new total returned by backend
+          if (data?.data?.new_total !== undefined) {
+            setExpense((prev) => ({ ...prev, total: data.data.new_total }));
+          }
+        } catch (err) {
+          console.error("Delete error (original row):", err);
+          expenseCtx.triggerSucessOrFailMessage("fail", "Delete failed");
+          return; // don't clear UI if backend delete failed
+        }
+      }
+
+      // Clear the row visually (and drop id)
+      setRowData((prev) =>
+        prev.map((r, i) => (i === index ? clearedOriginalRow(r) : r))
+      );
+      expenseCtx.triggerUpdate();
+      expenseCtx.triggerSucessOrFailMessage("success", "Row cleared");
+      return;
+    }
+
+    // SUBROW: remove from state; if persisted, delete in DB first
+    if (!row.id) {
+      setRowData((prev) => prev.filter((_, i) => i !== index));
+      return;
+    }
+
+    try {
+      const url = `${BASE_URL}/expenses/expense-entry/${row.id}`; // adjust if needed
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const data = await safeParse(res);
+      if (!res.ok || data.internalStatus !== "success") {
+        throw new Error(data?.message || "Failed to delete row");
+      }
+
+      // Remove subrow from UI
+      setRowData((prev) => prev.filter((_, i) => i !== index));
+
+      // Sync total
+      if (data?.data?.new_total !== undefined) {
+        setExpense((prev) => ({ ...prev, total: data.data.new_total }));
+      }
+      expenseCtx.triggerUpdate();
+      expenseCtx.triggerSucessOrFailMessage("success", "Row deleted");
+    } catch (err) {
+      console.error("Delete error (subrow):", err);
+      expenseCtx.triggerSucessOrFailMessage("fail", "Delete failed");
+    }
+  }
+
   function toggleModal() {
     setShowModal((prev) => !prev);
   }
@@ -314,7 +431,6 @@ export default function ExpenseForm({
   function handleSaveReceipts(files) {
     setReceiptFiles(files);
   }
-
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3">
@@ -375,6 +491,7 @@ export default function ExpenseForm({
               index={index}
               onValueChange={handleValueChange}
               onAddSubRow={() => handleAddSubRow(index)}
+              onDeleteRow={() => handleDeleteRow(index)}
               disabled={expense.approved}
             />
           ))}

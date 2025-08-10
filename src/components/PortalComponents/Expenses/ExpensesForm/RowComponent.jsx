@@ -6,6 +6,7 @@ export default function RowComponent({
   index,
   onValueChange,
   onAddSubRow,
+  onDeleteRow,
   disabled,
 }) {
   const [isActive, setIsActive] = useState(false);
@@ -53,9 +54,18 @@ export default function RowComponent({
       onFocus={handleRowFocus}
       onBlur={handleRowBlur}
     >
-      <td className="border px-0 text-center">
+      <td className={`border px-0 text-center `}>
         <button
-          className="text-indigo-600"
+          className={` ${disabled ? " text-red-200/90" : "text-red-600"}`}
+          onClick={onDeleteRow}
+          disabled={disabled}
+        >
+          -
+        </button>
+      </td>
+      <td className={`border px-0 text-center `}>
+        <button
+          className={` ${disabled ? " text-indigo-200/90" : "text-indigo-600"}`}
           onClick={onAddSubRow}
           disabled={disabled}
         >

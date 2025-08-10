@@ -5,6 +5,8 @@ export default function TableFooterComponent({ totals }) {
         <th className="border w-[0rem] px-0 py-1 text-center"></th>
 
         <th className="border w-[0rem] px-0 py-1 text-center"></th>
+
+        <th className="border w-[0rem] px-0 py-1 text-center"></th>
         <th className="border w-[0rem] px-0 py-1 text-center"></th>
         <th className="border w-[10rem] px-0 py-1 text-center"></th>
         <th className="border w-[5rem] px-2 py-1 text-center  font-thin">

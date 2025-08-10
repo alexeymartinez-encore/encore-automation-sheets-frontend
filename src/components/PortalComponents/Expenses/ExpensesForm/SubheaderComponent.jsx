@@ -3,6 +3,8 @@ export default function SubheaderComponent() {
     <thead className="bg-blue-500 text-white text-xs">
       <tr>
         <th className="border w-[0rem] px-0 py-1 text-center"></th>
+
+        <th className="border w-[0rem] px-0 py-1 text-center"></th>
         <th className="border w-[0rem] px-0 py-1 text-center"></th>
         <th className="border w-[3rem] px-0 py-1 text-center"></th>
         <th className="border w-[10rem] px-0 py-1 text-center"></th>
