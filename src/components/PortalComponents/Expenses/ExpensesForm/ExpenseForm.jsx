@@ -129,6 +129,7 @@ export default function ExpenseForm({
   expenseEntriesData = intitialEntriesData,
   expenseId = null,
   isEditing = false,
+  isAdmin = false,
 }) {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
   const [expense, setExpense] = useState(initialExpenseData);
@@ -183,7 +184,7 @@ export default function ExpenseForm({
           setExpense((prevExpense) => ({
             ...prevExpense,
             ...filteredExpense,
-            employee_id: localStorage.getItem("userId"),
+            // employee_id: localStorage.getItem("userId"),
             files: filteredExpense.ExpenseFiles || [],
             signed: filteredExpense.signed,
             total: filteredExpense.total,
@@ -282,25 +283,45 @@ export default function ExpenseForm({
     const numDays = getDaysInMonth(new Date(selectedDate));
     const total = calculateColumnTotals(rowData);
 
-    // use the new predicate (prevents blank sub-rows from being sent)
+    // send only meaningful rows (prevents blank sub-rows)
     const filteredRows = rowData.filter(hasMeaningfulData);
+
+    const currentUserId = localStorage.getItem("userId");
+    const currentUserName = localStorage.getItem("user_name");
+
+    // Keep the original owner when admin; otherwise use existing or current user
+    const employeeIdToSend = isAdmin
+      ? expense.employee_id
+      : expense.employee_id || currentUserId;
+
+    // Only the owner updates submitted_by on sign; admins shouldn't overwrite it
+    const submittedByToSend = isAdmin
+      ? expense.submitted_by ?? "None"
+      : expense.signed
+      ? currentUserName || "None"
+      : expense.submitted_by ?? "None";
+
+    // Track who processed when admin; otherwise preserve existing
+    const processedByToSend = isAdmin
+      ? currentUserName || expense.processed_by || "None"
+      : expense.processed_by || "None";
 
     const expenseData = {
       approved: expense.approved,
       approved_by: expense.approved_by,
       date_paid: expense.date_paid,
-      employee_id: localStorage.getItem("userId"),
-      // employee_id: expense.employee_id || localStorage.getItem("userId"),
+      employee_id: Number(employeeIdToSend),
       id: Number(expense.id) || expenseId,
       message: expense.message,
       paid: expense.paid,
-      processed_by: expense.processed_by,
+      processed_by: processedByToSend,
       signed: expense.signed,
-      submitted_by: expense.signed ? localStorage.getItem("user_name") : "None",
-      num_of_days: Number(numDays), // ✱ CHANGED
+      submitted_by: submittedByToSend,
+      num_of_days: Number(numDays),
       date_start: selectedDate,
       total: Number(total.grand_total.toFixed(2)),
     };
+
     try {
       const res = await saveExpenseSheet(
         expenseData,
@@ -334,6 +355,7 @@ export default function ExpenseForm({
     setExpense((prevExpense) => ({
       ...prevExpense, // Keep all other fields unchanged
       signed: !prevExpense.signed, // Toggle the signed field
+      submitted_by: localStorage.getItem("user_name"),
     }));
   }
 

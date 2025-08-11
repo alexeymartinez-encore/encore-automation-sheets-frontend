@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { TimesheetContext } from "../store/timesheet-context";
 import FormContainerCard from "../components/PortalComponents/Shared/FormContainerCard";
@@ -8,9 +8,10 @@ export default function TimesheetDetail() {
   const params = useParams();
   const [timesheetEntriesData, setTimesheetEntriesData] = useState([]);
   const timesheetCtx = useContext(TimesheetContext);
+  const [searchParams] = useSearchParams(); // gets query params like adminMode=true
+  const adminMode = searchParams?.get("adminMode") === "true"; // boolean
   const baseUrl = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
-    const token = localStorage.getItem("token");
     async function fetchTimesheetEntriesData() {
       try {
         const response = await fetch(
@@ -38,12 +39,17 @@ export default function TimesheetDetail() {
     fetchTimesheetEntriesData();
   }, [timesheetCtx.timesheets]);
   // console.log(timesheetEntriesData, "ENTIREEES");
+  console.log(params);
+  console.log(adminMode); // true if adminMode=true, false otherwise
+
+  console.log(timesheetEntriesData);
 
   return (
     <FormContainerCard>
       <TimesheetForm
         timesheetEntriesData={timesheetEntriesData}
         timesheetId={params.timesheetId}
+        isAdmin={adminMode}
       />
     </FormContainerCard>
   );

@@ -16,6 +16,8 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   useEffect(() => {
     async function getTimesheets() {
       // Convert to ISO 8601. Always set to 4:00
+      console.log("selectedDate");
+      console.log(selectedDate);
       const date = new Date(selectedDate);
       const hours = import.meta.env.VITE_UTC_CONFIGURATION;
       // Force to 4:00 AM UTC

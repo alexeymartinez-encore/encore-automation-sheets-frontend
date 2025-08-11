@@ -17,6 +17,7 @@ import {
   saveTimesheet,
 } from "../../../util/fetching";
 import DatePickerComponent from "../Shared/DatePickerComponent";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 const initialTimesheetData = {
   approved: false,
@@ -65,6 +66,7 @@ const intitialEntriesData = [
 export default function TimesheetForm({
   timesheetEntriesData = intitialEntriesData,
   timesheetId = null,
+  isAdmin = false,
 }) {
   const navigate = useNavigate();
 
@@ -77,26 +79,54 @@ export default function TimesheetForm({
 
   let filteredTimesheet;
   useEffect(() => {
-    if (timesheetEntriesData && timesheetId) {
-      filteredTimesheet = timesheetCtx.timesheets.find(
-        (timesheet) => timesheet.id === parseInt(timesheetId)
-      );
-      if (filteredTimesheet) {
-        const filteredDate = formatWeekendDate(
-          new Date(filteredTimesheet.week_ending)
+    async function init() {
+      if (timesheetEntriesData && timesheetId) {
+        filteredTimesheet = timesheetCtx.timesheets.find(
+          (timesheet) => timesheet.id === parseInt(timesheetId)
         );
-        setSelectedDate(filteredDate);
-        setTimesheet((prevTimesheet) => ({
-          ...prevTimesheet, // Keep all other fields unchanged
-          signed: filteredTimesheet.signed, // Toggle the signed field
-          total_reg_hours: filteredTimesheet.total_reg_hours,
-          total_overtime: filteredTimesheet.total_overtime,
-          approved: filteredTimesheet.approved,
-        }));
-        // setSigned(filteredTimesheet.signed);
+        console.log("=======filteredTimesheet==========");
+        console.log(filteredTimesheet);
+
+        if (filteredTimesheet) {
+          const filteredDate = formatWeekendDate(
+            new Date(filteredTimesheet.week_ending)
+          );
+          setSelectedDate(filteredDate);
+          setTimesheet((prevTimesheet) => ({
+            ...prevTimesheet, // Keep all other fields unchanged
+            signed: filteredTimesheet.signed, // Toggle the signed field
+            total_reg_hours: filteredTimesheet.total_reg_hours,
+            total_overtime: filteredTimesheet.total_overtime,
+            approved: filteredTimesheet.approved,
+          }));
+          // setSigned(filteredTimesheet.signed);
+        } else {
+          try {
+            const response = await fetch(
+              `${BASE_URL}/admin/timesheet/${timesheetId}`,
+              {
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+              }
+            );
+            const data = await response.json();
+            if (response.ok) {
+              filteredTimesheet = data.data[0];
+              console.log(filteredTimesheet);
+              setTimesheet(filteredTimesheet);
+            } else {
+              console.error("Error fetching expense");
+              return;
+            }
+          } catch (error) {
+            console.error("Error fetching expense:", error);
+            return;
+          }
+        }
+        setRowData(timesheetEntriesData);
       }
-      setRowData(timesheetEntriesData);
     }
+    init();
   }, [timesheetEntriesData, timesheetId, timesheetCtx.timesheets]);
 
   async function handleSave() {
@@ -107,7 +137,9 @@ export default function TimesheetForm({
       timesheet.submitted_by = timesheet.signed
         ? localStorage.getItem("user_name")
         : "None";
-      timesheet.employee_id = localStorage.getItem("userId");
+      timesheet.employee_id = isAdmin
+        ? timesheet.employee_id
+        : localStorage.getItem("userId");
       timesheet.week_ending = selectedDate;
       timesheet.id = timesheetId || timesheet.id;
 
@@ -163,6 +195,7 @@ export default function TimesheetForm({
     setTimesheet((prevTimesheet) => ({
       ...prevTimesheet, // Keep all other fields unchanged
       signed: !prevTimesheet.signed, // Toggle the signed field
+      submitted_by: localStorage.getItem("user_name"),
     }));
   }
 
@@ -217,6 +250,8 @@ export default function TimesheetForm({
       })
     );
   }
+
+  console.log(timesheet);
   return (
     <div className="pb-20">
       <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 ">

@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
 
 export default function TableRow({ expense, index, onValueChange }) {
-  const expenseTotal = expense.total;
   return (
     <div className="flex justify-between items-center p-3 text-[0.5rem] md:text-[0.7rem] ">
       <Link
-        to={`/employee-portal/dashboard/expenses/${expense.id}`}
+        to={`/employee-portal/dashboard/expenses/${expense.id}?adminMode=true`}
         className="flex-1 text-center underline text-blue-500"
       >
         {expense.last_name}

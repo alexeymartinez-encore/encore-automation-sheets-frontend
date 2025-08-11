@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { ExpensesContext } from "../store/expense-context";
 import ExpenseForm from "../components/PortalComponents/Expenses/ExpensesForm/ExpenseForm";
@@ -6,6 +6,8 @@ import ExpenseForm from "../components/PortalComponents/Expenses/ExpensesForm/Ex
 export default function ExpenseDetail() {
   const params = useParams();
   const [expenseEntriesData, setExpenseEntriesData] = useState([]);
+  const [searchParams] = useSearchParams(); // gets query params like adminMode=true
+  const adminMode = searchParams?.get("adminMode") === "true"; // boolean
 
   const expenseCtx = useContext(ExpensesContext);
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -38,6 +40,8 @@ export default function ExpenseDetail() {
 
     fetchExpenseEntriesData();
   }, [expenseCtx.data]);
+  console.log(params);
+  console.log(adminMode); // true if adminMode=true, false otherwise
 
   return (
     <div className="my-5 bg-white shadow-md rounded-lg overflow-x-scroll">
@@ -45,6 +49,7 @@ export default function ExpenseDetail() {
         expenseEntriesData={expenseEntriesData}
         expenseId={params.expenseId}
         isEditing={true}
+        isAdmin={adminMode}
       />
     </div>
   );

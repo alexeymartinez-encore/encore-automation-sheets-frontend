@@ -10,6 +10,7 @@ export default function FormActionsButtons({
   href,
 }) {
   const signed_text = signed ? "Unsign" : "Sign";
+  const role = localStorage.getItem("role_id");
   return (
     <div className="flex gap-3 md:justify-between items-center">
       {disabled ? (

@@ -6,29 +6,24 @@ export default function FormActionButton({
   text,
   disabled,
 }) {
-  let style = `${
-    signed
-      ? ` ${disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400"}`
-      : "bg-red-600 hover:bg-red-400"
-  }  rounded-md  duration-500`;
+  let style;
 
-  if (signed === null || signed === undefined) {
-    style = ` ${
-      disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400"
-    } rounded-md  duration-500`;
+  if (signed === true) {
+    style = disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400";
+  } else if (signed === false) {
+    style = disabled ? "bg-red-300" : "bg-red-600 hover:bg-red-400";
+  } else {
+    // null/undefined case
+    style = disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400";
   }
 
   return (
     <button
       onClick={onClick}
-      className={`py-1 ${style} ${
-        disabled
-          ? "bg-blue-300 hover:bg-blue-300"
-          : "bg-blue-500 hover:bg-blue-400"
-      }`}
+      className={`py-1 rounded-md duration-500 ${style}`}
       disabled={disabled}
     >
-      <FontAwesomeIcon className={"text-white pl-4"} icon={icon} />
+      <FontAwesomeIcon className="text-white pl-4" icon={icon} />
       <span className="text-white px-4">{text}</span>
     </button>
   );

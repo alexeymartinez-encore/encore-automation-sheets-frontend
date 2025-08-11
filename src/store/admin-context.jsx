@@ -307,7 +307,6 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-
       return data.data || [];
     } catch (error) {
       console.error("Error getting open expenses: ", error);

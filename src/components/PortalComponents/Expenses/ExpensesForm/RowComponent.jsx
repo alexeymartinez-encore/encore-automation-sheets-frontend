@@ -10,6 +10,7 @@ export default function RowComponent({
   disabled,
 }) {
   const [isActive, setIsActive] = useState(false);
+  const role = Number(localStorage.getItem("role_id"));
 
   const miscCtx = useContext(MiscellaneousContext);
   const totalAmount =

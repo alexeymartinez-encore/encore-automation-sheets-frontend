@@ -2,10 +2,20 @@ import { addDays, startOfMonth } from "date-fns";
 
 // Function to calculate the end of the current week (Sunday)
 
+// export function getEndOfWeek(date) {
+//   const currentDay = date.getDay();
+//   const daysUntilEndOfWeek = 7 - currentDay; // Days until Sunday
+//   console.log(addDays(date, daysUntilEndOfWeek));
+//   return addDays(date, daysUntilEndOfWeek);
+// }
+
 export function getEndOfWeek(date) {
-  const currentDay = date.getDay();
-  const daysUntilEndOfWeek = 7 - currentDay; // Days until Sunday
-  return addDays(date, daysUntilEndOfWeek);
+  const d = new Date(date);
+  const currentDay = d.getDay(); // 0=Sun ... 6=Sat
+  const daysUntilEnd = (7 - currentDay) % 7; // 0 on Sunday, 6 on Monday, etc.
+  d.setHours(0, 0, 0, 0); // normalize to local midnight
+  d.setDate(d.getDate() + daysUntilEnd);
+  return d; // local time end-of-week (Sunday 00:00 local)
 }
 
 export function getStartOfMonth(date) {

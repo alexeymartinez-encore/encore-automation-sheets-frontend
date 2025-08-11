@@ -15,6 +15,8 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
+  const role = Number(localStorage.getItem("role_id"));
+
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -178,7 +180,7 @@ export default function RowComponent({
 
       {/* Delete Button */}
       <td className="px-2 text-center">
-        {!disabled ? (
+        {!disabled && (
           <button>
             <FontAwesomeIcon
               icon={faTrashCan}
@@ -186,8 +188,6 @@ export default function RowComponent({
               onClick={() => onDeleteRow(index, row)}
             />
           </button>
-        ) : (
-          <></>
         )}
       </td>
     </tr>
