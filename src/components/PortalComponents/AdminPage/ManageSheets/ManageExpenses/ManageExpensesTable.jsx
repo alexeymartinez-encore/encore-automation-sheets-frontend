@@ -36,7 +36,7 @@ export default function ManageExpensesTable() {
     });
   }
 
-  console.log(expenses);
+  // console.log(expenses);
 
   function handleValueChange(index, field, value) {
     const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage

@@ -2,7 +2,7 @@ export const phaseToAllowedCostCodes = {
   0: [0], // Nothing
   100: [50], // Project Management phase ➔ Cost Code 50
   200: [100, 200], // Engineering phase ➔ Control Eng / Mech Eng
-  300: [300, 400, 425, 475], // Staging / Mod Build ➔ Software-related cost codes
+  300: [300, 400, 425, 475, 900], // Staging / Mod Build ➔ Software-related cost codes
   400: [475, 500], // Install / Commission ➔ Install/Process Prog
   500: [600, 700], // System Debug ➔ Service, Training
   600: [500, 600, 700], // Startup ➔ Service, Training
