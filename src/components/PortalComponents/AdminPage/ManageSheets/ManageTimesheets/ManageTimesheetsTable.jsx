@@ -143,7 +143,9 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       // Iterate through each entry for this timesheet
       entries.forEach((entry) => {
         // Map of day keys to simplify the iteration
-        console.log(entry);
+        // let x = 0;
+        // console.log(x, "=>", entry.CostCode.cost_code);
+        // x = x + 1;
         const dayKeys = [
           { day: "mon", index: 0 },
           { day: "tue", index: 1 },
@@ -168,8 +170,8 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
             "Unknown";
           const projectNumber = entry.project || "";
           const description = entry.project_description || "None";
-          const phase = entry.phase || "";
-          const costCode = entry.CostCode.cost_code || "";
+          const phase = entry.phase || "0";
+          const costCode = entry.CostCode.cost_code || "0";
 
           // Append the row to XML content
           xmlContent += `  <row
