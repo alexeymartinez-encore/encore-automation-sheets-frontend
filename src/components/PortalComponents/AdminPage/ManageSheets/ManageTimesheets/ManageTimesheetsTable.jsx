@@ -106,46 +106,78 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   }
 
   async function generateLaborReport() {
-    // Fetch the timesheets and entries from the API
-    const newTimesheets = await adminCtx.fetchLaborData(selectedDate);
-    console.log(newTimesheets);
+    // --- inputs & fetch ---
+    const date = new Date(selectedDate);
+    const hours = Number(import.meta.env.VITE_UTC_CONFIGURATION ?? 4); // fallback to 4 if unset
+    date.setUTCHours(hours, 0, 0, 0);
+    const isoDate = date.toISOString();
 
-    // XML Header
-    let xmlContent = "<ProjectLabor>\n";
+    const resp = await adminCtx.fetchLaborData(isoDate);
+    console.log(resp);
+    // const timesheetsRes = Array.isArray(resp?.data) ? resp.data : [];
 
-    // Function to format dates as "MonthDay" (e.g., "Feb24")
-    const formatDate = (date) => {
-      const options = { month: "short", day: "2-digit" };
-      return new Intl.DateTimeFormat("en-US", options)
-        .format(date)
-        .replace(" ", "");
+    // console.log(timesheetsRes);
+
+    // --- helpers ---
+    const escapeXml = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+    // Parse "YYYY-MM-DD" as a UTC date
+    const parseDateUTC = (ymd) => {
+      if (!ymd) return new Date(NaN);
+      if (typeof ymd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+        const [y, m, d] = ymd.split("-").map(Number);
+        return new Date(Date.UTC(y, m - 1, d));
+      }
+      // Fallback to native parse (already ISO string or Date)
+      return new Date(ymd);
     };
 
-    // Generate the file name based on the date range
+    const formatDateForFile = (d) =>
+      new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" })
+        .format(d)
+        .replace(" ", "");
+
+    // file name from biweekly range (selectedDate back 13 days)
     const endDate = new Date(selectedDate);
     const startDate = new Date(selectedDate);
-    startDate.setDate(startDate.getDate() - 13); // Go back 13 days for biweekly period
+    startDate.setDate(startDate.getDate() - 13);
+    const fileName = `EncoreLabor${formatDateForFile(
+      startDate
+    )}to${formatDateForFile(endDate)}_${startDate.getFullYear()}.xml`;
 
-    const fileName = `EncoreLabor${formatDate(startDate)}to${formatDate(
-      endDate
-    )}_${startDate.getFullYear()}.xml`;
+    // --- build XML ---
+    let xmlContent = "<ProjectLabor>\n";
 
-    // Iterate through each timesheet object
-    newTimesheets.forEach(({ timesheet, entries }) => {
-      // Calculate dates for each day of the week
-      const weekEndingDate = new Date(timesheet.week_ending);
+    for (const ts of resp) {
+      // week-ending (API gives e.g. "2025-08-02")
+      const weekEndingDate = parseDateUTC(ts.week_ending);
+
+      // Monday..Sunday based on a Saturday week-ending, then shift each by +1 day (as requested)
       const weekDates = Array.from({ length: 7 }, (_, index) => {
-        const date = new Date(weekEndingDate);
-        date.setDate(weekEndingDate.getDate() - (5 - index));
-        return date.toISOString().split("T")[0];
+        const d = new Date(weekEndingDate);
+        // Use UTC math to avoid TZ drift
+        d.setUTCDate(weekEndingDate.getUTCDate() - (5 - index)); // Mon..Sun
+        d.setUTCDate(d.getUTCDate() + 1); // shift to the day right after
+        return d.toISOString().split("T")[0];
       });
 
-      // Iterate through each entry for this timesheet
-      entries.forEach((entry) => {
-        // Map of day keys to simplify the iteration
-        // let x = 0;
-        console.log(entry);
-        // x = x + 1;
+      const employeeNumber = ts.employee_id ?? "";
+      const employeeName =
+        `${ts.Employee?.first_name ?? ""} ${
+          ts.Employee?.last_name ?? ""
+        }`.trim() || "Unknown";
+
+      const entries = Array.isArray(ts.TimesheetEntries)
+        ? ts.TimesheetEntries
+        : [];
+
+      for (const entry of entries) {
         const dayKeys = [
           { day: "mon", index: 0 },
           { day: "tue", index: 1 },
@@ -156,53 +188,48 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
           { day: "sun", index: 6 },
         ];
 
-        dayKeys.forEach(({ day, index }) => {
-          const regHours = Number(entry[`${day}_reg`] || 0).toFixed(15);
-          const otHours = Number(entry[`${day}_ot`] || 0).toFixed(15);
+        const projectNumber = entry.Project?.number ?? "";
+        const description =
+          (entry.Project?.description ?? entry.description ?? "None").trim() ||
+          "None";
+        const phase = entry.Phase?.number ?? "0";
+        const costCode = entry.CostCode?.cost_code ?? "0";
 
-          // Skip if both regular and overtime hours are zero
-          if (regHours == 0 && otHours == 0) return;
+        for (const { day, index } of dayKeys) {
+          const reg = Number(entry[`${day}_reg`] ?? 0);
+          const ot = Number(entry[`${day}_ot`] ?? 0);
+          if (reg === 0 && ot === 0) continue;
 
+          const regHours = reg.toFixed(15);
+          const otHours = ot.toFixed(15);
           const laborDate = weekDates[index];
-          const employeeNumber = timesheet.employee_id;
-          const employeeName =
-            `${timesheet.employee_first_name} ${timesheet.employee_last_name}` ||
-            "Unknown";
-          const projectNumber = entry.project || "";
-          const description = entry.project_description || "None";
-          const phase = entry.phase || "0";
-          const costCode = entry.CostCode.cost_code || "0";
 
-          // Append the row to XML content
           xmlContent += `  <row
-        LaborDate="${laborDate}T00:00:00"
-        EmployeeNumber="${employeeNumber}"
-        EmployeeName="${employeeName}"
-        RegHours="${regHours}"
-        OTHours="${otHours}"
-        ProjectNumber="${projectNumber}"
-        Description="${description}"
-        Phase="${phase}"
-        CostCode="${costCode}"
-      />\n`;
-        });
-      });
-    });
+    LaborDate="${laborDate}T00:00:00"
+    EmployeeNumber="${escapeXml(employeeNumber)}"
+    EmployeeName="${escapeXml(employeeName)}"
+    RegHours="${regHours}"
+    OTHours="${otHours}"
+    ProjectNumber="${escapeXml(projectNumber)}"
+    Description="${escapeXml(description)}"
+    Phase="${escapeXml(phase)}"
+    CostCode="${escapeXml(costCode)}"
+  />\n`;
+        }
+      }
+    }
 
-    // Close the XML tag
     xmlContent += "</ProjectLabor>";
 
-    // Create a Blob from the XML data
+    // --- download file ---
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
-
-    // Create a link and trigger download
     const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
+    document.body.appendChild(link);
     link.click();
-
-    // Cleanup
+    link.remove();
     URL.revokeObjectURL(url);
   }
 

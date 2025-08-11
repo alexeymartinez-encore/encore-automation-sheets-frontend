@@ -103,6 +103,7 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
+      console.log(data);
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);

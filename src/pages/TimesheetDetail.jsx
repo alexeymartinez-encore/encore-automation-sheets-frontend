@@ -38,11 +38,6 @@ export default function TimesheetDetail() {
 
     fetchTimesheetEntriesData();
   }, [timesheetCtx.timesheets]);
-  // console.log(timesheetEntriesData, "ENTIREEES");
-  console.log(params);
-  console.log(adminMode); // true if adminMode=true, false otherwise
-
-  console.log(timesheetEntriesData);
 
   return (
     <FormContainerCard>

@@ -73,7 +73,6 @@ export default function TimesheetForm({
   const [timesheet, setTimesheet] = useState(initialTimesheetData);
   const [rowData, setRowData] = useState(timesheetEntriesData);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
-  // const { timesheets } = useContext(TimesheetContext);
 
   const timesheetCtx = useContext(TimesheetContext);
 
@@ -84,8 +83,6 @@ export default function TimesheetForm({
         filteredTimesheet = timesheetCtx.timesheets.find(
           (timesheet) => timesheet.id === parseInt(timesheetId)
         );
-        console.log("=======filteredTimesheet==========");
-        console.log(filteredTimesheet);
 
         if (filteredTimesheet) {
           const filteredDate = formatWeekendDate(
@@ -93,13 +90,12 @@ export default function TimesheetForm({
           );
           setSelectedDate(filteredDate);
           setTimesheet((prevTimesheet) => ({
-            ...prevTimesheet, // Keep all other fields unchanged
-            signed: filteredTimesheet.signed, // Toggle the signed field
+            ...prevTimesheet,
+            signed: filteredTimesheet.signed,
             total_reg_hours: filteredTimesheet.total_reg_hours,
             total_overtime: filteredTimesheet.total_overtime,
             approved: filteredTimesheet.approved,
           }));
-          // setSigned(filteredTimesheet.signed);
         } else {
           try {
             const response = await fetch(
@@ -112,7 +108,6 @@ export default function TimesheetForm({
             const data = await response.json();
             if (response.ok) {
               filteredTimesheet = data.data[0];
-              console.log(filteredTimesheet);
               setTimesheet(filteredTimesheet);
             } else {
               console.error("Error fetching expense");
@@ -148,19 +143,19 @@ export default function TimesheetForm({
         timesheetEntryData: rowData,
       };
 
+      console.log(timesheetRequestBody);
+
       const res = await saveTimesheet(timesheetRequestBody, timesheetId);
 
       if (res.internalStatus === "success" && res.data) {
         if (!timesheetId) {
-          // Only navigate if it was a new creation
           const createdTimesheetId = res.data.timesheet.id;
           navigate(
             `/employee-portal/dashboard/timesheets/${createdTimesheetId}`
           );
-          timesheetCtx.triggerUpdate(); // Only trigger update after creating new
+          timesheetCtx.triggerUpdate();
         }
 
-        // Update local data if editing
         if (timesheetId) {
           setRowData(
             res.data.entries.length > 0 ? res.data.entries : intitialEntriesData
@@ -193,8 +188,8 @@ export default function TimesheetForm({
 
   function handleSign() {
     setTimesheet((prevTimesheet) => ({
-      ...prevTimesheet, // Keep all other fields unchanged
-      signed: !prevTimesheet.signed, // Toggle the signed field
+      ...prevTimesheet,
+      signed: !prevTimesheet.signed,
       submitted_by: localStorage.getItem("user_name"),
     }));
   }
@@ -203,14 +198,13 @@ export default function TimesheetForm({
     setRowData((prevData) => [
       ...prevData,
       {
-        ...intitialEntriesData[0], // Use the first entry as the base template
-        row_index: prevData.length + 1, // Update only the index
+        ...intitialEntriesData[0],
+        row_index: prevData.length + 1,
       },
     ]);
   }
 
   async function handleDeleteRow(index, row) {
-    // If the row has an ID, delete it from the server
     if (row.id) {
       try {
         await deleteTimesheetEntryById(index, row);
@@ -219,16 +213,25 @@ export default function TimesheetForm({
         return;
       }
     }
-
-    // Remove the row locally
     setRowData((prevData) => prevData.filter((_, i) => i !== index));
   }
 
   function handleValueChange(index, field, value) {
+    // Minimal numeric coercion for *_id fields (prevents sending "1" instead of 1)
+    const numericIdFields = new Set([
+      "project_id",
+      "phase_id",
+      "cost_code_id",
+      "row_index",
+      "id",
+      "timesheet_id",
+    ]);
+    const nextValue = numericIdFields.has(field) ? Number(value) : value;
+
     setRowData((prevData) =>
       prevData.map((row, i) => {
         if (i === index) {
-          const updatedRow = { ...row, [field]: value };
+          const updatedRow = { ...row, [field]: nextValue };
           const totalHours =
             Number(updatedRow.mon_reg || 0) +
             Number(updatedRow.mon_ot || 0) +
@@ -251,7 +254,6 @@ export default function TimesheetForm({
     );
   }
 
-  console.log(timesheet);
   return (
     <div className="pb-20">
       <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 ">
@@ -266,7 +268,7 @@ export default function TimesheetForm({
           signed={timesheet.signed}
           disabled={timesheet.approved}
           href={"/employee-portal/dashboard/timesheets/create-timesheet"}
-        />{" "}
+        />
       </div>
       <FormTable
         data={rowData}
@@ -274,7 +276,6 @@ export default function TimesheetForm({
         onDeleteRow={handleDeleteRow}
         timesheetId={timesheetId}
         disabled={timesheet.approved}
-        // onAddDescription={handleShowModal} // Pass row index to the modal handler
       />
       <div
         className={`flex ${
