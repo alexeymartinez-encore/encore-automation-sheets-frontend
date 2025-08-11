@@ -144,7 +144,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       entries.forEach((entry) => {
         // Map of day keys to simplify the iteration
         // let x = 0;
-        console.log(x, "=>", entry.entry);
+        console.log(entry);
         // x = x + 1;
         const dayKeys = [
           { day: "mon", index: 0 },
