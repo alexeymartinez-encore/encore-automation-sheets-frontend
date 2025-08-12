@@ -159,13 +159,16 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       const weekEndingDate = parseDateUTC(ts.week_ending);
 
       // Monday..Sunday based on a Saturday week-ending, then shift each by +1 day (as requested)
+      // Week starts Monday, ends Sunday, based on a Friday week-ending
       const weekDates = Array.from({ length: 7 }, (_, index) => {
         const d = new Date(weekEndingDate);
-        // Use UTC math to avoid TZ drift
-        d.setUTCDate(weekEndingDate.getUTCDate() - (5 - index)); // Mon..Sun
-        d.setUTCDate(d.getUTCDate() + 1); // shift to the day right after
+        // Friday - 4 days = Monday, then add index for each day
+        d.setUTCDate(weekEndingDate.getUTCDate() - 5 + index);
         return d.toISOString().split("T")[0];
       });
+
+      console.log(weekEndingDate);
+      console.log(weekDates);
 
       const employeeNumber = ts.employee_id ?? "";
       const employeeName =

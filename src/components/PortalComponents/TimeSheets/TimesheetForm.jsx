@@ -108,7 +108,6 @@ export default function TimesheetForm({
             const data = await response.json();
             if (response.ok) {
               filteredTimesheet = data.data[0];
-              console.log(filteredTimesheet);
               setSelectedDate(new Date(filteredTimesheet.week_ending));
               setTimesheet(filteredTimesheet);
             } else {
