@@ -164,9 +164,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         return d.toISOString().split("T")[0];
       });
 
-      console.log(weekEndingDate);
-      console.log(weekDates);
-
       const employeeNumber = ts.employee_id ?? "";
       const employeeName =
         `${ts.Employee?.first_name ?? ""} ${
