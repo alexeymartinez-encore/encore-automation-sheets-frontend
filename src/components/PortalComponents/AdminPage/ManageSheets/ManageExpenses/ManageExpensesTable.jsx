@@ -16,7 +16,6 @@ export default function ManageExpensesTable() {
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
-  // const isSunday = (date) => date.getDay() === 0;
   async function handleToggle() {
     setIsToggled((prevState) => {
       const newState = !prevState;
@@ -35,8 +34,6 @@ export default function ManageExpensesTable() {
       return newState;
     });
   }
-
-  // console.log(expenses);
 
   function handleValueChange(index, field, value) {
     const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
@@ -58,7 +55,6 @@ export default function ManageExpensesTable() {
     });
   }
 
-  // Functions to handle month navigation
   const goToPreviousMonth = () => {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
@@ -121,8 +117,6 @@ export default function ManageExpensesTable() {
       }));
     });
   }
-
-  // console.log("SELECTED DATE: ", selectedDate);
 
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
@@ -255,6 +249,11 @@ export default function ManageExpensesTable() {
     URL.revokeObjectURL(url);
   }
 
+  const getLastName = (x) =>
+    (x?.last_name ?? x?.employee?.last_name ?? "").trim();
+
+  console.log(expenses);
+
   return (
     <div className="flex flex-col w-full ">
       <TaskBar
@@ -273,14 +272,20 @@ export default function ManageExpensesTable() {
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {expenses && expenses.length > 0 ? (
-          expenses.map((expense, index) => (
-            <TableRow
-              key={expense.id}
-              expense={expense}
-              index={index}
-              onValueChange={handleValueChange}
-            />
-          ))
+          [...expenses]
+            .sort((a, b) =>
+              getLastName(a).localeCompare(getLastName(b), undefined, {
+                sensitivity: "base",
+              })
+            )
+            .map((expense, index) => (
+              <TableRow
+                key={expense.id}
+                expense={expense}
+                index={index}
+                onValueChange={handleValueChange}
+              />
+            ))
         ) : (
           <p className="bg-white text-blue-900 text-center py-3 text-xs">
             No expenses open

@@ -15,7 +15,7 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
-
+  console.log(miscCtx.projects);
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -78,11 +78,23 @@ export default function RowComponent({
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         >
-          {miscCtx.projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.number} - {project.description}
-            </option>
-          ))}
+          {[...miscCtx.projects]
+            .sort((a, b) => {
+              const startsWithDigitA = /^\d/.test(a.number);
+              const startsWithDigitB = /^\d/.test(b.number);
+
+              if (startsWithDigitA && !startsWithDigitB) return 1; // A goes after B
+              if (!startsWithDigitA && startsWithDigitB) return -1; // A goes before B
+
+              return a.number.localeCompare(b.number, undefined, {
+                sensitivity: "base",
+              });
+            })
+            .map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.number} - {project.description}
+              </option>
+            ))}
         </select>
       </td>
 

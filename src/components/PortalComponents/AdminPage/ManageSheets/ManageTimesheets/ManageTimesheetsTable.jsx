@@ -229,7 +229,12 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     link.remove();
     URL.revokeObjectURL(url);
   }
+  // const getLastName = (x) =>
+  //   (x?.last_name ?? x?.employee?.last_name ?? "").trim();
 
+  function getLastName(x) {
+    return (x?.last_name ?? x?.employee?.last_name ?? "").trim();
+  }
   return (
     <div className="flex flex-col text-center w-full">
       <TaskBar
@@ -246,14 +251,20 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {timesheets && timesheets.length > 0 ? (
-          timesheets.map((timesheet, index) => (
-            <TableRow
-              key={timesheet.id}
-              timesheet={timesheet}
-              index={index}
-              onValueChange={handleValueChange}
-            />
-          ))
+          [...timesheets]
+            .sort((a, b) =>
+              getLastName(a).localeCompare(getLastName(b), undefined, {
+                sensitivity: "base",
+              })
+            )
+            .map((timesheet, index) => (
+              <TableRow
+                key={timesheet.id}
+                timesheet={timesheet}
+                index={index}
+                onValueChange={handleValueChange}
+              />
+            ))
         ) : (
           <p className="bg-white text-blue-900 text-center py-3 text-xs">
             No timesheets found for this date range

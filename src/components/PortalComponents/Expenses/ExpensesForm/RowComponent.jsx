@@ -83,11 +83,24 @@ export default function RowComponent({
           disabled={disabled}
         >
           <option value="Nothing"></option>
-          {miscCtx.projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.number} - {project.description}
-            </option>
-          ))}
+
+          {[...miscCtx.projects]
+            .sort((a, b) => {
+              const startsWithDigitA = /^\d/.test(a.number);
+              const startsWithDigitB = /^\d/.test(b.number);
+
+              if (startsWithDigitA && !startsWithDigitB) return 1; // A goes after B
+              if (!startsWithDigitA && startsWithDigitB) return -1; // A goes before B
+
+              return a.number.localeCompare(b.number, undefined, {
+                sensitivity: "base",
+              });
+            })
+            .map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.number} - {project.description}
+              </option>
+            ))}
         </select>
       </td>
       <td className="border px-1 text-center">

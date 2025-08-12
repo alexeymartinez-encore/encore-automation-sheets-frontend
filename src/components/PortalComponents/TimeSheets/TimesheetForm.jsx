@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { TimesheetContext } from "../../../store/timesheet-context";
