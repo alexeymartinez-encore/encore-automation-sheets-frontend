@@ -44,7 +44,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.project_id}
-          className="w-full text-center px-2"
+          className="w-full text-start px-2"
           onChange={(e) => {
             const projectId = Number(e.target.value);
             const selectedProject = miscCtx.projects.find(
@@ -102,7 +102,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.phase_id}
-          className="w-full text-center px-2"
+          className="w-full text-start px-2"
           onChange={(e) => {
             const newPhaseId = Number(e.target.value);
             onValueChange(index, "phase_id", newPhaseId);
@@ -143,7 +143,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.cost_code_id}
-          className="w-full text-center px-2"
+          className="w-full text-start px-2"
           onChange={(e) =>
             onValueChange(index, "cost_code_id", Number(e.target.value))
           }

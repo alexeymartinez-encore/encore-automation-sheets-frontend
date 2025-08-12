@@ -77,7 +77,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.project_id}
-          className="w-full text-center px-0"
+          className="w-full text-start px-0"
           onChange={(e) => onValueChange(index, "project_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
