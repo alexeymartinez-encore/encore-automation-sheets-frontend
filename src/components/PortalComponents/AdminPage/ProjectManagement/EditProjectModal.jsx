@@ -15,8 +15,6 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
     }));
   }
 
-  //   console.log(miscCtx.customers);
-  console.log(project);
   function handleEdit(id) {
     if (project.customer_id === 0) {
       project.customer_id = null;

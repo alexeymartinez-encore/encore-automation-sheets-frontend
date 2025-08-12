@@ -16,8 +16,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   useEffect(() => {
     async function getTimesheets() {
       // Convert to ISO 8601. Always set to 4:00
-      console.log("selectedDate");
-      console.log(selectedDate);
+
       const date = new Date(selectedDate);
       const hours = import.meta.env.VITE_UTC_CONFIGURATION;
       // Force to 4:00 AM UTC
@@ -113,10 +112,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     const isoDate = date.toISOString();
 
     const resp = await adminCtx.fetchLaborData(isoDate);
-    console.log(resp);
-    // const timesheetsRes = Array.isArray(resp?.data) ? resp.data : [];
-
-    // console.log(timesheetsRes);
 
     // --- helpers ---
     const escapeXml = (s) =>
@@ -160,10 +155,12 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
 
       // Monday..Sunday based on a Saturday week-ending, then shift each by +1 day (as requested)
       // Week starts Monday, ends Sunday, based on a Friday week-ending
+      const daysToSubstract = import.meta.env.VITE_DAYS_REPORT;
+
       const weekDates = Array.from({ length: 7 }, (_, index) => {
         const d = new Date(weekEndingDate);
         // Friday - 4 days = Monday, then add index for each day
-        d.setUTCDate(weekEndingDate.getUTCDate() - 5 + index);
+        d.setUTCDate(weekEndingDate.getUTCDate() - daysToSubstract + index);
         return d.toISOString().split("T")[0];
       });
 

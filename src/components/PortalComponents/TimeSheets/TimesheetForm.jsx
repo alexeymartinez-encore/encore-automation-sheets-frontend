@@ -144,8 +144,6 @@ export default function TimesheetForm({
         timesheetEntryData: rowData,
       };
 
-      // console.log(timesheetRequestBody);
-
       const res = await saveTimesheet(timesheetRequestBody, timesheetId);
 
       if (res.internalStatus === "success" && res.data) {

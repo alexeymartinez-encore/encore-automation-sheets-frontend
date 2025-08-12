@@ -29,8 +29,6 @@ export default function AddProjectModal({ toggleModal }) {
     }));
   }
 
-  //   console.log(miscCtx.customers);
-  console.log(project);
   function handleSave() {
     if (project.customer_id === 0) {
       project.customer_id = null;

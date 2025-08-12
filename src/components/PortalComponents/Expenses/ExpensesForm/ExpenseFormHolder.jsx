@@ -67,10 +67,7 @@ export default function ExpenseForm({
   const [expense, setExpense] = useState(initialExpenseData);
   const [rowData, setRowData] = useState(expenseEntriesData);
   const [saved, setSaved] = useState(expenseId ? true : false);
-  console.log(
-    "====================== FROM EDIT ======================",
-    rowData
-  );
+
   const expenseCtx = useContext(ExpensesContext);
   let filteredExpense;
   useEffect(() => {
@@ -149,7 +146,6 @@ export default function ExpenseForm({
       setRowData(expenseEntriesData);
     }
   }, [selectedDate]);
-  // console.log("ROW DATA", rowData);
 
   function handleValueChange(rowIndex, field, value) {
     setRowData((prevRows) =>
@@ -245,7 +241,6 @@ export default function ExpenseForm({
       ...prevExpense, // Keep all other fields unchanged
       signed: !prevExpense.signed, // Toggle the signed field
     }));
-    console.log(expense);
   }
 
   function handleAddSubRow(index) {
