@@ -72,13 +72,16 @@ export default function ManageExpensesTable() {
 
   useEffect(() => {
     async function getExpenses() {
-      console.log("=========EXPENSES REGULAR DATE===========");
-      console.log(selectedDate);
       const isoDate = new Date(selectedDate).toISOString();
-      console.log("=========EXPENSES ISO DATE===========");
-      console.log(isoDate); // 2025-08-11T00:59:42.000Z (UTC time)
+
       const res = await adminCtx.getUsersExpensesByDate(isoDate);
-      setExpenses(res || []);
+
+      const sorted = (res || []).sort((a, b) => {
+        const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+        const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+        return lastNameA.localeCompare(lastNameB);
+      });
+      setExpenses(sorted || []);
     }
     getExpenses();
   }, [selectedDate]);
@@ -145,7 +148,6 @@ export default function ManageExpensesTable() {
       const expense = expenseWrapper.expense;
       const employee = expenseWrapper.employee;
       const entries = expenseWrapper.expenseEntries || [];
-      console.log(expense.date_start);
       const currentDate = new Date(expense.date_start);
       const nextMonth = new Date(
         currentDate.getFullYear(),
@@ -249,11 +251,6 @@ export default function ManageExpensesTable() {
     URL.revokeObjectURL(url);
   }
 
-  const getLastName = (x) =>
-    (x?.last_name ?? x?.employee?.last_name ?? "").trim();
-
-  console.log(expenses);
-
   return (
     <div className="flex flex-col w-full ">
       <TaskBar
@@ -272,20 +269,14 @@ export default function ManageExpensesTable() {
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {expenses && expenses.length > 0 ? (
-          [...expenses]
-            .sort((a, b) =>
-              getLastName(a).localeCompare(getLastName(b), undefined, {
-                sensitivity: "base",
-              })
-            )
-            .map((expense, index) => (
-              <TableRow
-                key={expense.id}
-                expense={expense}
-                index={index}
-                onValueChange={handleValueChange}
-              />
-            ))
+          expenses.map((expense, index) => (
+            <TableRow
+              key={expense.id}
+              expense={expense}
+              index={index}
+              onValueChange={handleValueChange}
+            />
+          ))
         ) : (
           <p className="bg-white text-blue-900 text-center py-3 text-xs">
             No expenses open

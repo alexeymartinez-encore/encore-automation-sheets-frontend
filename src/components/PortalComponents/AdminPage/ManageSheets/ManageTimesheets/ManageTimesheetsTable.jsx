@@ -24,7 +24,13 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
 
       const isoDate = date.toISOString();
       const res = await adminCtx.getUsersTimesheetsByDate(isoDate);
-      setTimesheets(res || []);
+
+      const sorted = (res || []).sort((a, b) => {
+        const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+        const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+        return lastNameA.localeCompare(lastNameB);
+      });
+      setTimesheets(sorted || []);
     }
     getTimesheets();
   }, [selectedDate]);
@@ -229,12 +235,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     link.remove();
     URL.revokeObjectURL(url);
   }
-  // const getLastName = (x) =>
-  //   (x?.last_name ?? x?.employee?.last_name ?? "").trim();
-
-  function getLastName(x) {
-    return (x?.last_name ?? x?.employee?.last_name ?? "").trim();
-  }
   return (
     <div className="flex flex-col text-center w-full">
       <TaskBar
@@ -251,20 +251,14 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {timesheets && timesheets.length > 0 ? (
-          [...timesheets]
-            .sort((a, b) =>
-              getLastName(a).localeCompare(getLastName(b), undefined, {
-                sensitivity: "base",
-              })
-            )
-            .map((timesheet, index) => (
-              <TableRow
-                key={timesheet.id}
-                timesheet={timesheet}
-                index={index}
-                onValueChange={handleValueChange}
-              />
-            ))
+          timesheets.map((timesheet, index) => (
+            <TableRow
+              key={timesheet.id}
+              timesheet={timesheet}
+              index={index}
+              onValueChange={handleValueChange}
+            />
+          ))
         ) : (
           <p className="bg-white text-blue-900 text-center py-3 text-xs">
             No timesheets found for this date range

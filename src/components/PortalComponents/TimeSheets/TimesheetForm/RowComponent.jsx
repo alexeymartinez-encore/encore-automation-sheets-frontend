@@ -15,7 +15,19 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
-  console.log(miscCtx.projects);
+  const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
+    const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
+    const bStartsLetter = /^[A-Za-z]/.test(b.number.trim());
+
+    // Letter-first group
+    if (aStartsLetter && !bStartsLetter) return -1;
+    if (!aStartsLetter && bStartsLetter) return 1;
+
+    // Same group → sort alphabetically
+    return a.number.localeCompare(b.number, undefined, {
+      sensitivity: "base",
+    });
+  });
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -27,7 +39,9 @@ export default function RowComponent({
 
       const currentIndex = formElements.indexOf(e.target);
       const nextElement = formElements[currentIndex + 1];
-      if (nextElement) nextElement.focus();
+      if (nextElement) {
+        nextElement.focus();
+      }
     }
   }
 
@@ -46,7 +60,7 @@ export default function RowComponent({
           value={row.project_id}
           className="w-full text-start px-2"
           onChange={(e) => {
-            const projectId = Number(e.target.value);
+            const projectId = e.target.value;
             const selectedProject = miscCtx.projects.find(
               (p) => p.id == projectId
             );
@@ -66,35 +80,19 @@ export default function RowComponent({
               );
 
               if (matchingPhase)
-                onValueChange(index, "phase_id", Number(matchingPhase.id));
+                onValueChange(index, "phase_id", matchingPhase.id);
               if (matchingCostCode)
-                onValueChange(
-                  index,
-                  "cost_code_id",
-                  Number(matchingCostCode.id)
-                );
+                onValueChange(index, "cost_code_id", matchingCostCode.id);
             }
           }}
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         >
-          {[...miscCtx.projects]
-            .sort((a, b) => {
-              const startsWithDigitA = /^\d/.test(a.number);
-              const startsWithDigitB = /^\d/.test(b.number);
-
-              if (startsWithDigitA && !startsWithDigitB) return 1; // A goes after B
-              if (!startsWithDigitA && startsWithDigitB) return -1; // A goes before B
-
-              return a.number.localeCompare(b.number, undefined, {
-                sensitivity: "base",
-              });
-            })
-            .map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.number} - {project.description}
-              </option>
-            ))}
+          {sortedProjects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.number} - {project.description}
+            </option>
+          ))}
         </select>
       </td>
 
@@ -103,31 +101,7 @@ export default function RowComponent({
         <select
           value={row.phase_id}
           className="w-full text-start px-2"
-          onChange={(e) => {
-            const newPhaseId = Number(e.target.value);
-            onValueChange(index, "phase_id", newPhaseId);
-
-            // Re-align cost_code_id to a valid ID for this phase
-            const phaseNumber = miscCtx.phases.find(
-              (p) => p.id == newPhaseId
-            )?.number;
-            const allowedCodes = phaseToAllowedCostCodes[phaseNumber] || [];
-
-            // Current cost code number from cost_code_id
-            const currentCC = miscCtx.costCodes.find(
-              (c) => c.id == row.cost_code_id
-            );
-            const currentCode = currentCC?.cost_code;
-
-            if (!currentCode || !allowedCodes.includes(currentCode)) {
-              // Pick the first allowed cost_code number and map to its ID
-              const targetCode = allowedCodes[0];
-              const match = miscCtx.costCodes.find(
-                (c) => c.cost_code == targetCode
-              );
-              if (match) onValueChange(index, "cost_code_id", Number(match.id));
-            }
-          }}
+          onChange={(e) => onValueChange(index, "phase_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
           disabled={!!specialProject}
         >
@@ -144,9 +118,7 @@ export default function RowComponent({
         <select
           value={row.cost_code_id}
           className="w-full text-start px-2"
-          onChange={(e) =>
-            onValueChange(index, "cost_code_id", Number(e.target.value))
-          }
+          onChange={(e) => onValueChange(index, "cost_code_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         >
@@ -162,10 +134,10 @@ export default function RowComponent({
                 ));
             }
 
-            const phaseNumber = miscCtx.phases.find(
-              (p) => p.id == row.phase_id
-            )?.number;
-            const allowedCodes = phaseToAllowedCostCodes[phaseNumber] || [];
+            const allowedCodes =
+              phaseToAllowedCostCodes[
+                miscCtx.phases.find((p) => p.id == row.phase_id)?.number
+              ] || [];
 
             return miscCtx.costCodes
               .filter((costCode) => allowedCodes.includes(costCode.cost_code))

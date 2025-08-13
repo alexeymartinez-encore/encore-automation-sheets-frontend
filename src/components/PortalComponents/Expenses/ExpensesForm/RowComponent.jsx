@@ -10,9 +10,21 @@ export default function RowComponent({
   disabled,
 }) {
   const [isActive, setIsActive] = useState(false);
-  const role = Number(localStorage.getItem("role_id"));
 
   const miscCtx = useContext(MiscellaneousContext);
+  const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
+    const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
+    const bStartsLetter = /^[A-Za-z]/.test(b.number.trim());
+
+    // Letter-first group
+    if (aStartsLetter && !bStartsLetter) return -1;
+    if (!aStartsLetter && bStartsLetter) return 1;
+
+    // Same group → sort alphabetically
+    return a.number.localeCompare(b.number, undefined, {
+      sensitivity: "base",
+    });
+  });
   const totalAmount =
     Number(row.destination_cost || 0) +
     Number(row.lodging_cost || 0) +
@@ -83,24 +95,11 @@ export default function RowComponent({
           disabled={disabled}
         >
           <option value="Nothing"></option>
-
-          {[...miscCtx.projects]
-            .sort((a, b) => {
-              const startsWithDigitA = /^\d/.test(a.number);
-              const startsWithDigitB = /^\d/.test(b.number);
-
-              if (startsWithDigitA && !startsWithDigitB) return 1; // A goes after B
-              if (!startsWithDigitA && startsWithDigitB) return -1; // A goes before B
-
-              return a.number.localeCompare(b.number, undefined, {
-                sensitivity: "base",
-              });
-            })
-            .map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.number} - {project.description}
-              </option>
-            ))}
+          {sortedProjects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.number} - {project.description}
+            </option>
+          ))}
         </select>
       </td>
       <td className="border px-1 text-center">

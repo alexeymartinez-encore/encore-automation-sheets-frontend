@@ -14,7 +14,22 @@ export default function ProjectsManagement() {
   useEffect(() => {
     const fetchProjects = async () => {
       const fetchedProjects = await adminCtx.getAllProjects();
-      setProjects(fetchedProjects || []);
+
+      const sortedProjects = [...(fetchedProjects || [])].sort((a, b) => {
+        const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
+        const bStartsLetter = /^[A-Za-z]/.test(b.number.trim());
+
+        // Letter-first group
+        if (aStartsLetter && !bStartsLetter) return -1;
+        if (!aStartsLetter && bStartsLetter) return 1;
+
+        // Same group → sort alphabetically
+        return a.number.localeCompare(b.number, undefined, {
+          sensitivity: "base",
+        });
+      });
+
+      setProjects(sortedProjects);
     };
 
     fetchProjects();

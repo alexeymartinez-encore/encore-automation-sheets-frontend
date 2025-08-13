@@ -108,7 +108,10 @@ export default function TimesheetForm({
             const data = await response.json();
             if (response.ok) {
               filteredTimesheet = data.data[0];
-              setSelectedDate(new Date(filteredTimesheet.week_ending));
+              const filteredDate = formatWeekendDate(
+                new Date(filteredTimesheet.week_ending)
+              );
+              setSelectedDate(new Date(filteredDate));
               setTimesheet(filteredTimesheet);
             } else {
               console.error("Error fetching expense");

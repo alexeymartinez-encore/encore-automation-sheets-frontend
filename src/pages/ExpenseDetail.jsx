@@ -40,8 +40,6 @@ export default function ExpenseDetail() {
 
     fetchExpenseEntriesData();
   }, [expenseCtx.data]);
-  console.log(params);
-  console.log(adminMode); // true if adminMode=true, false otherwise
 
   return (
     <div className="my-5 bg-white shadow-md rounded-lg overflow-x-scroll">

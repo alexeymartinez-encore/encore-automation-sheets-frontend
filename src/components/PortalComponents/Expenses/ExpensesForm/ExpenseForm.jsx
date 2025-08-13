@@ -453,6 +453,7 @@ export default function ExpenseForm({
   function handleSaveReceipts(files) {
     setReceiptFiles(files);
   }
+
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3">
