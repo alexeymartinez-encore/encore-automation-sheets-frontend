@@ -9,9 +9,9 @@ export default function TableHeader() {
       <p className="flex-1 text-center hidden md:block">Approved</p>
       <p className="flex-1 text-center md:hidden flex">Appr</p>
       <p className="flex-1 text-center">Paid</p>
-      <p className="flex-1 text-center  hidden md:block">Signed By</p>
+      <p className="flex-1 text-center  hidden md:block">Sign By</p>
       <p className="flex-1 text-center  md:hidden flex justify-center">By</p>
-      <p className="flex-1 text-center hidden md:block">Date Paid</p>
+      <p className="flex-1 text-center hidden md:block">Paid On</p>
       <p className="flex-1 text-center">Reg</p>
       <p className="flex-1 text-center">OT</p>
       <p className="flex-1 text-center">Total</p>

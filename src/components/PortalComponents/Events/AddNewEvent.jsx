@@ -40,7 +40,7 @@ export default function AddNewEvent({ newEvent, setNewEvent, addEvent }) {
           }
           inputStyles="py-3 px-2 rounded-md  w-full"
         />
-        <div className="flex w-full gap-10">
+        <div className="flex justify-between md:justify-start w-full gap-10">
           <div className="flex flex-col justify-center items-start ">
             <label className="py-2 text-black">Background Color</label>
             <input

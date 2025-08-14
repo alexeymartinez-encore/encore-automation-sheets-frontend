@@ -123,7 +123,7 @@ export default function ManageExpensesTable() {
 
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
-
+    console.log(newExpenses);
     let xmlContent = "<ProjectExpenses>\n";
 
     const formatMonthYear = (date) => {

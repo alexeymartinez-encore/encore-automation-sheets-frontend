@@ -26,6 +26,7 @@ const initialExpenseData = {
   createdAt: "",
   date_paid: null,
   employee_id: "",
+  employee_name: "",
   id: null,
   message: "None",
   paid: false,
@@ -137,6 +138,11 @@ export default function ExpenseForm({
   const [showModal, setShowModal] = useState(false);
   const [receiptFiles, setReceiptFiles] = useState([]);
   const [savedFilesByEntry, setSavedFilesByEntry] = useState({});
+  const [selectedUser, setSelectedUser] = useState({
+    id: null,
+    first_name: "",
+    last_name: "",
+  });
 
   const expenseCtx = useContext(ExpensesContext);
   const navigate = useNavigate();
@@ -166,6 +172,7 @@ export default function ExpenseForm({
             const data = await response.json();
             if (response.ok) {
               filteredExpense = data.data[0];
+              setSelectedUser(data.data[0].Employee);
             } else {
               console.error("Error fetching expense");
               return;
@@ -454,9 +461,11 @@ export default function ExpenseForm({
     setReceiptFiles(files);
   }
 
+  console.log(expense.Employee);
+
   return (
     <div>
-      <div className="flex gap-5 justify-between px-5 py-3">
+      <div className="flex gap-5 justify-between px-5 py-3 items-center">
         <div className="flex items-center gap-5">
           <MonthlyDatePicker
             onChange={(date) => setSelectedDate(date)}
@@ -494,6 +503,11 @@ export default function ExpenseForm({
             )}
           </div>
         </div>
+        {isAdmin && (
+          <p className="text-red-500 font-bold text-xl">
+            {selectedUser.first_name} {selectedUser.last_name}
+          </p>
+        )}
 
         <FormActionsButtons
           handleSave={handleSave}

@@ -73,6 +73,11 @@ export default function TimesheetForm({
   const [timesheet, setTimesheet] = useState(initialTimesheetData);
   const [rowData, setRowData] = useState(timesheetEntriesData);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
+  const [selectedUser, setSelectedUser] = useState({
+    id: null,
+    first_name: "",
+    last_name: "",
+  });
 
   const timesheetCtx = useContext(TimesheetContext);
 
@@ -108,6 +113,7 @@ export default function TimesheetForm({
             const data = await response.json();
             if (response.ok) {
               filteredTimesheet = data.data[0];
+              setSelectedUser(data.data[0].Employee);
               const filteredDate = formatWeekendDate(
                 new Date(filteredTimesheet.week_ending)
               );
@@ -258,12 +264,17 @@ export default function TimesheetForm({
 
   return (
     <div className="pb-20">
-      <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 ">
+      <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 items-center ">
         <DatePickerComponent
           onChange={(date) => setSelectedDate(date)}
           selected={formatWeekendDate(selectedDate)}
           disabled={timesheet.approved}
         />
+        {isAdmin && (
+          <p className="text-red-500 font-bold text-xl">
+            {selectedUser.first_name} {selectedUser.last_name}
+          </p>
+        )}
         <FormActionsButtons
           handleSave={handleSave}
           handleSign={handleSign}

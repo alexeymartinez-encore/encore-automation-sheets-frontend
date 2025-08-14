@@ -111,7 +111,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
   return (
     <div>
       {/* Add New Event Section */}
-      <div className="flex flex-col items-end text-xs bg-white shadow-sm rounded-md">
+      <div className="flex flex-col items-center md:items-end text-xs bg-white shadow-sm rounded-md">
         <AddNewEvent
           newEvent={newEvent}
           setNewEvent={setNewEvent}
@@ -119,7 +119,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
         />
         <div className="p-5">
           <button
-            className="flex items-center gap-2 bg-blue-500 text-white py-2 px-3 rounded-md hover:bg-blue-400 transition duration-400 mt-2 "
+            className="flex items-center gap-2 bg-blue-500 text-white py-2  px-3 rounded-md hover:bg-blue-400 transition duration-400 mt-2 "
             onClick={addEvent}
           >
             <FaPlus />

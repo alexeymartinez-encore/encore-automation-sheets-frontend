@@ -3,7 +3,7 @@ import AdminNavLink from "./AdminNavLink";
 
 export default function AdminNavBar() {
   return (
-    <div className=" flex gap-5 mt-5 py-2">
+    <div className=" flex gap-5 mt-5 py-2 bg-white shadow-sm rounded-md">
       <AdminNavLink to="/employee-portal/dashboard/admin" end>
         Sheets
       </AdminNavLink>

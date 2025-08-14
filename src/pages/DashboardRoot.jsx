@@ -10,6 +10,11 @@ export default function DashboardRootLayout() {
   const noHeaderRoutes = [
     "/employee-portal/dashboard/timesheets/create-timesheet",
     "/employee-portal/dashboard/expenses/create-expense",
+    "/employee-portal/dashboard/admin",
+    "/employee-portal/dashboard/admin/register-user",
+    "/employee-portal/dashboard/admin/project-management",
+    "/employee-portal/dashboard/admin/user-management",
+    "/employee-portal/dashboard/manager",
   ];
 
   const isHeaderHidden =
