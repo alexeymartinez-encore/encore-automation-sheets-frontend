@@ -4,80 +4,80 @@ import { getEndOfWeek } from "../../../../../util/helper";
 import DateNavigationBtns from "../ManageSheetsShared/DateNavigationBtns";
 import { AdminContext } from "../../../../../store/admin-context";
 
-const PEOPLE = [
-  {
-    id: 1,
-    last_name: "Martinez",
-    first_name: "Alex",
-    total_overtime: 4.0,
-  },
-  {
-    id: 2,
-    last_name: "Moore",
-    first_name: "Cameron",
-    total_overtime: "11.0",
-  },
-  {
-    id: 3,
-    last_name: "Bhagat",
-    first_name: "Aeijaz",
-    total_overtime: "7.0",
-  },
-  {
-    id: 4,
-    last_name: "Selk",
-    first_name: "Randy",
-    total_overtime: "2.0",
-  },
-  {
-    id: 5,
-    last_name: "Martinez",
-    first_name: "Alex",
-    total_overtime: "4.0",
-  },
-  {
-    id: 6,
-    last_name: "Moore",
-    first_name: "Cameron",
-    total_overtime: "11.0",
-  },
-  {
-    id: 7,
-    last_name: "Bhagat",
-    first_name: "Aeijaz",
-    total_overtime: "7.0",
-  },
-  {
-    id: 8,
-    last_name: "Selk",
-    first_name: "Randy",
-    total_overtime: "2.0",
-  },
-  {
-    id: 9,
-    last_name: "Martinez",
-    first_name: "Alex",
-    total_overtime: "4.0",
-  },
-  {
-    id: 10,
-    last_name: "Moore",
-    first_name: "Cameron",
-    total_overtime: "11.0",
-  },
-  {
-    id: 11,
-    last_name: "Bhagat",
-    first_name: "Aeijaz",
-    total_overtime: "7.0",
-  },
-  {
-    id: 12,
-    last_name: "Selk",
-    first_name: "Randy",
-    total_overtime: "2.0",
-  },
-];
+// const PEOPLE = [
+//   {
+//     id: 1,
+//     last_name: "Martinez",
+//     first_name: "Alex",
+//     total_overtime: 4.0,
+//   },
+//   {
+//     id: 2,
+//     last_name: "Moore",
+//     first_name: "Cameron",
+//     total_overtime: "11.0",
+//   },
+//   {
+//     id: 3,
+//     last_name: "Bhagat",
+//     first_name: "Aeijaz",
+//     total_overtime: "7.0",
+//   },
+//   {
+//     id: 4,
+//     last_name: "Selk",
+//     first_name: "Randy",
+//     total_overtime: "2.0",
+//   },
+//   {
+//     id: 5,
+//     last_name: "Martinez",
+//     first_name: "Alex",
+//     total_overtime: "4.0",
+//   },
+//   {
+//     id: 6,
+//     last_name: "Moore",
+//     first_name: "Cameron",
+//     total_overtime: "11.0",
+//   },
+//   {
+//     id: 7,
+//     last_name: "Bhagat",
+//     first_name: "Aeijaz",
+//     total_overtime: "7.0",
+//   },
+//   {
+//     id: 8,
+//     last_name: "Selk",
+//     first_name: "Randy",
+//     total_overtime: "2.0",
+//   },
+//   {
+//     id: 9,
+//     last_name: "Martinez",
+//     first_name: "Alex",
+//     total_overtime: "4.0",
+//   },
+//   {
+//     id: 10,
+//     last_name: "Moore",
+//     first_name: "Cameron",
+//     total_overtime: "11.0",
+//   },
+//   {
+//     id: 11,
+//     last_name: "Bhagat",
+//     first_name: "Aeijaz",
+//     total_overtime: "7.0",
+//   },
+//   {
+//     id: 12,
+//     last_name: "Selk",
+//     first_name: "Randy",
+//     total_overtime: "2.0",
+//   },
+// ];
 
 export default function OvertimeModalComponent() {
   const [timesheets, setTimesheets] = useState([]);
@@ -201,7 +201,9 @@ export default function OvertimeModalComponent() {
             {timesheets.map((person) => (
               <tr
                 key={person.id}
-                className="grid grid-cols-3 gap-10 px-2 mb-2 text-center"
+                className={`grid grid-cols-3 gap-10 px-2 mb-2 text-center ${
+                  person.total_overtime === 0 && "hidden"
+                }`}
               >
                 <td>{person.last_name}</td>
                 <td>{person.first_name}</td>

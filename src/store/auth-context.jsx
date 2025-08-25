@@ -44,12 +44,14 @@ export default function AuthContextProvider({ children }) {
       cell_phone: credentials.cell_phone,
       home_phone: credentials.home_phone,
       role_id: credentials.role_id,
-      manager_id: +credentials.manager_id,
+      manager_id: credentials.manager_id,
+      is_contractor: String(credentials.is_contractor).toLowerCase() === "true",
+      is_active: String(credentials.is_active).toLowerCase() === "true",
     };
 
     try {
       const data = await authRequest(requestBody, "PUT", "signup");
-      console.log("Signup Successful: ", data);
+      // console.log("Signup Successful: ", data);
       return data;
     } catch (err) {
       console.error(err);

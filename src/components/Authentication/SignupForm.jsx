@@ -21,6 +21,8 @@ const initialCredentials = {
   home_phone: "",
   role_id: "",
   manager_id: "",
+  is_contractor: "",
+  is_active: "",
 };
 
 export default function SignupForm({ mode }) {
@@ -39,6 +41,7 @@ export default function SignupForm({ mode }) {
     state: false,
     message: "",
   });
+
   useEffect(() => {
     async function fetchAllEmployees() {
       const users = await userCtx.getAllEmployees();
@@ -48,6 +51,7 @@ export default function SignupForm({ mode }) {
   }, []);
 
   function inputChangeHandler(inputIdentifier, event) {
+    console.log(typeof event.target.value);
     setCredentials((currentInputValues) => {
       return {
         ...currentInputValues,
@@ -178,6 +182,33 @@ export default function SignupForm({ mode }) {
           onChange={inputChangeHandler.bind(this, "role_id")}
         />
       </InputCard>
+
+      <div className="flex gap-0 md:gap-5 flex-col md:flex-row w-full text-center">
+        <div className="w-full ">
+          <label>Is Contractor?</label>
+          <select
+            value={credentials.is_contractor}
+            className="w-full text-center py-2 border rounded-md"
+            onChange={inputChangeHandler.bind(this, "is_contractor")}
+          >
+            <option value="Nothing">Nothing</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div className="w-full">
+          <label>Is Active?</label>
+          <select
+            value={credentials.is_active}
+            className="w-full text-center py-2 border rounded-md"
+            onChange={inputChangeHandler.bind(this, "is_active")}
+          >
+            <option value="Nothing">Nothing</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </div>
       <div className="text-center">
         <label>Reports to:</label>
         <select

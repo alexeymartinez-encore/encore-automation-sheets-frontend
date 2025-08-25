@@ -19,6 +19,7 @@ export const AdminContext = createContext({
   editProjectById: (id) => {},
   fetchLaborData: () => {},
   getOpenExpenses: () => {},
+  getOpenTimesheets: () => {},
 });
 
 export default function AdminContextProvider({ children }) {
@@ -304,6 +305,30 @@ export default function AdminContextProvider({ children }) {
     }
   }
 
+  async function getOpenTimesheets() {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/open-timesheets`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      console.log(response);
+
+      if (!response.ok) {
+        throw new Error("Error getting expenses server");
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error("Error getting open expenses: ", error);
+      return;
+    }
+  }
+
   async function saveTimesheetsStatusChanges(timesheetData) {
     try {
       const response = await fetch(
@@ -396,6 +421,7 @@ export default function AdminContextProvider({ children }) {
     fetchLaborData: fetchLaborData,
     fetchExpenseReportData: fetchExpenseReportData,
     getOpenExpenses: getOpenExpenses,
+    getOpenTimesheets: getOpenTimesheets,
   };
 
   return (

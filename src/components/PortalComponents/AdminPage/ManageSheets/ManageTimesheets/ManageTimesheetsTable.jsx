@@ -9,6 +9,9 @@ import { TimesheetContext } from "../../../../../store/timesheet-context";
 export default function ManageTimesheetsTable({ onViewOvertime }) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
+  const [isToggled, setIsToggled] = useState(false);
+
+  const timesheetMode = !isToggled ? "Open Timesheets" : "Timesheets By Date";
 
   const adminCtx = useContext(AdminContext);
   const timesheetCtx = useContext(TimesheetContext);
@@ -34,6 +37,30 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     }
     getTimesheets();
   }, [selectedDate]);
+
+  async function handleToggle() {
+    const newState = !isToggled; // use current state
+    setIsToggled(newState);
+
+    const isoDate = new Date(selectedDate).toISOString();
+
+    let res;
+    if (newState) {
+      // Going to Open Expenses
+      res = await adminCtx.getOpenTimesheets();
+    } else {
+      // Going back to Expenses By Date
+      res = await adminCtx.getUsersTimesheetsByDate(isoDate);
+    }
+
+    const sorted = (res || []).sort((a, b) => {
+      const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+      const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+      return lastNameA.localeCompare(lastNameB);
+    });
+
+    setTimesheets(sorted || []);
+  }
 
   function handleValueChange(index, field, value) {
     const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
@@ -247,6 +274,9 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         setAllApproved={handleSetAllApproved}
         setAllPaid={handleSetAllProcessed}
         generateReport={generateLaborReport}
+        handleToggle={handleToggle}
+        timesheetMode={timesheetMode}
+        isToggled={isToggled}
       />
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">

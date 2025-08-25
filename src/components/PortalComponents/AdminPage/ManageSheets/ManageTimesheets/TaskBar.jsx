@@ -36,13 +36,23 @@ export default function TaskBar({
   setAllApproved,
   setAllPaid,
   generateReport,
+  handleToggle,
+  timesheetMode,
+  isToggled,
 }) {
   const isSunday = (date) => date.getDay() === 0;
 
   return (
-    <div className=" flex flex-col md:flex-row justify-around items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
+    <div className=" flex flex-col md:flex-row justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
       {/* Date Picker */}
+
       <div className="flex items-center justify-around gap-5 w-full">
+        <button
+          onClick={handleToggle}
+          className="border py-1 w-20 px-1 md:w-40 rounded-md hover:bg-blue-500 hover:text-white transition duration-400 text-[0.5rem] md:text-xs"
+        >
+          {timesheetMode}
+        </button>
         <DatePicker
           selected={selectedDate}
           onChange={onChange}
@@ -55,10 +65,11 @@ export default function TaskBar({
           goToPrevious={goToPreviousWeek}
           goToNext={goToNextWeek}
           date={selectedDate}
+          handleState={isToggled}
         />
       </div>
 
-      <div className="flex justify-around w-full">
+      <div className="flex justify-end gap-5 w-full">
         <button type="button" title="View Overtime Data" onClick={viewOvertime}>
           <FontAwesomeIcon
             icon={faClock}

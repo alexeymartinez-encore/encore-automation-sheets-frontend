@@ -42,7 +42,7 @@ export default function TaskBar({
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
 
   return (
-    <div className=" flex flex-col md:flex-row  justify-around items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
+    <div className=" flex flex-col md:flex-row  justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
       {/* Date Picker */}
       <div className="flex items-center space-x-4 w-full">
         <button
@@ -69,7 +69,7 @@ export default function TaskBar({
         />
       </div>
 
-      <div className="flex justify-around w-full">
+      <div className="flex justify-end items-center gap-5 w-full">
         {/* <FontAwesomeIcon icon={faClock} className="text-blue-500 h-5" /> */}
         <button type="button" title="Save Status Changes" onClick={saveChanges}>
           <FontAwesomeIcon

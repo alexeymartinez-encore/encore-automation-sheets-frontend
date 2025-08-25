@@ -15,6 +15,7 @@ export default function DateNavigationBtns({
            hover:bg-blue-400 transition duration-300 ${
              handleState ? "cursor-not-allowed opacity-50" : ""
            }`}
+        disabled={handleState}
       >
         <MdKeyboardArrowLeft className="md:size-5" />
       </button>
@@ -29,6 +30,7 @@ export default function DateNavigationBtns({
           hover:bg-blue-400 transition duration-300 ${
             handleState ? "cursor-not-allowed opacity-50" : ""
           }`}
+        disabled={handleState}
       >
         <MdKeyboardArrowRight className="md:size-5" />
       </button>

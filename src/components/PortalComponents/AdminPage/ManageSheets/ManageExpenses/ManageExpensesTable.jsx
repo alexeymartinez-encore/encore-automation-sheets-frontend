@@ -16,23 +16,47 @@ export default function ManageExpensesTable() {
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
+  // async function handleToggle() {
+  //   setIsToggled((prevState) => {
+  //     const newState = !prevState;
+  //     const isoDate = new Date(selectedDate).toISOString();
+
+  //     if (newState) {
+  //       // Going to Open Expenses
+  //       adminCtx.getOpenExpenses().then((res) => setExpenses(res || []));
+  //     } else {
+  //       // Going back to Expenses By Date
+  //       adminCtx
+  //         .getUsersExpensesByDate(isoDate)
+  //         .then((res) => setExpenses(res || []));
+  //     }
+
+  //     return newState;
+  //   });
+  // }
+
   async function handleToggle() {
-    setIsToggled((prevState) => {
-      const newState = !prevState;
-      const isoDate = new Date(selectedDate).toISOString();
+    const newState = !isToggled; // use current state
+    setIsToggled(newState);
 
-      if (newState) {
-        // Going to Open Expenses
-        adminCtx.getOpenExpenses().then((res) => setExpenses(res || []));
-      } else {
-        // Going back to Expenses By Date
-        adminCtx
-          .getUsersExpensesByDate(isoDate)
-          .then((res) => setExpenses(res || []));
-      }
+    const isoDate = new Date(selectedDate).toISOString();
 
-      return newState;
+    let res;
+    if (newState) {
+      // Going to Open Expenses
+      res = await adminCtx.getOpenExpenses();
+    } else {
+      // Going back to Expenses By Date
+      res = await adminCtx.getUsersExpensesByDate(isoDate);
+    }
+
+    const sorted = (res || []).sort((a, b) => {
+      const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+      const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+      return lastNameA.localeCompare(lastNameB);
     });
+
+    setTimesheets(sorted || []);
   }
 
   function handleValueChange(index, field, value) {
