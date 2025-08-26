@@ -106,6 +106,7 @@ export async function deleteTimesheetEntryById(index, row) {
 }
 
 export async function saveTimesheet(timesheetRequestBody, timesheetId = null) {
+  console.log(timesheetRequestBody);
   try {
     const method = "POST";
 

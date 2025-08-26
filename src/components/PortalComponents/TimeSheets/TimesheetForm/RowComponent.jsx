@@ -15,19 +15,17 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
+
+  // --- Project Sorting (unchanged) ---
   const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
     const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
     const bStartsLetter = /^[A-Za-z]/.test(b.number.trim());
-
-    // Letter-first group
     if (aStartsLetter && !bStartsLetter) return -1;
     if (!aStartsLetter && bStartsLetter) return 1;
-
-    // Same group → sort alphabetically
-    return a.number.localeCompare(b.number, undefined, {
-      sensitivity: "base",
-    });
+    return a.number.localeCompare(b.number, undefined, { sensitivity: "base" });
   });
+
+  // --- Enter key navigation (unchanged) ---
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -39,16 +37,29 @@ export default function RowComponent({
 
       const currentIndex = formElements.indexOf(e.target);
       const nextElement = formElements[currentIndex + 1];
-      if (nextElement) {
-        nextElement.focus();
-      }
+      if (nextElement) nextElement.focus();
     }
   }
 
+  // --- Helpers ---
   const selectedProject = miscCtx.projects.find((p) => p.id == row.project_id);
   const specialProject = selectedProject
     ? projectsToAllowedMixPhasesCostCodes[selectedProject.number]
     : null;
+
+  const getPhaseNumberById = (phaseId) =>
+    miscCtx.phases.find((p) => p.id == phaseId)?.number;
+
+  const getAllowedCostCodeIdsForPhaseId = (phaseId) => {
+    const phaseNum = getPhaseNumberById(phaseId);
+    const allowedNums = phaseToAllowedCostCodes[phaseNum] || [];
+    // translate cost_code numbers -> ids
+    return miscCtx.costCodes
+      .filter((c) => allowedNums.includes(c.cost_code))
+      .map((c) => c.id);
+  };
+
+  console.log(row);
 
   return (
     <tr className="bg-white text-[0.5rem] md:text-xs w-full">
@@ -57,10 +68,10 @@ export default function RowComponent({
       {/* Project Selector */}
       <td className="border px-2">
         <select
-          value={row.project_id}
+          value={row.project_id ?? ""}
           className="w-full text-start px-2"
           onChange={(e) => {
-            const projectId = e.target.value;
+            const projectId = Number(e.target.value);
             const selectedProject = miscCtx.projects.find(
               (p) => p.id == projectId
             );
@@ -99,9 +110,27 @@ export default function RowComponent({
       {/* Phase Selector */}
       <td className="border px-2">
         <select
-          value={row.phase_id}
+          value={row.phase_id ?? ""}
           className="w-full text-start px-2"
-          onChange={(e) => onValueChange(index, "phase_id", e.target.value)}
+          onChange={(e) => {
+            const newPhaseId = Number(e.target.value);
+            onValueChange(index, "phase_id", newPhaseId);
+
+            // 🔥 Enforce a valid cost code when the phase changes (non-special projects)
+            if (!specialProject) {
+              const allowedIds = getAllowedCostCodeIdsForPhaseId(newPhaseId);
+              if (
+                allowedIds.length > 0 &&
+                !allowedIds.includes(row.cost_code_id)
+              ) {
+                onValueChange(index, "cost_code_id", allowedIds[0]); // pick first allowed
+              }
+              // Optional: if none allowed, clear it
+              if (allowedIds.length === 0) {
+                onValueChange(index, "cost_code_id", "");
+              }
+            }
+          }}
           onKeyDown={handleEnterKeyFocus}
           disabled={!!specialProject}
         >
@@ -116,9 +145,11 @@ export default function RowComponent({
       {/* Cost Code Selector */}
       <td className="border px-2">
         <select
-          value={row.cost_code_id}
+          value={row.cost_code_id ?? ""}
           className="w-full text-start px-2"
-          onChange={(e) => onValueChange(index, "cost_code_id", e.target.value)}
+          onChange={(e) =>
+            onValueChange(index, "cost_code_id", Number(e.target.value))
+          }
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         >
@@ -134,16 +165,14 @@ export default function RowComponent({
                 ));
             }
 
-            const allowedCodes =
-              phaseToAllowedCostCodes[
-                miscCtx.phases.find((p) => p.id == row.phase_id)?.number
-              ] || [];
+            const allowedIds = getAllowedCostCodeIdsForPhaseId(row.phase_id);
+            const allowedSet = new Set(allowedIds);
 
             return miscCtx.costCodes
-              .filter((costCode) => allowedCodes.includes(costCode.cost_code))
-              .map((costCode) => (
-                <option key={costCode.id} value={costCode.id}>
-                  {costCode.cost_code} - {costCode.description}
+              .filter((c) => allowedSet.has(c.id))
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.cost_code} - {c.description}
                 </option>
               ));
           })()}
@@ -192,12 +221,8 @@ export default function RowComponent({
       {/* Delete Button */}
       <td className="px-2 text-center">
         {!disabled && (
-          <button>
-            <FontAwesomeIcon
-              icon={faTrashCan}
-              className="text-red-600"
-              onClick={() => onDeleteRow(index, row)}
-            />
+          <button onClick={() => onDeleteRow(index, row)}>
+            <FontAwesomeIcon icon={faTrashCan} className="text-red-600" />
           </button>
         )}
       </td>

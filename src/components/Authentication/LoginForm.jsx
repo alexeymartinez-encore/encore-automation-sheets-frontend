@@ -49,25 +49,27 @@ export default function LoginForm() {
 
   return (
     <AuthForm onSubmit={loginHandler}>
-      {error && <StatusUI status={"error"}>{error}</StatusUI>}
-      <FormInput
-        type="text"
-        placeholder="User Name"
-        value={credentials.user_name}
-        onChange={credentialChangeHandler.bind(this, "user_name")}
-      />
-      <FormInput
-        type="password"
-        placeholder="Password"
-        value={credentials.password}
-        onChange={credentialChangeHandler.bind(this, "password")}
-      />
-      <FormLink to="/employee-portal/reset-password-request">
-        Forgot Password?
-      </FormLink>
-      <ButtonUI type="submit" disabled={loading}>
-        {loading ? "Logging in..." : "Login"}
-      </ButtonUI>
+      <div className="flex flex-col items-center">
+        {error && <StatusUI status={"error"}>{error}</StatusUI>}
+        <FormInput
+          type="text"
+          placeholder="User Name"
+          value={credentials.user_name}
+          onChange={credentialChangeHandler.bind(this, "user_name")}
+        />
+        <FormInput
+          type="password"
+          placeholder="Password"
+          value={credentials.password}
+          onChange={credentialChangeHandler.bind(this, "password")}
+        />
+        <FormLink to="/employee-portal/reset-password-request">
+          Forgot Password?
+        </FormLink>
+        <ButtonUI type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </ButtonUI>
+      </div>
       {/* <FormLink to="/employee-portal/signup" text={"Don't have an account? "}>
         Sign Up
       </FormLink> */}
