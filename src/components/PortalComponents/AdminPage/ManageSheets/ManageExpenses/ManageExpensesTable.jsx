@@ -5,7 +5,6 @@ import TaskBar from "./TaskBar";
 import { AdminContext } from "../../../../../store/admin-context";
 import { getStartOfMonth } from "../../../../../util/helper";
 import { ExpensesContext } from "../../../../../store/expense-context";
-import { MiscellaneousContext } from "../../../../../store/miscellaneous-context";
 
 export default function ManageExpensesTable() {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
@@ -13,29 +12,8 @@ export default function ManageExpensesTable() {
 
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
-  const miscCtx = useContext(MiscellaneousContext);
-  console.log(miscCtx.projects);
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
-
-  // async function handleToggle() {
-  //   setIsToggled((prevState) => {
-  //     const newState = !prevState;
-  //     const isoDate = new Date(selectedDate).toISOString();
-
-  //     if (newState) {
-  //       // Going to Open Expenses
-  //       adminCtx.getOpenExpenses().then((res) => setExpenses(res || []));
-  //     } else {
-  //       // Going back to Expenses By Date
-  //       adminCtx
-  //         .getUsersExpensesByDate(isoDate)
-  //         .then((res) => setExpenses(res || []));
-  //     }
-
-  //     return newState;
-  //   });
-  // }
 
   async function handleToggle() {
     const newState = !isToggled; // use current state
@@ -148,17 +126,15 @@ export default function ManageExpensesTable() {
   }
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
-    console.log(newExpenses);
 
     let xmlContent = "<ProjectExpenses>\n";
 
-    const formatMonthYear = (date) => {
-      return (
-        date.toLocaleString("default", { month: "long" }) +
-        " " +
-        date.getFullYear()
-      );
-    };
+    const pad = (n) => String(n).padStart(2, "0");
+
+    const formatMonthYear = (date) =>
+      date.toLocaleString("default", { month: "long" }) +
+      " " +
+      date.getFullYear();
 
     const fileName = `EncoreExpenses ${formatMonthYear(selectedDate)}.xml`;
 
@@ -172,6 +148,14 @@ export default function ManageExpensesTable() {
       "Employee Relations": "EmpRel",
     };
 
+    // Precompute the target month/year and days in that month from selectedDate
+    const targetYear = selectedDate.getFullYear();
+    const targetMonthNum = selectedDate.getMonth() + 1; // 1-12
+    const daysInMonth = new Date(targetYear, targetMonthNum, 0).getDate();
+
+    const withSGA = (baseType, flag) =>
+      flag === true || flag === 1 || flag === "1" ? `${baseType}SGA` : baseType;
+
     newExpenses.forEach((expenseWrapper) => {
       const expense = expenseWrapper.expense;
       const employee = expenseWrapper.employee;
@@ -180,16 +164,15 @@ export default function ManageExpensesTable() {
       entries.forEach((entry) => {
         const rowsToCreate = [];
 
-        // Build expense date from expense.date_start + entry.day
-        const startDate = new Date(expense.date_start);
-        const year = startDate.getFullYear();
-        const month = startDate.getMonth(); // 0-based
-        const day = Number(entry.day) > 0 ? Number(entry.day) : 1;
-        const expenseDate = new Date(year, month, day)
-          .toISOString()
-          .split("T")[0];
+        // Build date inside the SELECTED month using entry.day
+        const dayNumRaw = Number(entry.day);
+        const dayNum = Number.isFinite(dayNumRaw) ? dayNumRaw : 1;
+        const clampedDay = Math.min(Math.max(dayNum, 1), daysInMonth);
+        const expenseDate = `${targetYear}-${pad(targetMonthNum)}-${pad(
+          clampedDay
+        )}`;
 
-        // 1. Miscellaneous entries
+        // 1) Miscellaneous
         if (entry.miscellaneous_amount && entry.miscellaneous_amount > 0) {
           const miscDesc = entry.miscellaneous_description || "Nothing";
           const mappedType = miscTypeMapping[miscDesc] || "Nothing";
@@ -201,7 +184,7 @@ export default function ManageExpensesTable() {
           });
         }
 
-        // 2. Other cost-based types
+        // 2) Other cost-based types
         if (entry.miles_cost && entry.miles_cost > 0) {
           rowsToCreate.push({
             type: "Mileage",
@@ -251,14 +234,9 @@ export default function ManageExpensesTable() {
           });
         }
 
-        // Emit rows
+        // Emit one <row> per charge type, suffix SGA when needed
         rowsToCreate.forEach((row) => {
-          const typeWithSGA =
-            entry.sga_flag === true ||
-            entry.sga_flag === 1 ||
-            entry.sga_flag === "1"
-              ? `${row.type}SGA`
-              : row.type;
+          const typeWithSGA = withSGA(row.type, entry.sga_flag);
 
           xmlContent += `  <row
       ExpenseDate="${expenseDate}T00:00:00"
