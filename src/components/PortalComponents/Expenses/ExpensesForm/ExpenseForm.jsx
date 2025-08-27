@@ -461,8 +461,6 @@ export default function ExpenseForm({
     setReceiptFiles(files);
   }
 
-  console.log(expense.Employee);
-
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3 items-center">

@@ -5,6 +5,7 @@ import TaskBar from "./TaskBar";
 import { AdminContext } from "../../../../../store/admin-context";
 import { getStartOfMonth } from "../../../../../util/helper";
 import { ExpensesContext } from "../../../../../store/expense-context";
+import { MiscellaneousContext } from "../../../../../store/miscellaneous-context";
 
 export default function ManageExpensesTable() {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
@@ -12,7 +13,8 @@ export default function ManageExpensesTable() {
 
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
-
+  const miscCtx = useContext(MiscellaneousContext);
+  console.log(miscCtx.projects);
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
@@ -144,19 +146,21 @@ export default function ManageExpensesTable() {
       }));
     });
   }
-
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
     console.log(newExpenses);
+
     let xmlContent = "<ProjectExpenses>\n";
 
     const formatMonthYear = (date) => {
       return (
-        date.toLocaleString("default", { month: "long" }) + date.getFullYear()
+        date.toLocaleString("default", { month: "long" }) +
+        " " +
+        date.getFullYear()
       );
     };
 
-    const fileName = `EncoreExpenses${formatMonthYear(selectedDate)}.xml`;
+    const fileName = `EncoreExpenses ${formatMonthYear(selectedDate)}.xml`;
 
     const miscTypeMapping = {
       Nothing: "Nothing",
@@ -172,23 +176,25 @@ export default function ManageExpensesTable() {
       const expense = expenseWrapper.expense;
       const employee = expenseWrapper.employee;
       const entries = expenseWrapper.expenseEntries || [];
-      const currentDate = new Date(expense.date_start);
-      const nextMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        1
-      );
-      const expenseDate = nextMonth.toISOString().split("T")[0];
 
       entries.forEach((entry) => {
         const rowsToCreate = [];
+
+        // Build expense date from expense.date_start + entry.day
+        const startDate = new Date(expense.date_start);
+        const year = startDate.getFullYear();
+        const month = startDate.getMonth(); // 0-based
+        const day = Number(entry.day) > 0 ? Number(entry.day) : 1;
+        const expenseDate = new Date(year, month, day)
+          .toISOString()
+          .split("T")[0];
 
         // 1. Miscellaneous entries
         if (entry.miscellaneous_amount && entry.miscellaneous_amount > 0) {
           const miscDesc = entry.miscellaneous_description || "Nothing";
           const mappedType = miscTypeMapping[miscDesc] || "Nothing";
           rowsToCreate.push({
-            type: mappedType, // Default to regular version
+            type: mappedType,
             amount: entry.miscellaneous_amount,
             miscDetail: miscDesc,
             miscType: miscDesc,
@@ -245,14 +251,21 @@ export default function ManageExpensesTable() {
           });
         }
 
-        // Create an XML <row> for each rowToCreate
+        // Emit rows
         rowsToCreate.forEach((row) => {
+          const typeWithSGA =
+            entry.sga_flag === true ||
+            entry.sga_flag === 1 ||
+            entry.sga_flag === "1"
+              ? `${row.type}SGA`
+              : row.type;
+
           xmlContent += `  <row
       ExpenseDate="${expenseDate}T00:00:00"
       EmployeeNumber="${employee?.employee_number || ""}"
       EmployeeName="${employee?.first_name || ""} ${employee?.last_name || ""}"
       Amount="${Number(row.amount).toFixed(4)}"
-      Type="${row.type}"
+      Type="${typeWithSGA}"
       TransportWhere=""
       ProjectNumber="${entry.project_number || "ProjOver"}"
       Purpose="${expense.message || ""}"
