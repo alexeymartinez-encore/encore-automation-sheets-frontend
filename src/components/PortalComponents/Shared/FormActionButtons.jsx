@@ -8,9 +8,10 @@ export default function FormActionsButtons({
   signed,
   disabled,
   href,
+  handleCopy,
 }) {
   const signed_text = signed ? "Unsign" : "Sign";
-  const role = localStorage.getItem("role_id");
+
   return (
     <div className="flex gap-3 md:justify-between items-center">
       {disabled ? (
@@ -42,6 +43,12 @@ export default function FormActionsButtons({
       >
         + New
       </Link>
+      <button
+        onClick={handleCopy}
+        className="bg-blue-500 text-white py-1 rounded-md px-3 hover:bg-blue-400 transition duration-300"
+      >
+        + Copy New
+      </button>
     </div>
   );
 }

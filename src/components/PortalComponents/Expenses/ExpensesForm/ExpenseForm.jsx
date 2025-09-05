@@ -461,6 +461,22 @@ export default function ExpenseForm({
     setReceiptFiles(files);
   }
 
+  async function handleCopy() {
+    try {
+      navigate("/employee-portal/dashboard/expenses/create-expense", {
+        state: {
+          prefillEntries: rowData.map((row) => ({
+            ...row,
+            id: null, // reset so backend treats as new
+            expense_id: null, // 👈 should be expense_id, not timesheet_id
+          })),
+        },
+      });
+    } catch (err) {
+      console.error("Error copying timesheet:", err);
+    }
+  }
+
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3 items-center">
@@ -513,6 +529,7 @@ export default function ExpenseForm({
           signed={expense.signed}
           disabled={expense.approved}
           href={"/employee-portal/dashboard/expenses/create-expense"}
+          handleCopy={handleCopy}
         />
       </div>
       <table className="w-full border-collapse border ">

@@ -70,8 +70,8 @@ export default function TaskBar({
           handleState={isToggled}
         />
       </div>
-      <div className="w-full  rounded-sm">
-        <p>Completed:</p>
+      <div className="flex flex-wrap  justify-center w-full  rounded-sm">
+        <p>Completed: </p>
         <p className="">
           {completeTimesheets} / {totalTimesheets}
         </p>

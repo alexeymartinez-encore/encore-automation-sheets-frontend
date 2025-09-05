@@ -7,7 +7,16 @@ import { getStartOfMonth } from "../../../../../util/helper";
 import { ExpensesContext } from "../../../../../store/expense-context";
 
 export default function ManageExpensesTable() {
-  const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
+  let monthDate;
+
+  if (localStorage.getItem("month_date") === null) {
+    monthDate = getStartOfMonth(new Date());
+  } else {
+    monthDate = getStartOfMonth(new Date(localStorage.getItem("month_date")));
+  }
+
+  console.log(localStorage.getItem("month_date"));
+  const [selectedDate, setSelectedDate] = useState(monthDate);
   const [expenses, setExpenses] = useState([]);
   const [signedCount, setSignedCount] = useState(0);
 
@@ -66,14 +75,18 @@ export default function ManageExpensesTable() {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(newDate.getMonth() - 1); // Go back 1 month
-      return getStartOfMonth(newDate); // Ensure it is the start of the month
+      const monthDate = getStartOfMonth(newDate);
+      localStorage.setItem("month_date", monthDate);
+      return monthDate; // Ensure it is the start of the month
     });
   };
   const goToNextMonth = () => {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(newDate.getMonth() + 1); // Go forward 1 month
-      return getStartOfMonth(newDate); // Ensure it is the start of the month
+      const monthDate = getStartOfMonth(newDate);
+      localStorage.setItem("month_date", monthDate);
+      return monthDate; // Ensure it is the start of the month
     });
   };
 
@@ -160,7 +173,7 @@ export default function ManageExpensesTable() {
     const withSGA = (baseType, flag) =>
       flag === true || flag === 1 || flag === "1" ? `${baseType}SGA` : baseType;
 
-    // 🟢 Step 1: Collect rows instead of appending directly
+    // Step 1: Collect rows instead of appending directly
     const allRows = [];
 
     newExpenses.forEach((expenseWrapper) => {
@@ -239,10 +252,10 @@ export default function ManageExpensesTable() {
       });
     });
 
-    // 🟢 Step 2: Sort rows by date
+    // Step 2: Sort rows by date
     allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
 
-    // 🟢 Step 3: Build XML after sorting
+    // Step 3: Build XML after sorting
     let xmlContent = "<ProjectExpenses>\n";
     allRows.forEach((row) => {
       xmlContent += `  <row

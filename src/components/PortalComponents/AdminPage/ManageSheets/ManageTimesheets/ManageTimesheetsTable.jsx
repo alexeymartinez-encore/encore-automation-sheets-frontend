@@ -7,8 +7,15 @@ import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
 
 export default function ManageTimesheetsTable({ onViewOvertime }) {
+  let weekDate;
+
+  if (localStorage.getItem("week_date") === null) {
+    weekDate = getEndOfWeek(new Date());
+  } else {
+    weekDate = getEndOfWeek(new Date(localStorage.getItem("week_date")));
+  }
   const [timesheets, setTimesheets] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
+  const [selectedDate, setSelectedDate] = useState(weekDate);
   const [isToggled, setIsToggled] = useState(false);
   const [signedCount, setSignedCount] = useState(0);
 
@@ -93,7 +100,10 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() - 7);
-      return newDate;
+      const weekDate = getEndOfWeek(newDate);
+      localStorage.setItem("week_date", weekDate);
+      return weekDate;
+      // return newDate;
     });
   }
 
@@ -101,7 +111,9 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() + 7);
-      return newDate;
+      const weekDate = getEndOfWeek(newDate);
+      localStorage.setItem("week_date", weekDate);
+      return weekDate;
     });
   }
 

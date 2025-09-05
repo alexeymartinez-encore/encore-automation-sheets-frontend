@@ -262,6 +262,22 @@ export default function TimesheetForm({
     );
   }
 
+  async function handleCopy() {
+    try {
+      navigate("/employee-portal/dashboard/timesheets/create-timesheet", {
+        state: {
+          prefillEntries: rowData.map((row) => ({
+            ...row,
+            id: null, // reset so backend treats as new
+            timesheet_id: null, // detach from old timesheet
+          })),
+        },
+      });
+    } catch (err) {
+      console.error("Error copying timesheet:", err);
+    }
+  }
+
   console.log("Row DATA", rowData);
 
   return (
@@ -283,6 +299,8 @@ export default function TimesheetForm({
           signed={timesheet.signed}
           disabled={timesheet.approved}
           href={"/employee-portal/dashboard/timesheets/create-timesheet"}
+          // rowData={rowData}
+          handleCopy={handleCopy}
         />
       </div>
       <FormTable
