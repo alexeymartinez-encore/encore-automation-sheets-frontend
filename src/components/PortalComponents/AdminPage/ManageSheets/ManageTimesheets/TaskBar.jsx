@@ -39,6 +39,8 @@ export default function TaskBar({
   handleToggle,
   timesheetMode,
   isToggled,
+  totalTimesheets,
+  completeTimesheets,
 }) {
   const isSunday = (date) => date.getDay() === 0;
 
@@ -46,7 +48,7 @@ export default function TaskBar({
     <div className=" flex flex-col md:flex-row justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
       {/* Date Picker */}
 
-      <div className="flex items-center justify-around gap-5 w-full">
+      <div className="flex items-center justify-around gap-0 w-full">
         <button
           onClick={handleToggle}
           className="border py-1 w-20 px-1 md:w-40 rounded-md hover:bg-blue-500 hover:text-white transition duration-400 text-[0.5rem] md:text-xs"
@@ -67,6 +69,12 @@ export default function TaskBar({
           date={selectedDate}
           handleState={isToggled}
         />
+      </div>
+      <div className="w-full  rounded-sm">
+        <p>Completed:</p>
+        <p className="">
+          {completeTimesheets} / {totalTimesheets}
+        </p>
       </div>
 
       <div className="flex justify-end gap-5 w-full">

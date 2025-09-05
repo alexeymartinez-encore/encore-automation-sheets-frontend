@@ -10,6 +10,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
   const [isToggled, setIsToggled] = useState(false);
+  const [signedCount, setSignedCount] = useState(0);
 
   const timesheetMode = !isToggled ? "Open Timesheets" : "Timesheets By Date";
 
@@ -34,6 +35,8 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         return lastNameA.localeCompare(lastNameB);
       });
       setTimesheets(sorted || []);
+      const count = (sorted || []).filter((ts) => ts.signed === true).length;
+      setSignedCount(count);
     }
     getTimesheets();
   }, [selectedDate]);
@@ -60,7 +63,11 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     });
 
     setTimesheets(sorted || []);
+    const count = (sorted || []).filter((ts) => ts.signed === true).length;
+    setSignedCount(count);
   }
+
+  console.log(signedCount);
 
   function handleValueChange(index, field, value) {
     const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
@@ -162,7 +169,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         const [y, m, d] = ymd.split("-").map(Number);
         return new Date(Date.UTC(y, m - 1, d));
       }
-      // Fallback to native parse (already ISO string or Date)
       return new Date(ymd);
     };
 
@@ -179,20 +185,15 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       startDate
     )}to${formatDateForFile(endDate)}_${startDate.getFullYear()}.xml`;
 
-    // --- build XML ---
-    let xmlContent = "<ProjectLabor>\n";
+    // Collect rows here
+    const allRows = [];
 
     for (const ts of resp) {
-      // week-ending (API gives e.g. "2025-08-02")
       const weekEndingDate = parseDateUTC(ts.week_ending);
-
-      // Monday..Sunday based on a Saturday week-ending, then shift each by +1 day (as requested)
-      // Week starts Monday, ends Sunday, based on a Friday week-ending
       const daysToSubstract = import.meta.env.VITE_DAYS_REPORT;
 
       const weekDates = Array.from({ length: 7 }, (_, index) => {
         const d = new Date(weekEndingDate);
-        // Friday - 4 days = Monday, then add index for each day
         d.setUTCDate(weekEndingDate.getUTCDate() - daysToSubstract + index);
         return d.toISOString().split("T")[0];
       });
@@ -230,25 +231,41 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
           const ot = Number(entry[`${day}_ot`] ?? 0);
           if (reg === 0 && ot === 0) continue;
 
-          const regHours = reg.toFixed(15);
-          const otHours = ot.toFixed(15);
           const laborDate = weekDates[index];
 
-          xmlContent += `  <row
-    LaborDate="${laborDate}T00:00:00"
-    EmployeeNumber="${escapeXml(employeeNumber)}"
-    EmployeeName="${escapeXml(employeeName)}"
-    RegHours="${regHours}"
-    OTHours="${otHours}"
-    ProjectNumber="${escapeXml(projectNumber)}"
-    Description="${escapeXml(description)}"
-    Phase="${escapeXml(phase)}"
-    CostCode="${escapeXml(costCode)}"
-  />\n`;
+          allRows.push({
+            LaborDate: laborDate,
+            EmployeeNumber: employeeNumber,
+            EmployeeName: employeeName,
+            RegHours: reg.toFixed(15),
+            OTHours: ot.toFixed(15),
+            ProjectNumber: projectNumber,
+            Description: description,
+            Phase: phase,
+            CostCode: costCode,
+          });
         }
       }
     }
 
+    // 🟢 Sort rows by date
+    allRows.sort((a, b) => new Date(a.LaborDate) - new Date(b.LaborDate));
+
+    // 🟢 Build XML after sorting
+    let xmlContent = "<ProjectLabor>\n";
+    allRows.forEach((row) => {
+      xmlContent += `  <row
+    LaborDate="${row.LaborDate}T00:00:00"
+    EmployeeNumber="${escapeXml(row.EmployeeNumber)}"
+    EmployeeName="${escapeXml(row.EmployeeName)}"
+    RegHours="${row.RegHours}"
+    OTHours="${row.OTHours}"
+    ProjectNumber="${escapeXml(row.ProjectNumber)}"
+    Description="${escapeXml(row.Description)}"
+    Phase="${escapeXml(row.Phase)}"
+    CostCode="${escapeXml(row.CostCode)}"
+  />\n`;
+    });
     xmlContent += "</ProjectLabor>";
 
     // --- download file ---
@@ -262,6 +279,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     link.remove();
     URL.revokeObjectURL(url);
   }
+
   return (
     <div className="flex flex-col text-center w-full">
       <TaskBar
@@ -277,6 +295,8 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         handleToggle={handleToggle}
         timesheetMode={timesheetMode}
         isToggled={isToggled}
+        totalTimesheets={timesheets.length}
+        completeTimesheets={signedCount}
       />
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">

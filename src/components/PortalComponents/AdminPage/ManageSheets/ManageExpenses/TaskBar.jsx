@@ -37,6 +37,8 @@ export default function TaskBar({
   isToggled,
   handleToggle,
   expenseMode,
+  totalExpenses,
+  completeExpenses,
 }) {
   // const isSunday = (date) => date.getDay() === 0;
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
@@ -67,6 +69,12 @@ export default function TaskBar({
           date={selectedDate}
           handleState={isToggled}
         />
+      </div>
+      <div className="w-full  rounded-sm">
+        <p>Completed:</p>
+        <p className="">
+          {completeExpenses} / {totalExpenses}
+        </p>
       </div>
 
       <div className="flex justify-end items-center gap-5 w-full">

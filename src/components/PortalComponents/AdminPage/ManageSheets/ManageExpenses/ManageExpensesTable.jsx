@@ -9,6 +9,7 @@ import { ExpensesContext } from "../../../../../store/expense-context";
 export default function ManageExpensesTable() {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
   const [expenses, setExpenses] = useState([]);
+  const [signedCount, setSignedCount] = useState(0);
 
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
@@ -36,7 +37,9 @@ export default function ManageExpensesTable() {
       return lastNameA.localeCompare(lastNameB);
     });
 
-    setTimesheets(sorted || []);
+    setExpenses(sorted || []);
+    const count = (sorted || []).filter((ts) => ts.paid === true).length;
+    setSignedCount(count);
   }
 
   function handleValueChange(index, field, value) {
@@ -86,9 +89,13 @@ export default function ManageExpensesTable() {
         return lastNameA.localeCompare(lastNameB);
       });
       setExpenses(sorted || []);
+      const count = (sorted || []).filter((ts) => ts.paid === true).length;
+      setSignedCount(count);
     }
     getExpenses();
   }, [selectedDate]);
+
+  console.log(expenses);
 
   async function handleSaveStatusChanges() {
     const res = await adminCtx.saveExpensesStatusChanges(expenses);
@@ -127,8 +134,6 @@ export default function ManageExpensesTable() {
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
 
-    let xmlContent = "<ProjectExpenses>\n";
-
     const pad = (n) => String(n).padStart(2, "0");
 
     const formatMonthYear = (date) =>
@@ -143,18 +148,20 @@ export default function ManageExpensesTable() {
       Meals: "Meals",
       "Postage/Freight/Shipping": "PostFrtShip",
       "Cell Phone": "CellPhn",
-      "Employee Education / Training": "EmplEd",
+      "Employee Education / Training": "EmpEducTrain",
       "Supplies / Part": "SupplsPrts",
-      "Employee Relations": "EmpRel",
+      "Employee Relations": "EmpRelat",
     };
 
-    // Precompute the target month/year and days in that month from selectedDate
     const targetYear = selectedDate.getFullYear();
     const targetMonthNum = selectedDate.getMonth() + 1; // 1-12
     const daysInMonth = new Date(targetYear, targetMonthNum, 0).getDate();
 
     const withSGA = (baseType, flag) =>
       flag === true || flag === 1 || flag === "1" ? `${baseType}SGA` : baseType;
+
+    // 🟢 Step 1: Collect rows instead of appending directly
+    const allRows = [];
 
     newExpenses.forEach((expenseWrapper) => {
       const expense = expenseWrapper.expense;
@@ -164,7 +171,6 @@ export default function ManageExpensesTable() {
       entries.forEach((entry) => {
         const rowsToCreate = [];
 
-        // Build date inside the SELECTED month using entry.day
         const dayNumRaw = Number(entry.day);
         const dayNum = Number.isFinite(dayNumRaw) ? dayNumRaw : 1;
         const clampedDay = Math.min(Math.max(dayNum, 1), daysInMonth);
@@ -172,7 +178,7 @@ export default function ManageExpensesTable() {
           clampedDay
         )}`;
 
-        // 1) Miscellaneous
+        // Miscellaneous
         if (entry.miscellaneous_amount && entry.miscellaneous_amount > 0) {
           const miscDesc = entry.miscellaneous_description || "Nothing";
           const mappedType = miscTypeMapping[miscDesc] || "Nothing";
@@ -184,79 +190,78 @@ export default function ManageExpensesTable() {
           });
         }
 
-        // 2) Other cost-based types
+        // Other cost-based types
         if (entry.miles_cost && entry.miles_cost > 0) {
-          rowsToCreate.push({
-            type: "Mileage",
-            amount: entry.miles_cost,
-            miscDetail: "",
-            miscType: "",
-          });
+          rowsToCreate.push({ type: "Mileage", amount: entry.miles_cost });
         }
         if (entry.perdiem_cost && entry.perdiem_cost > 0) {
-          rowsToCreate.push({
-            type: "PerDiem",
-            amount: entry.perdiem_cost,
-            miscDetail: "",
-            miscType: "",
-          });
+          rowsToCreate.push({ type: "PerDiem", amount: entry.perdiem_cost });
         }
         if (entry.car_rental_cost && entry.car_rental_cost > 0) {
           rowsToCreate.push({
             type: "CarRental",
             amount: entry.car_rental_cost,
-            miscDetail: "",
-            miscType: "",
           });
         }
         if (entry.other_expense_cost && entry.other_expense_cost > 0) {
           rowsToCreate.push({
             type: "CabsParking",
             amount: entry.other_expense_cost,
-            miscDetail: "",
-            miscType: "",
           });
         }
         if (entry.lodging_cost && entry.lodging_cost > 0) {
-          rowsToCreate.push({
-            type: "Lodge",
-            amount: entry.lodging_cost,
-            miscDetail: "",
-            miscType: "",
-          });
+          rowsToCreate.push({ type: "Lodging", amount: entry.lodging_cost });
         }
         if (entry.destination_cost && entry.destination_cost > 0) {
           rowsToCreate.push({
-            type: "Travel",
+            type: "Transportation",
             amount: entry.destination_cost,
-            miscDetail: "",
-            miscType: "",
           });
         }
 
-        // Emit one <row> per charge type, suffix SGA when needed
         rowsToCreate.forEach((row) => {
-          const typeWithSGA = withSGA(row.type, entry.sga_flag);
-
-          xmlContent += `  <row
-      ExpenseDate="${expenseDate}T00:00:00"
-      EmployeeNumber="${employee?.employee_number || ""}"
-      EmployeeName="${employee?.first_name || ""} ${employee?.last_name || ""}"
-      Amount="${Number(row.amount).toFixed(4)}"
-      Type="${typeWithSGA}"
-      TransportWhere=""
-      ProjectNumber="${entry.project_number || "ProjOver"}"
-      Purpose="${expense.message || ""}"
-      MiscDetail="${row.miscDetail}"
-      MiscType="${row.miscType}"
-      EntInfo=" "
-    />\n`;
+          allRows.push({
+            ExpenseDate: expenseDate,
+            EmployeeNumber: employee?.employee_number || "",
+            EmployeeName: `${employee?.first_name || ""} ${
+              employee?.last_name || ""
+            }`,
+            Amount: Number(row.amount).toFixed(4),
+            Type: withSGA(row.type, entry.sga_flag),
+            TransportWhere: "",
+            ProjectNumber: entry.project_number || "ProjOver",
+            Purpose: expense.message || "",
+            MiscDetail: row.miscDetail || "",
+            MiscType: row.miscType || "",
+            EntInfo: " ",
+          });
         });
       });
     });
 
+    // 🟢 Step 2: Sort rows by date
+    allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
+
+    // 🟢 Step 3: Build XML after sorting
+    let xmlContent = "<ProjectExpenses>\n";
+    allRows.forEach((row) => {
+      xmlContent += `  <row
+      ExpenseDate="${row.ExpenseDate}T00:00:00"
+      EmployeeNumber="${row.EmployeeNumber}"
+      EmployeeName="${row.EmployeeName}"
+      Amount="${row.Amount}"
+      Type="${row.Type}"
+      TransportWhere="${row.TransportWhere}"
+      ProjectNumber="${row.ProjectNumber}"
+      Purpose="${row.Purpose}"
+      MiscDetail="${row.MiscDetail}"
+      MiscType="${row.MiscType}"
+      EntInfo="${row.EntInfo}"
+    />\n`;
+    });
     xmlContent += "</ProjectExpenses>";
 
+    // Save file
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -280,6 +285,8 @@ export default function ManageExpensesTable() {
         isToggled={isToggled}
         handleToggle={handleToggle}
         expenseMode={expenseMode}
+        totalExpenses={expenses.length}
+        completeExpenses={signedCount}
       />
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
