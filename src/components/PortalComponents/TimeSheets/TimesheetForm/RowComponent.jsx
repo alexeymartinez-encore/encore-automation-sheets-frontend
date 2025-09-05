@@ -59,8 +59,6 @@ export default function RowComponent({
       .map((c) => c.id);
   };
 
-  console.log(row);
-
   return (
     <tr className="bg-white text-[0.5rem] md:text-xs w-full">
       <td className="border px-2 text-center">{index + 1}</td>

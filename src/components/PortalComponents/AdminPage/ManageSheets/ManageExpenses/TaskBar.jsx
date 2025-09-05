@@ -44,7 +44,7 @@ export default function TaskBar({
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
 
   return (
-    <div className=" flex flex-col md:flex-row  justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
+    <div className=" flex flex-col md:flex-row  md:items-baseline justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
       {/* Date Picker */}
       <div className="flex items-center space-x-4 w-full">
         <button
@@ -70,14 +70,14 @@ export default function TaskBar({
           handleState={isToggled}
         />
       </div>
-      <div className="flex flex-wrap justify-center w-full  rounded-sm">
+      <div className="bg-blue-500 text-white py-2 flex flex-wrap justify-center gap-2 w-full  rounded-sm mx-5">
         <p>Completed:</p>
         <p className="">
           {completeExpenses} / {totalExpenses}
         </p>
       </div>
 
-      <div className="flex justify-end items-center gap-5 w-full">
+      <div className="flex justify-center md:justify-end items-center gap-5 w-full">
         {/* <FontAwesomeIcon icon={faClock} className="text-blue-500 h-5" /> */}
         <button type="button" title="Save Status Changes" onClick={saveChanges}>
           <FontAwesomeIcon

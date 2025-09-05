@@ -15,7 +15,6 @@ export default function ManageExpensesTable() {
     monthDate = getStartOfMonth(new Date(localStorage.getItem("month_date")));
   }
 
-  console.log(localStorage.getItem("month_date"));
   const [selectedDate, setSelectedDate] = useState(monthDate);
   const [expenses, setExpenses] = useState([]);
   const [signedCount, setSignedCount] = useState(0);
@@ -107,8 +106,6 @@ export default function ManageExpensesTable() {
     }
     getExpenses();
   }, [selectedDate]);
-
-  console.log(expenses);
 
   async function handleSaveStatusChanges() {
     const res = await adminCtx.saveExpensesStatusChanges(expenses);

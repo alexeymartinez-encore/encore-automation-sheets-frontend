@@ -74,8 +74,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     setSignedCount(count);
   }
 
-  console.log(signedCount);
-
   function handleValueChange(index, field, value) {
     const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
 

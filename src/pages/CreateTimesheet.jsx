@@ -8,7 +8,7 @@ export default function CreateTimesheetPage() {
   return (
     <FormContainerCard>
       <TimesheetForm
-        timesheetEntriesData={prefillEntries || []} // prefill if copying
+        timesheetEntriesData={prefillEntries} // prefill if copying
         timesheetId={null} // always new
         isAdmin={false}
       />
