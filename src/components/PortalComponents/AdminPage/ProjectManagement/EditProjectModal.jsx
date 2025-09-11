@@ -110,6 +110,26 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
           </select>
         </div>
         <div>
+          <p className="text-blue-500">Select Is Active:</p>
+          <select
+            value={
+              project.is_active === true
+                ? "true"
+                : project.is_active === false
+                ? "false"
+                : ""
+            }
+            className="w-full text-center rounded-md p-2 border"
+            onChange={(e) =>
+              handleValueChange("is_active", e.target.value === "true")
+            }
+          >
+            <option value="">Select Is Active</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div>
           <p className="text-blue-500">Select Customer:</p>
           <select
             value={project.customer_id || ""}

@@ -15,7 +15,6 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
-
   // --- Project Sorting (unchanged) ---
   const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
     const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
@@ -24,6 +23,7 @@ export default function RowComponent({
     if (!aStartsLetter && bStartsLetter) return 1;
     return a.number.localeCompare(b.number, undefined, { sensitivity: "base" });
   });
+  console.log(sortedProjects);
 
   // --- Enter key navigation (unchanged) ---
   function handleEnterKeyFocus(e) {
@@ -99,6 +99,7 @@ export default function RowComponent({
         >
           {sortedProjects.map((project) => (
             <option key={project.id} value={project.id}>
+              {/* {project.is_active} */}
               {project.number} - {project.description}
             </option>
           ))}

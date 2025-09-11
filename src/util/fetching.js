@@ -35,7 +35,7 @@ export async function authRequest(requestBody, method, authType) {
   }
 
   const data = await response.json();
-
+  // console.log(data);
   if (authType === "login") {
     // Store token in localStorage
     // localStorage.setItem("token", data.token);
@@ -51,6 +51,7 @@ export async function authRequest(requestBody, method, authType) {
     localStorage.setItem("manager_id", data.user.manager_id);
     localStorage.setItem("position", data.user.position);
     localStorage.setItem("manager_name", data.user.manager_name);
+    localStorage.setItem("total_employees", data.totalEmployees);
   }
   return data;
 }

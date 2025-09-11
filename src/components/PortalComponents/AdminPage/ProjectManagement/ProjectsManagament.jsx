@@ -35,6 +35,8 @@ export default function ProjectsManagement() {
     fetchProjects();
   }, [adminCtx]);
 
+  console.log(projects);
+
   async function handleDelete(id) {
     adminCtx.deleteProjectById(id);
   }
@@ -54,6 +56,7 @@ export default function ProjectsManagement() {
             <th className="w-full px-10 md:px-0">Project Number</th>
             <th className="w-full px-10 md:px-0">Description</th>
             <th className="w-full px-10 md:px-0">Short Name</th>
+            <th className="w-full px-10 md:px-0">Active</th>
             <th className="w-full px-10 md:px-0">Overtime</th>
             <th className="w-full px-10 md:px-0">SGA Flag</th>
             <th className="w-full px-10 md:px-0">Customer</th>
@@ -88,6 +91,13 @@ export default function ProjectsManagement() {
                 {project.description === "" ? "-" : project.description}
               </td>
               <td className="w-full px-10 md:px-0">{project.short_name}</td>
+              <td
+                className={`w-full px-10 md:px-0 ${
+                  project.is_active ? "text-green-500" : "text-red-600"
+                }`}
+              >
+                {project.is_active ? "Yes" : "No"}
+              </td>
               <td
                 className={`w-full px-10 md:px-0 ${
                   project.overtime ? "text-green-500" : "text-red-600"

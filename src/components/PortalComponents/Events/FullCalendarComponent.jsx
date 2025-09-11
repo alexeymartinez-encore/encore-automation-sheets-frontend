@@ -108,6 +108,8 @@ export default function FullCalendarComponent({ eventsData = [] }) {
     );
   }
 
+  console.log(events);
+
   return (
     <div>
       {/* Add New Event Section */}
@@ -135,11 +137,16 @@ export default function FullCalendarComponent({ eventsData = [] }) {
         </h3>
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
-            <div key={event.id}>
-              <div className="flex items-center px-10 border my-2 rounded-md">
-                <div className="flex flex-col md:flex-row justify-around gap-5 items-center py-2 w-full text-md ">
+            <div key={event.id} className="px-10 border my-2 rounded-md">
+              <div className="grid grid-cols-[1.5fr_2fr_3fr_1.5fr_1fr] items-center gap-4 py-2 w-full text-sm">
+                {/* Column 1 - Employee Name */}
+                <p className="text-center">
+                  {event.Employee.first_name} {event.Employee.last_name}
+                </p>
+
+                {/* Column 2 - Dates */}
+                <div className="flex gap-2 items-center justify-center">
                   <input
-                    className="flex-1 text-center w-[5rem]"
                     type="date"
                     value={event.start}
                     onChange={(e) => handleEventChange(e, event.id, "start")}
@@ -147,9 +154,9 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                       event.employee_id !==
                       Number(localStorage.getItem("userId"))
                     }
+                    className="text-center border rounded px-1"
                   />
                   <input
-                    className="flex-1 text-center"
                     type="date"
                     value={event.end_date}
                     onChange={(e) => handleEventChange(e, event.id, "end_date")}
@@ -157,9 +164,13 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                       event.employee_id !==
                       Number(localStorage.getItem("userId"))
                     }
+                    className="text-center border rounded px-1"
                   />
+                </div>
+
+                {/* Column 3 - Title + Description */}
+                <div className="flex gap-2 items-center justify-center">
                   <input
-                    className="flex-1 text-center"
                     type="text"
                     value={event.title}
                     onChange={(e) => handleEventChange(e, event.id, "title")}
@@ -167,9 +178,9 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                       event.employee_id !==
                       Number(localStorage.getItem("userId"))
                     }
+                    className="flex-1 text-center border rounded px-1"
                   />
                   <input
-                    className="flex-1 text-center"
                     type="text"
                     value={event.long_description}
                     onChange={(e) =>
@@ -179,41 +190,43 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                       event.employee_id !==
                       Number(localStorage.getItem("userId"))
                     }
+                    className="flex-1 text-center border rounded px-1"
                   />
-                  <p className="flex-1 text-center">
-                    <input
-                      className="text-black text-center border w-7 h-7 rounded-full border-none appearance-none cursor-pointer bg-white"
-                      type="color"
-                      value={event.back_color_id}
-                      onChange={(e) =>
-                        handleEventChange(e, event.id, "back_color_id")
-                      }
-                      readOnly={
-                        event.employee_id !==
-                        Number(localStorage.getItem("userId"))
-                      }
-                    />
-                  </p>
-                  <p className="flex-1 text-center">
-                    <input
-                      className="text-black text-center border w-7 h-7 rounded-full border-none appearance-none cursor-pointer bg-white"
-                      type="color"
-                      value={event.fore_color_id}
-                      onChange={(e) =>
-                        handleEventChange(e, event.id, "fore_color_id")
-                      }
-                      readOnly={
-                        event.employee_id !==
-                        Number(localStorage.getItem("userId"))
-                      }
-                    />
-                  </p>
                 </div>
-                <div className=" w-[5%]">
-                  {" "}
+
+                {/* Column 4 - Colors */}
+                <div className="flex gap-2 items-center justify-center">
+                  <input
+                    type="color"
+                    value={event.back_color_id}
+                    onChange={(e) =>
+                      handleEventChange(e, event.id, "back_color_id")
+                    }
+                    readOnly={
+                      event.employee_id !==
+                      Number(localStorage.getItem("userId"))
+                    }
+                    className="w-7 h-7 rounded-full cursor-pointer"
+                  />
+                  <input
+                    type="color"
+                    value={event.fore_color_id}
+                    onChange={(e) =>
+                      handleEventChange(e, event.id, "fore_color_id")
+                    }
+                    readOnly={
+                      event.employee_id !==
+                      Number(localStorage.getItem("userId"))
+                    }
+                    className="w-7 h-7 rounded-full cursor-pointer"
+                  />
+                </div>
+
+                {/* Column 5 - Actions */}
+                <div className="flex gap-2 items-center justify-center">
                   {event.employee_id ===
                     Number(localStorage.getItem("userId")) && (
-                    <div className="flex items-center justify-center gap-10">
+                    <>
                       <button
                         type="button"
                         className="rounded-sm"
@@ -228,11 +241,10 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                       >
                         <MdDeleteForever className="text-red-500" size={20} />
                       </button>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
-              {/* <hr /> */}
             </div>
           ))
         ) : (

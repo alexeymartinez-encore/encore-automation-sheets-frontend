@@ -40,7 +40,7 @@ export default function RootLayout() {
       location.pathname
     );
 
-  // 🔥 Here: find the first context that has a success or fail
+  // Here: find the first context that has a success or fail
   const activeMessage = timesheetCtx.successOrFailMessage.successStatus
     ? timesheetCtx.successOrFailMessage
     : expenseCtx.successOrFailMessage.successStatus

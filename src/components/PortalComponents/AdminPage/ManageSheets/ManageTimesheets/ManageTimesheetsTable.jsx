@@ -19,7 +19,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
   const [isToggled, setIsToggled] = useState(false);
   const [signedCount, setSignedCount] = useState(0);
 
-  const timesheetMode = !isToggled ? "Open Timesheets" : "Timesheets By Date";
+  const timesheetMode = !isToggled ? "Go to Open" : "Go to By Date";
 
   const adminCtx = useContext(AdminContext);
   const timesheetCtx = useContext(TimesheetContext);
@@ -35,7 +35,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
 
       const isoDate = date.toISOString();
       const res = await adminCtx.getUsersTimesheetsByDate(isoDate);
-
       const sorted = (res || []).sort((a, b) => {
         const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
         const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
@@ -305,7 +304,6 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         handleToggle={handleToggle}
         timesheetMode={timesheetMode}
         isToggled={isToggled}
-        totalTimesheets={timesheets.length}
         completeTimesheets={signedCount}
       />
       <TableHeader />

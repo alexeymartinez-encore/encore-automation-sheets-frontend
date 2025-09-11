@@ -37,11 +37,11 @@ export default function TaskBar({
   isToggled,
   handleToggle,
   expenseMode,
-  totalExpenses,
   completeExpenses,
 }) {
   // const isSunday = (date) => date.getDay() === 0;
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
+  const totalExpenses = localStorage.getItem("total_employees");
 
   return (
     <div className=" flex flex-col md:flex-row  md:items-baseline justify-between items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
@@ -71,7 +71,7 @@ export default function TaskBar({
         />
       </div>
       <div className="bg-blue-500 text-white py-2 flex flex-wrap justify-center gap-2 w-full  rounded-sm mx-5">
-        <p>Completed:</p>
+        <p>Signed:</p>
         <p className="">
           {completeExpenses} / {totalExpenses}
         </p>

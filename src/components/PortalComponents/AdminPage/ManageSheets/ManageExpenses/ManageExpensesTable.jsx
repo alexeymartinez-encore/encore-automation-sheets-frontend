@@ -22,7 +22,7 @@ export default function ManageExpensesTable() {
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
   const [isToggled, setIsToggled] = useState(false);
-  const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
+  const expenseMode = !isToggled ? "Go To Open" : "Go To By Date";
 
   async function handleToggle() {
     const newState = !isToggled; // use current state
@@ -295,7 +295,6 @@ export default function ManageExpensesTable() {
         isToggled={isToggled}
         handleToggle={handleToggle}
         expenseMode={expenseMode}
-        totalExpenses={expenses.length}
         completeExpenses={signedCount}
       />
       <TableHeader />

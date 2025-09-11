@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from "react";
+import { forwardRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarAlt,
@@ -39,11 +39,10 @@ export default function TaskBar({
   handleToggle,
   timesheetMode,
   isToggled,
-  totalTimesheets,
   completeTimesheets,
 }) {
   const isSunday = (date) => date.getDay() === 0;
-
+  const totalTimesheets = localStorage.getItem("total_employees");
   return (
     <div className=" flex flex-col md:flex-row justify-between md:items-baseline items-center gap-5 bg-white p-3 border-b rounded-md text-xs my-1 space-y-2">
       {/* Date Picker */}
@@ -71,7 +70,7 @@ export default function TaskBar({
         />
       </div>
       <div className="bg-blue-500 text-white py-2 flex flex-wrap justify-center gap-2 w-full  rounded-sm mx-5">
-        <p>Completed: </p>
+        <p>Signed: </p>
         <p className="">
           {completeTimesheets} / {totalTimesheets}
         </p>
