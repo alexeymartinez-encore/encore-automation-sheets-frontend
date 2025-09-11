@@ -46,8 +46,8 @@ export default function ManageExpensesTable() {
     });
 
     setExpenses(sorted || []);
-    const count = (sorted || []).filter((ts) => ts.paid === true).length;
-    setSignedCount(count);
+    // const count = (sorted || []).filter((ts) => ts.paid === true).length;
+    // setSignedCount(count);
   }
 
   function handleValueChange(index, field, value) {
@@ -101,7 +101,7 @@ export default function ManageExpensesTable() {
         return lastNameA.localeCompare(lastNameB);
       });
       setExpenses(sorted || []);
-      const count = (sorted || []).filter((ts) => ts.paid === true).length;
+      const count = (sorted || []).filter((ts) => ts.signed === true).length;
       setSignedCount(count);
     }
     getExpenses();

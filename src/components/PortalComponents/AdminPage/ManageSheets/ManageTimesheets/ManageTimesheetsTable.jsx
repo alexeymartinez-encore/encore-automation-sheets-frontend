@@ -69,8 +69,8 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     });
 
     setTimesheets(sorted || []);
-    const count = (sorted || []).filter((ts) => ts.signed === true).length;
-    setSignedCount(count);
+    // const count = (sorted || []).filter((ts) => ts.signed === true).length;
+    // setSignedCount(count);
   }
 
   function handleValueChange(index, field, value) {
