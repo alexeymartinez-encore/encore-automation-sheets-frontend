@@ -131,10 +131,10 @@ export default function AdminContextProvider({ children }) {
     }
   }
 
-  async function fetchOpenExpenseReportData() {
+  async function fetchOpenExpenseReportData(date) {
     try {
       const response = await fetch(
-        `${BASE_URL}/admin/expenses/expense-report-open`,
+        `${BASE_URL}/admin/expenses/expense-report-open/${date}`,
         {
           method: "GET",
           headers: {
@@ -309,9 +309,9 @@ export default function AdminContextProvider({ children }) {
     }
   }
 
-  async function getOpenExpenses() {
+  async function getOpenExpenses(date) {
     try {
-      const response = await fetch(`${BASE_URL}/admin/open-expenses`, {
+      const response = await fetch(`${BASE_URL}/admin/open-expenses/${date}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -33,7 +33,7 @@ export default function ManageExpensesTable() {
     let res;
     if (newState) {
       // Going to Open Expenses
-      res = await adminCtx.getOpenExpenses();
+      res = await adminCtx.getOpenExpenses(selectedDate);
     } else {
       // Going back to Expenses By Date
       res = await adminCtx.getUsersExpensesByDate(isoDate);
@@ -145,12 +145,11 @@ export default function ManageExpensesTable() {
   async function generateExpenseReport() {
     let newExpenses;
     if (expenseMode === "Go To By Date") {
-      newExpenses = await adminCtx.fetchOpenExpenseReportData();
+      newExpenses = await adminCtx.fetchOpenExpenseReportData(selectedDate);
     } else {
       newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
     }
-    // //  "Go To By Date"
-    // newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
+
     const pad = (n) => String(n).padStart(2, "0");
 
     const formatMonthYear = (date) =>
@@ -170,12 +169,33 @@ export default function ManageExpensesTable() {
       "Employee Relations": "EmpRelat",
     };
 
-    const targetYear = selectedDate.getFullYear();
-    const targetMonthNum = selectedDate.getMonth() + 1; // 1-12
-    const daysInMonth = new Date(targetYear, targetMonthNum, 0).getDate();
-
     const withSGA = (baseType, flag) =>
       flag === true || flag === 1 || flag === "1" ? `${baseType}SGA` : baseType;
+
+    // --- Helper to normalize expense date ---
+    function normalizeExpenseDate(dateStart, entryDay) {
+      // Extract just the yyyy-mm-dd portion
+      const [year, month, day] = dateStart.split("T")[0].split("-").map(Number);
+
+      let baseYear = year;
+      let baseMonth = month; // 1–12
+
+      // If it's not already the 1st, bump to the next month
+      if (day !== 1) {
+        baseMonth += 1;
+        if (baseMonth > 12) {
+          baseMonth = 1;
+          baseYear += 1;
+        }
+      }
+
+      // Clamp entry.day to valid range
+      const dayNumRaw = Number(entryDay);
+      const daysInMonth = new Date(baseYear, baseMonth, 0).getDate();
+      const clampedDay = Math.min(Math.max(dayNumRaw || 1, 1), daysInMonth);
+
+      return `${baseYear}-${pad(baseMonth)}-${pad(clampedDay)}`;
+    }
 
     // Step 1: Collect rows instead of appending directly
     const allRows = [];
@@ -188,12 +208,7 @@ export default function ManageExpensesTable() {
       entries.forEach((entry) => {
         const rowsToCreate = [];
 
-        const dayNumRaw = Number(entry.day);
-        const dayNum = Number.isFinite(dayNumRaw) ? dayNumRaw : 1;
-        const clampedDay = Math.min(Math.max(dayNum, 1), daysInMonth);
-        const expenseDate = `${targetYear}-${pad(targetMonthNum)}-${pad(
-          clampedDay
-        )}`;
+        const expenseDate = normalizeExpenseDate(expense.date_start, entry.day);
 
         // Miscellaneous
         if (entry.miscellaneous_amount && entry.miscellaneous_amount !== 0) {
@@ -264,6 +279,7 @@ export default function ManageExpensesTable() {
         });
       });
     });
+
     // Step 2: Sort rows by date
     allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
 
