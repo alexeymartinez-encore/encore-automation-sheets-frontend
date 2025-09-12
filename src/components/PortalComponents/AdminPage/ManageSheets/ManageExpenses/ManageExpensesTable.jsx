@@ -143,7 +143,7 @@ export default function ManageExpensesTable() {
   }
   async function generateExpenseReport() {
     const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
-
+    console.log(newExpenses);
     const pad = (n) => String(n).padStart(2, "0");
 
     const formatMonthYear = (date) =>
@@ -189,7 +189,7 @@ export default function ManageExpensesTable() {
         )}`;
 
         // Miscellaneous
-        if (entry.miscellaneous_amount && entry.miscellaneous_amount > 0) {
+        if (entry.miscellaneous_amount && entry.miscellaneous_amount !== 0) {
           const miscDesc = entry.miscellaneous_description || "Nothing";
           const mappedType = miscTypeMapping[miscDesc] || "Nothing";
           rowsToCreate.push({
@@ -228,6 +228,15 @@ export default function ManageExpensesTable() {
             amount: entry.destination_cost,
           });
         }
+        if (
+          entry.entertainment_cost !== null &&
+          entry.entertainment_cost !== 0
+        ) {
+          rowsToCreate.push({
+            type: "Entertainment",
+            amount: entry.entertainment_cost,
+          });
+        }
 
         rowsToCreate.forEach((row) => {
           allRows.push({
@@ -248,7 +257,7 @@ export default function ManageExpensesTable() {
         });
       });
     });
-
+    console.log(allRows);
     // Step 2: Sort rows by date
     allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
 
