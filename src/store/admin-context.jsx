@@ -11,6 +11,7 @@ export const AdminContext = createContext({
   getAllProjects: () => {},
   fetchOvertimeData: (date) => {},
   fetchExpenseReportData: (date) => {},
+  fetchOpenExpenseReportData: () => {},
   successOrFailMessage: null,
   triggerSucessOrFailMessage: () => {},
   triggerUpdate: () => {},
@@ -108,7 +109,7 @@ export default function AdminContextProvider({ children }) {
   async function fetchExpenseReportData(date) {
     try {
       const response = await fetch(
-        `${BASE_URL}/admin/timesheets/expense-report/${date}`,
+        `${BASE_URL}/admin/expenses/expense-report/${date}`,
         {
           method: "GET",
           headers: {
@@ -123,7 +124,31 @@ export default function AdminContextProvider({ children }) {
       }
 
       const data = await response.json();
-      console.log(data);
+      return data.data || [];
+    } catch (error) {
+      console.error("Error deleting row: ", error);
+      return;
+    }
+  }
+
+  async function fetchOpenExpenseReportData() {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/expenses/expense-report-open`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheets server");
+      }
+
+      const data = await response.json();
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
@@ -316,8 +341,6 @@ export default function AdminContextProvider({ children }) {
         credentials: "include",
       });
 
-      console.log(response);
-
       if (!response.ok) {
         throw new Error("Error getting expenses server");
       }
@@ -423,6 +446,7 @@ export default function AdminContextProvider({ children }) {
     fetchExpenseReportData: fetchExpenseReportData,
     getOpenExpenses: getOpenExpenses,
     getOpenTimesheets: getOpenTimesheets,
+    fetchOpenExpenseReportData: fetchOpenExpenseReportData,
   };
 
   return (

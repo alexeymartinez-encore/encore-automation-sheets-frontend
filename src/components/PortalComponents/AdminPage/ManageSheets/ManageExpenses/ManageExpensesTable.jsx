@@ -141,9 +141,16 @@ export default function ManageExpensesTable() {
       }));
     });
   }
+
   async function generateExpenseReport() {
-    const newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
-    console.log(newExpenses);
+    let newExpenses;
+    if (expenseMode === "Go To By Date") {
+      newExpenses = await adminCtx.fetchOpenExpenseReportData();
+    } else {
+      newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
+    }
+    // //  "Go To By Date"
+    // newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
     const pad = (n) => String(n).padStart(2, "0");
 
     const formatMonthYear = (date) =>
@@ -257,7 +264,6 @@ export default function ManageExpensesTable() {
         });
       });
     });
-    console.log(allRows);
     // Step 2: Sort rows by date
     allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
 

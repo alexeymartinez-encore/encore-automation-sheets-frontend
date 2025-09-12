@@ -108,8 +108,6 @@ export default function FullCalendarComponent({ eventsData = [] }) {
     );
   }
 
-  console.log(events);
-
   return (
     <div>
       {/* Add New Event Section */}
