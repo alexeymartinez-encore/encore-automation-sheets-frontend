@@ -10,6 +10,10 @@ export const AdminContext = createContext({
   getAllEmployees: () => {},
   getAllProjects: () => {},
   fetchOvertimeData: (date) => {},
+  fetchBereavementData: (date) => {},
+  fetchJuryDutyData: (date) => {},
+  fetchSickData: (date) => {},
+  fetchVacationData: (date) => {},
   fetchExpenseReportData: (date) => {},
   fetchOpenExpenseReportData: () => {},
   successOrFailMessage: null,
@@ -60,6 +64,109 @@ export default function AdminContextProvider({ children }) {
     try {
       const response = await fetch(
         `${BASE_URL}/admin/timesheets/overtime-report/${date}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheets server");
+      }
+
+      const data = await response.json();
+
+      console.log(data);
+      return data.data || [];
+    } catch (error) {
+      console.error("Error deleting row: ", error);
+      return;
+    }
+  }
+
+  async function fetchVacationData(date) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/vacation-report/${date}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheets server");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      return data.data || [];
+    } catch (error) {
+      console.error("Error Fetching Timesheets row: ", error);
+      return;
+    }
+  }
+
+  async function fetchSickData(date) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/sick-report/${date}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheets server");
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error("Error deleting row: ", error);
+      return;
+    }
+  }
+
+  async function fetchJuryDutyData(date) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/juryduty-report/${date}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheets server");
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error("Error deleting row: ", error);
+      return;
+    }
+  }
+
+  async function fetchBereavementData(date) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/bereavement-report/${date}`,
         {
           method: "GET",
           headers: {
@@ -443,6 +550,10 @@ export default function AdminContextProvider({ children }) {
     deleteProjectById: deleteProjectById,
     editProjectById: editProjectById,
     fetchLaborData: fetchLaborData,
+    fetchBereavementData: fetchBereavementData,
+    fetchJuryDutyData: fetchJuryDutyData,
+    fetchSickData: fetchSickData,
+    fetchVacationData: fetchVacationData,
     fetchExpenseReportData: fetchExpenseReportData,
     getOpenExpenses: getOpenExpenses,
     getOpenTimesheets: getOpenTimesheets,

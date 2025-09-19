@@ -4,7 +4,7 @@ import { getEndOfWeek } from "../../../../../util/helper";
 import DateNavigationBtns from "../ManageSheetsShared/DateNavigationBtns";
 import { AdminContext } from "../../../../../store/admin-context";
 
-export default function OvertimeModalComponent({ onClose }) {
+export default function LaborReportModal({ onClose }) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
   const isSunday = (date) => date.getDay() === 0;
@@ -73,7 +73,7 @@ export default function OvertimeModalComponent({ onClose }) {
       onClick={onClose}
     >
       <div
-        className="flex flex-col items-center justify-start bg-white w-[30rem] rounded-md p-10 shadow-sm md:h-[40rem]"
+        className="flex flex-col items-center justify-center bg-white w-[30rem] rounded-md p-10 shadow-sm md:h-[40rem]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center w-full">

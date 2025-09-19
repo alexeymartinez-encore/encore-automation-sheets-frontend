@@ -344,7 +344,7 @@ export default function ExpenseForm({
         }
         expenseCtx.triggerUpdate();
         expenseCtx.triggerSucessOrFailMessage("success", res.message);
-        setReceiptFiles([]);
+        // setReceiptFiles([]);
       } else {
         expenseCtx.triggerSucessOrFailMessage(
           "fail",

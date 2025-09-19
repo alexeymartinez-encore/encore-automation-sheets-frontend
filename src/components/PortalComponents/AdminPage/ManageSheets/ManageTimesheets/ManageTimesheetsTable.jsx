@@ -6,7 +6,7 @@ import { getEndOfWeek } from "../../../../../util/helper";
 import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
 
-export default function ManageTimesheetsTable({ onViewOvertime }) {
+export default function ManageTimesheetsTable({ openReportModal }) {
   let weekDate;
 
   if (localStorage.getItem("week_date") === null) {
@@ -296,7 +296,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         selectedDate={selectedDate}
         goToPreviousWeek={goToPreviousWeek}
         goToNextWeek={goToNextWeek}
-        viewOvertime={onViewOvertime}
+        openReportModal={openReportModal}
         saveChanges={handleSaveStatusChanges}
         setAllApproved={handleSetAllApproved}
         setAllPaid={handleSetAllProcessed}

@@ -148,6 +148,13 @@ export async function saveExpenseSheet(
 ) {
   try {
     const formData = new FormData();
+    const expenseDataOb = {
+      expenseData,
+      expenseEntriesData,
+      receiptFiles,
+      expenseId,
+    };
+    console.log(expenseDataOb);
 
     formData.append("expenseData", JSON.stringify(expenseData));
     formData.append("expenseEntriesData", JSON.stringify(expenseEntriesData));

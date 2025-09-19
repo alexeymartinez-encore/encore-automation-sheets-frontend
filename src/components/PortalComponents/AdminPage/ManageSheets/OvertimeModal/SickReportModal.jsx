@@ -4,52 +4,95 @@ import { getEndOfWeek } from "../../../../../util/helper";
 import DateNavigationBtns from "../ManageSheetsShared/DateNavigationBtns";
 import { AdminContext } from "../../../../../store/admin-context";
 
-export default function OvertimeModalComponent({ onClose }) {
+export default function SickReportModal({ onClose }) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
   const isSunday = (date) => date.getDay() === 0;
   const adminCtx = useContext(AdminContext);
 
+  function groupByEmployee(timesheets) {
+    const map = new Map();
+
+    timesheets.forEach((person) => {
+      const empId = person.Employee.id;
+      const workedHours = getWorkedHours(person);
+
+      if (map.has(empId)) {
+        map.get(empId).hours += workedHours;
+      } else {
+        map.set(empId, {
+          id: empId,
+          firstName: person.Employee.first_name,
+          lastName: person.Employee.last_name,
+          hours: workedHours,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
   useEffect(() => {
     async function getTimesheets() {
-      const res = await adminCtx.fetchOvertimeData(selectedDate);
+      const res = await adminCtx.fetchSickData(selectedDate);
       setTimesheets(res || []);
     }
     getTimesheets();
   }, [selectedDate, adminCtx]);
 
+  function getWorkedHours(person) {
+    if (!person.TimesheetEntries) return 0;
+
+    return person.TimesheetEntries.reduce((sum, entry) => {
+      return (
+        sum +
+        entry.mon_reg +
+        entry.mon_ot +
+        entry.tue_reg +
+        entry.tue_ot +
+        entry.wed_reg +
+        entry.wed_ot +
+        entry.thu_reg +
+        entry.thu_ot +
+        entry.fri_reg +
+        entry.fri_ot +
+        entry.sat_reg +
+        entry.sat_ot +
+        entry.sun_reg +
+        entry.sun_ot
+      );
+    }, 0);
+  }
+
+  const groupedTimesheets = groupByEmployee(timesheets);
+
+  const totalHours = groupedTimesheets.reduce((sum, emp) => sum + emp.hours, 0);
+
   function downloadCSV() {
-    const headers = ["Last Name", "First Name", "Total Overtime"];
-    const rows = timesheets.map((person) => [
-      person.last_name,
-      person.first_name,
-      person.total_overtime,
-    ]);
-    const totalOvertime = timesheets.reduce(
-      (sum, item) => sum + item.total_overtime,
-      0
-    );
+    const headers = ["Last Name", "First Name", "Total Hours"];
+
+    const grouped = groupByEmployee(timesheets);
+
+    const rows = grouped.map((emp) => [emp.lastName, emp.firstName, emp.hours]);
+
+    const totalHours = grouped.reduce((sum, emp) => sum + emp.hours, 0);
+
     const csvContent = [
       headers.join(","),
       ...rows.map((row) => row.join(",")),
-      `Total Overtime,,${totalOvertime}`,
+      `Total Hours,,${totalHours}`,
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `overtime_report_${
+    link.download = `sick_report_${
       selectedDate.toISOString().split("T")[0]
     }.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
-
-  const totalOvertime = timesheets.reduce(
-    (sum, item) => sum + item.total_overtime,
-    0
-  );
 
   function goToPreviousWeek() {
     setSelectedDate((prev) => {
@@ -77,7 +120,7 @@ export default function OvertimeModalComponent({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center w-full">
-          <h1 className="py-3 text-lg">Encore Overtime Report</h1>
+          <h1 className="py-3 text-lg">Bi-Weekly Sick Report</h1>
           <button
             onClick={downloadCSV}
             className="bg-blue-500 text-white py-1 px-5 text-sm rounded-md hover:bg-blue-400 transition duration-400"
@@ -113,23 +156,21 @@ export default function OvertimeModalComponent({ onClose }) {
               </tr>
             </thead>
             <tbody>
-              {timesheets.map((person) => (
+              {groupedTimesheets.map((emp) => (
                 <tr
-                  key={person.id}
-                  className={`grid grid-cols-3 gap-10 px-2 mb-2 text-center ${
-                    person.total_overtime === 0 && "hidden"
-                  }`}
+                  key={emp.id}
+                  className="grid grid-cols-3 gap-10 px-2 mb-2 text-center "
                 >
-                  <td>{person.last_name}</td>
-                  <td>{person.first_name}</td>
-                  <td>{person.total_overtime}</td>
+                  <td>{emp.lastName}</td>
+                  <td>{emp.firstName}</td>
+                  <td>{emp.hours}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <h1 className="text-xs self-end my-5">Total: {totalOvertime}</h1>
+        <h1 className="text-xs self-end my-5">Total: {totalHours}</h1>
       </div>
     </div>
   );

@@ -166,7 +166,7 @@ export default function ManageExpensesTable() {
       "Cell Phone": "CellPhn",
       "Employee Education / Training": "EmpEducTrain",
       "Supplies / Part": "SupplsPrts",
-      "Employee Relations": "EmpRelat",
+      "Employee Relations": "EmplyRelat",
     };
 
     const withSGA = (baseType, flag) =>
