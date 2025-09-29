@@ -81,7 +81,7 @@ export default function TaskBar({
             onChange={onChange}
             customInput={<CustomInput />}
             placeholderText="Select date"
-            // popperPlacement="bottom-end" // Change the placement here
+            popperPlacement="bottom-end" // Change the placement here
             filterDate={isFirstDayOfMonth}
             dateFormat="dd MMMM yyyy" // Display as Month Year
             showMonthYearPicker // Optional: pick by month
