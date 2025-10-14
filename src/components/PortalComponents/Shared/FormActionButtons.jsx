@@ -9,6 +9,7 @@ export default function FormActionsButtons({
   disabled,
   href,
   handleCopy,
+  isSaving,
 }) {
   const signed_text = signed ? "Unsign" : "Sign";
 
@@ -27,6 +28,7 @@ export default function FormActionsButtons({
             icon={faFloppyDisk}
             disabled={disabled}
             text={"Save"}
+            isSaving={isSaving}
           />
           <FormActionButton
             onClick={handleSign}
@@ -34,6 +36,7 @@ export default function FormActionsButtons({
             signed={signed}
             text={signed_text}
             disabled={disabled}
+            isSaving={isSaving}
           />
         </>
       )}

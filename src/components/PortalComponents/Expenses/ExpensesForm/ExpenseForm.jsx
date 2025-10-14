@@ -137,6 +137,8 @@ export default function ExpenseForm({
   const [showModal, setShowModal] = useState(false);
   const [receiptFiles, setReceiptFiles] = useState([]);
   const [savedFilesByEntry, setSavedFilesByEntry] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
   const [selectedUser, setSelectedUser] = useState({
     id: null,
     first_name: "",
@@ -285,6 +287,8 @@ export default function ExpenseForm({
   }
 
   async function handleSave() {
+    if (isSaving) return; // prevent double click
+    setIsSaving(true);
     // ensure a Date instance goes to getDaysInMonth
     const numDays = getDaysInMonth(new Date(selectedDate));
     const total = calculateColumnTotals(rowData);
@@ -354,6 +358,8 @@ export default function ExpenseForm({
     } catch (error) {
       expenseCtx.triggerSucessOrFailMessage("fail", "Save failed");
       console.error("Save error:", error);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -486,20 +492,17 @@ export default function ExpenseForm({
             disabled={expense.approved}
           />
           <div className="flex">
-            {expense.approved ? (
-              <></>
-            ) : (
-              <button
-                onClick={toggleModal}
-                title="Import Receipts"
-                className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
+            <button
+              onClick={toggleModal}
+              title="Import Receipts"
+              className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
                           hover:bg-blue-400 transition duration-300"
-                disabled={expense.approved}
-              >
-                <FaReceipt color="white" size={18} />
-                <span>Receipts</span>
-              </button>
-            )}
+              // disabled={expense.approved}
+            >
+              <FaReceipt color="white" size={18} />
+              <span>Receipts</span>
+            </button>
+
             {showModal && (
               <div
                 className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
@@ -511,6 +514,7 @@ export default function ExpenseForm({
                   savedFiles={expense.files || []}
                   receiptFiles={receiptFiles}
                   setReceiptFiles={setReceiptFiles}
+                  disabled={expense.approved}
                 />
               </div>
             )}
@@ -524,6 +528,7 @@ export default function ExpenseForm({
 
         <FormActionsButtons
           handleSave={handleSave}
+          isSaving={isSaving}
           handleSign={handleSign}
           signed={expense.signed}
           disabled={expense.approved}

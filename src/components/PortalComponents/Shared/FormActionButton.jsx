@@ -5,6 +5,7 @@ export default function FormActionButton({
   signed,
   text,
   disabled,
+  isSaving,
 }) {
   let style;
 
@@ -20,8 +21,10 @@ export default function FormActionButton({
   return (
     <button
       onClick={onClick}
-      className={`py-1 rounded-md duration-500 ${style}`}
-      disabled={disabled}
+      className={`py-1 rounded-md duration-500 ${style} ${
+        isSaving ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+      disabled={disabled || isSaving}
     >
       <FontAwesomeIcon className="text-white pl-4" icon={icon} />
       <span className="text-white px-4">{text}</span>

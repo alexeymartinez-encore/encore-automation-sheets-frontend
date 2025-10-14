@@ -15,6 +15,14 @@ export default function RowComponent({
   disabled,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
+  const restrictedProjects = [
+    "Admin",
+    "Bereavement",
+    "Holiday",
+    "Vacation",
+    "Sick",
+  ];
+
   // --- Project Sorting (unchanged) ---
   const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
     const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
@@ -23,7 +31,6 @@ export default function RowComponent({
     if (!aStartsLetter && bStartsLetter) return 1;
     return a.number.localeCompare(b.number, undefined, { sensitivity: "base" });
   });
-  console.log(sortedProjects);
 
   // --- Enter key navigation (unchanged) ---
   function handleEnterKeyFocus(e) {
@@ -58,6 +65,10 @@ export default function RowComponent({
       .filter((c) => allowedNums.includes(c.cost_code))
       .map((c) => c.id);
   };
+
+  const isRestrictedProject = selectedProject
+    ? restrictedProjects.includes(selectedProject.number)
+    : false;
 
   return (
     <tr className="bg-white text-[0.5rem] md:text-xs w-full">
@@ -195,10 +206,25 @@ export default function RowComponent({
       {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => (
         <td key={day} className="border px-2">
           <input
+            type="number"
             value={row[`${day}_reg`]}
             className="w-full text-center px-2"
             placeholder="Reg"
-            onChange={(e) => onValueChange(index, `${day}_reg`, e.target.value)}
+            min="0"
+            max={isRestrictedProject ? 8 : undefined}
+            onChange={(e) => {
+              let value = e.target.value;
+
+              // Enforce numeric range
+              if (isRestrictedProject && Number(value) > 8) {
+                value = 8;
+              }
+              if (Number(value) < 0) {
+                value = 0;
+              }
+
+              onValueChange(index, `${day}_reg`, value);
+            }}
             onKeyDown={handleEnterKeyFocus}
             disabled={disabled}
           />
@@ -228,3 +254,5 @@ export default function RowComponent({
     </tr>
   );
 }
+
+// const projects = ["Admin", "Bereavement", "Holiday", "Vacation"];

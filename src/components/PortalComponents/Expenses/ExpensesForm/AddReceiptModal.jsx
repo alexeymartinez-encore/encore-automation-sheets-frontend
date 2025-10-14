@@ -9,6 +9,7 @@ export default function AddReceiptModal({
   savedFiles = [],
   receiptFiles,
   setReceiptFiles,
+  disabled,
 }) {
   const expenseCtx = useContext(ExpensesContext);
 
@@ -93,9 +94,13 @@ export default function AddReceiptModal({
         <div className="flex flex-col items-center ">
           <p className="font-semibold text-sm text-gray-600 mb-2 ">Receipts</p>
           <label
-            className="flex items-center justify-center w-[10rem] md:w-[20rem] h-[3rem] 
-                          rounded-md bg-transparent text-black border border-blue-500 cursor-pointer
-                         hover:bg-blue-500 hover:text-white transition-all duration-300 text-center"
+            className={`flex items-center justify-center w-[10rem] md:w-[20rem] h-[3rem] 
+                          rounded-md text-black border border-blue-500 cursor-pointer
+                           transition-all duration-300 text-center ${
+                             disabled
+                               ? "bg-blue-200"
+                               : " bg-transparent hover:bg-blue-500 hover:text-white"
+                           }`}
           >
             <input
               type="file"
@@ -104,7 +109,8 @@ export default function AddReceiptModal({
               onChange={(e) =>
                 fileSelectedHandler(e, setReceiptFiles, setReceiptPreviewUrls)
               }
-              className="hidden"
+              className={`hidden`}
+              disabled={disabled}
             />
             Attach Receipt
           </label>
@@ -120,8 +126,15 @@ export default function AddReceiptModal({
                     <li className="text-xs">
                       {index + 1}. {file.name}
                     </li>
-                    <button onClick={() => handleDelete(index)}>
-                      <MdDeleteForever className="text-red-500" />
+                    <button
+                      onClick={() => handleDelete(index)}
+                      disabled={disabled}
+                    >
+                      <MdDeleteForever
+                        className={`${
+                          disabled ? "text-red-200" : "text-red-500"
+                        } `}
+                      />
                     </button>
                   </div>
                 ))}
@@ -150,8 +163,17 @@ export default function AddReceiptModal({
                         {fileName} –{" "}
                         {new Date(file.upload_date).toLocaleDateString()}
                       </a>
-                      <button onClick={() => handleDeleteSavedFile(file.id)}>
-                        <MdDeleteForever className="text-red-500 cursor-pointer" />
+                      <button
+                        onClick={() => handleDeleteSavedFile(file.id)}
+                        disabled={disabled}
+                      >
+                        <MdDeleteForever
+                          className={`${
+                            disabled
+                              ? "text-red-200"
+                              : "text-red-500 cursor-pointer"
+                          } `}
+                        />
                       </button>
                     </li>
                   );
@@ -163,7 +185,10 @@ export default function AddReceiptModal({
 
         <button
           onClick={handleSave}
-          className="bg-blue-500 w-[10rem] md:w-[20rem] text-white py-2 px-3 rounded-sm hover:bg-blue-400 transition duration-400"
+          className={`${
+            disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400 "
+          }  w-[10rem] md:w-[20rem] text-white py-2 px-3 rounded-sm transition duration-400`}
+          disabled={disabled}
         >
           Save Receipts
         </button>
