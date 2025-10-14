@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState } from "react";
 import FormBody from "./FormBody";
 import FormHeader from "./FormHeader";
-import { TimesheetContext } from "../../../../store/timesheet-context";
 
 export default function FormTable({
   data,
@@ -12,7 +10,7 @@ export default function FormTable({
   onAddDescription,
 }) {
   return (
-    <table className="w-full overflow-x-auto">
+    <table className="hidden md:table w-full overflow-x-auto">
       <FormHeader />
       <FormBody
         data={data}

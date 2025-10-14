@@ -30,18 +30,35 @@ export default function TableContentRows({ timesheet }) {
   return (
     <TableContainerCard>
       <TableCellRegItem>{formattedWeekEndingDate}</TableCellRegItem>
-      <TableCellStatusItem status={timesheet.signed} />
-      <TableCellStatusItem status={timesheet.approved} />
-      <TableCellStatusItem status={timesheet.processed} />
-      <TableCellRegItem>{timesheet.submitted_by}</TableCellRegItem>
-      <TableCellRegItem>{timesheet.total_reg_hours}</TableCellRegItem>
-      <TableCellRegItem>{timesheet.total_overtime}</TableCellRegItem>
+
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={timesheet.signed}
+      />
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={timesheet.approved}
+      />
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={timesheet.processed}
+      />
+
+      <TableCellRegItem mobileStyle={"hidden md:block"}>
+        {timesheet.submitted_by}
+      </TableCellRegItem>
+      <TableCellRegItem mobileStyle={"hidden md:block"}>
+        {timesheet.total_reg_hours}
+      </TableCellRegItem>
+      <TableCellRegItem mobileStyle={"hidden md:block"}>
+        {timesheet.total_overtime}
+      </TableCellRegItem>
       <TableCellRegItem>
         {timesheet.total_reg_hours + timesheet.total_overtime}
       </TableCellRegItem>
       <ButtonsContainerCard>
         <TableActionButton onClick={handleEdit} color={"blue"}>
-          <FaEdit className="text-blue-500 size-3 md:size-5" />
+          <FaEdit className="text-blue-500 size-4 md:size-5" />
         </TableActionButton>
 
         <TableActionButton
@@ -52,7 +69,7 @@ export default function TableContentRows({ timesheet }) {
           <MdDeleteForever
             className={`${
               timesheet.approved ? "text-red-300" : "text-red-500"
-            } size-3 md:size-5`}
+            } size-4 md:size-5`}
           />
         </TableActionButton>
       </ButtonsContainerCard>

@@ -1,5 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { TimesheetContext } from "../../../store/timesheet-context";
@@ -12,11 +14,14 @@ import {
 import FormActionsButtons from "../Shared/FormActionButtons";
 import FormHoursTotal from "./TimesheetForm/FormHoursTotal";
 import FormTable from "./TimesheetForm/FormTable";
+import FormTableMobile from "./TimesheetForm/MobileComponents/FormTableMobile";
+
 import {
   deleteTimesheetEntryById,
   saveTimesheet,
 } from "../../../util/fetching";
 import DatePickerComponent from "../Shared/DatePickerComponent";
+
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 const initialTimesheetData = {
@@ -278,11 +283,9 @@ export default function TimesheetForm({
     }
   }
 
-  console.log(rowData);
-
   return (
     <div className="pb-20">
-      <div className="relative flex gap-5 justify-between px-2 md:px-5 pb-10 items-center ">
+      <div className="relative flex flex-col md:flex-row gap-5 justify-between px-2 md:px-5 pb-10 items-center ">
         <DatePickerComponent
           onChange={(date) => setSelectedDate(date)}
           selected={formatWeekendDate(selectedDate)}
@@ -310,19 +313,35 @@ export default function TimesheetForm({
         timesheetId={timesheetId}
         disabled={timesheet.approved}
       />
+      {/* Only On Phone */}
+      <FormTableMobile
+        data={rowData}
+        onValueChange={handleValueChange}
+        onDeleteRow={handleDeleteRow}
+        timesheetId={timesheetId}
+        disabled={timesheet.approved}
+      />
+
       <div
-        className={`flex ${
-          timesheet.approved ? "justify-end my-5" : "justify-between"
+        className={`flex md:flex-row flex-col ${
+          timesheet.approved
+            ? "justify-end my-5"
+            : "justify-center md:justify-between my-5 md:my-0"
         } gap-5 items-center px-3 md:px-5`}
       >
         {timesheet.approved ? (
           <> </>
         ) : (
-          <div className="">
-            <AddEntryButton onClick={handleAddRow} />
-          </div>
+          <>
+            <div className="hidden md:block">
+              <AddEntryButton onClick={handleAddRow} />
+            </div>{" "}
+            <div className="block md:hidden">
+              <AddEntryButton onClick={handleAddRow} />
+            </div>{" "}
+          </>
         )}
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-between md:justify-end gap-2">
           <FormHoursTotal description={"Reg:"} textColor="text-blue-500">
             {calculateHours(rowData).totalRegHours}
           </FormHoursTotal>

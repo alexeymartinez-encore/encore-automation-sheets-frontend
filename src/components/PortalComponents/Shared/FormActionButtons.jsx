@@ -14,7 +14,7 @@ export default function FormActionsButtons({
   const signed_text = signed ? "Unsign" : "Sign";
 
   return (
-    <div className="flex gap-3 md:justify-between items-center">
+    <div className="flex gap-1 md:gap-3 md:justify-between items-center w-full md:w-2/3">
       {disabled ? (
         <>
           <p className="bg-orange-500 text-white py-1 px-3 rounded-md">
@@ -42,15 +42,17 @@ export default function FormActionsButtons({
       )}
       <Link
         to={href}
-        className="bg-blue-500 text-white py-1 rounded-md px-3 hover:bg-blue-400 transition duration-300"
+        className="flex  justify-center items-center w-full bg-blue-500 text-white py-1 md:py-2 rounded-md
+         text-sm md:text-lg px-1 md:px-3 hover:bg-blue-400 transition duration-300"
       >
         + New
       </Link>
       <button
         onClick={handleCopy}
-        className="bg-blue-500 text-white py-1 rounded-md px-3 hover:bg-blue-400 transition duration-300"
+        className="flex justify-center items-center w-full bg-blue-500 text-white py-1 md:py-2 rounded-md
+         text-sm md:text-lg px-1 md:px-3 hover:bg-blue-400 transition duration-300"
       >
-        + Copy New
+        + Copy
       </button>
     </div>
   );

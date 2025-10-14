@@ -4,8 +4,8 @@ export default function DatePickerComponent({ onChange, selected, disabled }) {
   const isSunday = (date) => date.getDay() === 0;
 
   return (
-    <div className="flex gap-5 items-baseline text-xs z-10">
-      <div className="flex flex-col md:flex-row gap-1 items-center justify-center bg-blue-500 px-3 py-2 rounded-md">
+    <div className="flex gap-5 items-baseline text-xs z-10 w-full md:w-1/3">
+      <div className="flex flex-col md:flex-row gap-1 items-center justify-center bg-blue-500 px-3 py-2 rounded-md w-full">
         <span className="text-white md:text-sm text-[0.7rem]">
           Week Ending On:
         </span>

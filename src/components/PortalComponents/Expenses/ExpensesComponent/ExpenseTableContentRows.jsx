@@ -28,16 +28,29 @@ export default function ExpenseTableContentRows({ expense }) {
   return (
     <TableContainerCard>
       <TableCellRegItem>{formattedMonthStartingDate}</TableCellRegItem>
-      <TableCellRegItem>{expense.num_of_days}</TableCellRegItem>
-      <TableCellStatusItem status={expense.signed} />
-      <TableCellStatusItem status={expense.approved} />
-      <TableCellStatusItem status={expense.paid} />
-      <TableCellRegItem>{expense.submitted_by}</TableCellRegItem>
-      <TableCellRegItem>-</TableCellRegItem>
-      <TableCellRegItem>{expense.total.toFixed(2)}</TableCellRegItem>
+      <TableCellRegItem mobileStyle={"hidden"}>
+        {expense.num_of_days}
+      </TableCellRegItem>
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={expense.signed}
+      />
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={expense.approved}
+      />
+      <TableCellStatusItem
+        mobileStyle={"hidden md:block"}
+        status={expense.paid}
+      />
+      <TableCellRegItem mobileStyle={"hidden md:block"}>
+        {expense.submitted_by}
+      </TableCellRegItem>
+      <TableCellRegItem mobileStyle={"hidden md:block"}>-</TableCellRegItem>
+      <TableCellRegItem>$ {expense.total.toFixed(2)}</TableCellRegItem>
       <ButtonsContainerCard>
         <TableActionButton onClick={handleEdit} color={"blue"}>
-          <FaEdit className="text-blue-500 size-3 md:size-5" />
+          <FaEdit className="text-blue-500 size-4 md:size-5" />
         </TableActionButton>
 
         <TableActionButton
@@ -47,7 +60,7 @@ export default function ExpenseTableContentRows({ expense }) {
           <MdDeleteForever
             className={`${
               expense.approved ? "text-red-300" : "text-red-500"
-            } size-3 md:size-5`}
+            } size-4 md:size-5`}
           />
         </TableActionButton>
       </ButtonsContainerCard>

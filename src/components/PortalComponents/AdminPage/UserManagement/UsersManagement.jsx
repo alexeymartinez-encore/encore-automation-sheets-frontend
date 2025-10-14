@@ -24,7 +24,7 @@ export default function UsersManagement() {
       </div>
       <table className="w-full">
         <thead>
-          <tr className="flex justify-around  py-2 px-1 my-2 border-b rounded-sm text-[0.6rem] md:text-sm">
+          <tr className="flex justify-around  py-0 px-1 my-0 border-b rounded-sm text-[0.6rem] md:text-sm">
             {/* <p className="w-full">{project.id}</p> */}
             <th className="w-full px-1 md:px-0">#</th>
             <th className="w-full px-10 md:px-0">User</th>
@@ -56,7 +56,7 @@ export default function UsersManagement() {
         <tbody>
           {employees.map((employee) => (
             <tr
-              className="flex justify-around  py-2 px-1 my-2 border-b rounded-sm text-[0.6rem]  md:text-xs text-center"
+              className="flex items-center justify-around  py-1 px-1 my-0 border-b rounded-sm text-[0.6rem]  md:text-xs text-center"
               key={employee.id}
             >
               {/* <p className="w-full">{employee.id}</p> */}

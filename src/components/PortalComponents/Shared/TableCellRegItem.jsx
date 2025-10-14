@@ -1,5 +1,11 @@
-export default function TableCellRegItem({ children }) {
+export default function TableCellRegItem({ children, mobileStyle }) {
   return (
-    <p className="flex-1 text-center text-[0.5rem] md:text-sm">{children}</p>
+    <p
+      className={`flex-1 text-center  ${
+        mobileStyle ? `${mobileStyle} md:text-sm` : " md:text-sm"
+      }`}
+    >
+      {children}
+    </p>
   );
 }

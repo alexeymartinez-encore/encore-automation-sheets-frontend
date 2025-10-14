@@ -51,7 +51,7 @@ export default function ProjectsManagement() {
 
       <table className="bg-white  w-full">
         <thead>
-          <tr className="flex justify-around items-center border-b py-2 px-10 my-2  rounded-sm text-sm font-semibold text-center">
+          <tr className="flex justify-around items-center border-b py-1 px-10 my-0  rounded-sm text-sm font-semibold text-center">
             {/* <p className="w-full">{project.id}</p> */}
             <th className="w-full px-10 md:px-0">Project Number</th>
             <th className="w-full px-10 md:px-0">Description</th>
@@ -82,7 +82,7 @@ export default function ProjectsManagement() {
         <tbody>
           {projects.map((project) => (
             <tr
-              className="flex justify-around items-center py-2 px-10 my-2 border-b rounded-sm text-xs text-center"
+              className="flex justify-around items-center py-1 px-10 my-0 border-b rounded-sm text-xs text-center"
               key={project.id}
             >
               {/* <p className="w-full px-10 md:px-0">{project.id}</p> */}
