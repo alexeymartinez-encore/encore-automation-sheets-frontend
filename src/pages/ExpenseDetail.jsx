@@ -12,26 +12,25 @@ export default function ExpenseDetail() {
 
   const expenseCtx = useContext(ExpensesContext);
   const baseUrl = import.meta.env.VITE_BASE_URL;
-
   const realId = params.expenseId; // e.g. "4002"
   const encodedId = encode(realId); // e.g. "NDAwMg=="
 
-  // Replace the visible URL after mount
-  useEffect(() => {
-    const newUrl = `/employee-portal/dashboard/timesheets/${encodedId}${
-      adminMode ? "?adminMode=true" : ""
-    }`;
+  // // Replace the visible URL after mount
+  // useEffect(() => {
+  //   const newUrl = `/employee-portal/dashboard/expenses/${encodedId}${
+  //     adminMode ? "?adminMode=true" : ""
+  //   }`;
 
-    // Replace only the visible URL — doesn’t trigger navigation
-    window.history.replaceState(null, "", newUrl);
-  }, [encodedId, adminMode]);
+  //   // Replace only the visible URL — doesn’t trigger navigation
+  //   window.history.replaceState(null, "", newUrl);
+  // }, [encodedId, adminMode]);
 
   useEffect(() => {
     async function fetchExpenseEntriesData() {
       try {
         // console.log(params.expenseId);
         const response = await fetch(
-          `${baseUrl}/expenses/entries/${params.realId}`,
+          `${baseUrl}/expenses/entries/${params.expenseId}`,
           {
             headers: {
               // Authorization: "Bearer " + token,
@@ -59,7 +58,7 @@ export default function ExpenseDetail() {
     <div className="my-5 bg-white shadow-md rounded-lg ">
       <ExpenseForm
         expenseEntriesData={expenseEntriesData}
-        expenseId={realId}
+        expenseId={params.expenseId}
         isEditing={true}
         isAdmin={adminMode}
       />

@@ -17,15 +17,15 @@ export default function TimesheetDetail() {
   const realId = params.timesheetId; // e.g. "4002"
   const encodedId = encode(realId); // e.g. "NDAwMg=="
 
-  // Replace the visible URL after mount
-  useEffect(() => {
-    const newUrl = `/employee-portal/dashboard/timesheets/${encodedId}${
-      adminMode ? "?adminMode=true" : ""
-    }`;
+  // // Replace the visible URL after mount
+  // useEffect(() => {
+  //   const newUrl = `/employee-portal/dashboard/timesheets/${encodedId}${
+  //     adminMode ? "?adminMode=true" : ""
+  //   }`;
 
-    // Replace only the visible URL — doesn’t trigger navigation
-    window.history.replaceState(null, "", newUrl);
-  }, [encodedId, adminMode]);
+  //   // Replace only the visible URL — doesn’t trigger navigation
+  //   window.history.replaceState(null, "", newUrl);
+  // }, [encodedId, adminMode]);
 
   useEffect(() => {
     async function fetchTimesheetEntriesData() {

@@ -490,27 +490,27 @@ export default function ExpenseForm({
           selected={selectedDate}
           disabled={expense.approved}
         />
-
+        <button
+          onClick={toggleModal}
+          title="Import Receipts"
+          className="flex items-center justify-center gap-3  bg-blue-500 py-2 px-3 rounded text-white
+                          hover:bg-blue-400 transition duration-300 w-full md:w-1/3"
+          // disabled={expense.approved}
+        >
+          <FaReceipt color="white" size={24} />
+          <span>Receipts</span>
+        </button>{" "}
         {isAdmin && (
           <p className="text-red-500 font-bold text-xl">
             {selectedUser.first_name} {selectedUser.last_name}
           </p>
         )}
-        <div className="flex w-full">
-          <button
-            onClick={toggleModal}
-            title="Import Receipts"
-            className="flex items-center justify-center gap-3  bg-blue-500 py-2 px-3 rounded text-white
-                          hover:bg-blue-400 transition duration-300 w-full md:w-1/3"
-            // disabled={expense.approved}
-          >
-            <FaReceipt color="white" size={18} />
-            <span>Receipts</span>
-          </button>
-
+        <div
+          className={`${showModal ? "" : "hidden"} flex justify-center w-full`}
+        >
           {showModal && (
             <div
-              className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+              className={` fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50`}
               onClick={toggleModal}
             >
               <AddReceiptModal
@@ -524,7 +524,6 @@ export default function ExpenseForm({
             </div>
           )}
         </div>
-
         <FormActionsButtons
           handleSave={handleSave}
           isSaving={isSaving}

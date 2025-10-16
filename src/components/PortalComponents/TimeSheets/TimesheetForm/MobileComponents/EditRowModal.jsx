@@ -255,6 +255,15 @@ export default function EditRowModal({
           disabled={disabled}
         />
       </td>
+
+      <td className="flex justify-center items-center">
+        <button
+          onClick={toggleModal}
+          className="w-full bg-blue-500 py-2 text-white rounded-sm"
+        >
+          Done
+        </button>
+      </td>
     </tr>
   );
 }

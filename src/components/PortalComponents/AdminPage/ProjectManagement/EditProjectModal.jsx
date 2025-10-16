@@ -25,7 +25,7 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
 
   return (
     <div
-      className="bg-white py-5 px-20 rounded-md text-center shadow-md w-[30rem] relative"
+      className="bg-white py-5 px-10 rounded-md text-center shadow-md w-full md:w-[30rem] relative mx-5 md:mx-0 "
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
     >
       <div className="mb-4">
@@ -40,36 +40,49 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
         </button> */}
       </div>
       <div className="flex flex-col gap-3">
-        <input
-          type="text"
-          placeholder="Project Number"
-          value={project.number}
-          onChange={(e) => handleValueChange("number", e.target.value)}
-          className="border p-2 rounded-md text-center"
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={project.description}
-          onChange={(e) => handleValueChange("description", e.target.value)}
-          className="border p-2 rounded-md text-center"
-        />{" "}
-        <input
-          type="text"
-          placeholder="Abreviation"
-          value={project.short_name}
-          onChange={(e) => handleValueChange("short_name", e.target.value)}
-          className="border p-2 rounded-md text-center"
-        />{" "}
-        <input
-          type="text"
-          placeholder="Comment"
-          value={project.comment}
-          onChange={(e) => handleValueChange("comment", e.target.value)}
-          className="border p-2 rounded-md text-center"
-        />{" "}
-        <div>
-          <p className="text-blue-500">Select Overtime:</p>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Project #</label>
+          <input
+            type="text"
+            placeholder="Project Number"
+            value={project.number}
+            onChange={(e) => handleValueChange("number", e.target.value)}
+            className="border p-2 rounded-md text-center w-2/3"
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Description</label>
+          <input
+            type="text"
+            placeholder="Description"
+            value={project.description}
+            onChange={(e) => handleValueChange("description", e.target.value)}
+            className="border p-2 rounded-md text-center w-2/3"
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Abbreviation</label>
+          <input
+            type="text"
+            placeholder="Abreviation"
+            value={project.short_name}
+            onChange={(e) => handleValueChange("short_name", e.target.value)}
+            className="border p-2 rounded-md text-center w-2/3"
+          />{" "}
+        </div>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Comment</label>
+          <input
+            type="text"
+            placeholder="Comment"
+            value={project.comment}
+            onChange={(e) => handleValueChange("comment", e.target.value)}
+            className="border p-2 rounded-md text-center w-2/3"
+          />{" "}
+        </div>
+
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Overtime?</label>
           <select
             value={
               project.overtime === true
@@ -78,7 +91,7 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
                 ? "false"
                 : ""
             }
-            className="w-full text-center rounded-md  p-2 border "
+            className="w-2/3 text-center rounded-md  p-2 border "
             onChange={(e) =>
               handleValueChange("overtime", e.target.value === "true")
             }
@@ -89,8 +102,8 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
             <option value="false">No</option>
           </select>
         </div>
-        <div>
-          <p className="text-blue-500">Select SGA Flag:</p>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">SGA?</label>
           <select
             value={
               project.sga_flag === true
@@ -99,7 +112,7 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
                 ? "false"
                 : ""
             }
-            className="w-full text-center rounded-md p-2 border"
+            className="w-2/3 text-center rounded-md p-2 border"
             onChange={(e) =>
               handleValueChange("sga_flag", e.target.value === "true")
             }
@@ -109,8 +122,8 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
             <option value="false">No</option>
           </select>
         </div>
-        <div>
-          <p className="text-blue-500">Select Is Active:</p>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Active?</label>
           <select
             value={
               project.is_active === true
@@ -119,7 +132,7 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
                 ? "false"
                 : ""
             }
-            className="w-full text-center rounded-md p-2 border"
+            className="w-2/3 text-center rounded-md p-2 border"
             onChange={(e) =>
               handleValueChange("is_active", e.target.value === "true")
             }
@@ -129,11 +142,11 @@ export default function EditProjectFormM({ toggleModal, selectedProject }) {
             <option value="false">No</option>
           </select>
         </div>
-        <div>
-          <p className="text-blue-500">Select Customer:</p>
+        <div className="flex justify-between items-center">
+          <label className="text-blue-500 w-1/3 text-left">Customer</label>
           <select
             value={project.customer_id || ""}
-            className="w-full text-center rounded-md  p-2 border"
+            className="w-2/3 text-center rounded-md  p-2 border"
             // onChange={() => {}}
             onChange={(e) =>
               handleValueChange("customer_id", parseInt(e.target.value))

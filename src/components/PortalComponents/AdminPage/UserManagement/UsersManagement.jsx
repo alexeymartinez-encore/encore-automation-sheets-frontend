@@ -24,16 +24,19 @@ export default function UsersManagement() {
       </div>
       <table className="w-full">
         <thead>
-          <tr className="flex justify-around  py-0 px-1 my-0 border-b rounded-sm text-[0.6rem] md:text-sm">
+          <tr
+            className="grid grid-cols-[50px,0.5fr,1fr,1fr,50px] md:grid-cols-[50px,1.5fr,1.5fr,2.5fr,1.5fr,1.5fr,2fr,80px] 
+          justify-around py-0 px-1 my-0 border-b rounded-sm text-[0.6rem] md:text-sm"
+          >
             {/* <p className="w-full">{project.id}</p> */}
             <th className="w-full px-1 md:px-0">#</th>
-            <th className="w-full px-10 md:px-0">User</th>
-            <th className="w-full px-10 md:px-0">Name</th>
+            <th className="w-full md:px-0 ">User</th>
+            <th className="w-full md:px-0">Name</th>
             {/* <th className="w-full px-10 md:px-0">Last</th> */}
-            <th className="w-full px-10 md:px-0">Email</th>
-            <th className="w-full px-10 md:px-0">Home #</th>
-            <th className="w-full px-10 md:px-0">Cell #</th>
-            <th className="w-full px-10 md:px-0">Position</th>
+            <th className="w-full hidden md:block">Email</th>
+            <th className="w-full md:px-0 hidden md:block">Home #</th>
+            <th className="w-full md:px-0">Cell #</th>
+            <th className="w-full md:px-0 hidden md:block">Position</th>
             <th>
               <ButtonsContainerCard>
                 <TableActionButton
@@ -42,13 +45,13 @@ export default function UsersManagement() {
                 >
                   <GoDash className="text-blue-500 size-3 md:size-5" />
                 </TableActionButton>
-
+                {/* 
                 <TableActionButton
                   // onClick={() => handleDelete(timesheet.id)}
                   color={"red"}
                 >
                   <GoDash className="text-red-500 size-3 md:size-5" />
-                </TableActionButton>
+                </TableActionButton> */}
               </ButtonsContainerCard>
             </th>
           </tr>
@@ -56,22 +59,27 @@ export default function UsersManagement() {
         <tbody>
           {employees.map((employee) => (
             <tr
-              className="flex items-center justify-around  py-1 px-1 my-0 border-b rounded-sm text-[0.6rem]  md:text-xs text-center"
+              className="grid grid-cols-[50px,0.5fr,1fr,1fr,50px] md:grid-cols-[50px,1.5fr,1.5fr,2.5fr,1.5fr,1.5fr,2fr,80px] 
+              items-center justify-around py-1 md:py-0 px-1 my-0 border-b rounded-sm text-[0.6rem]  md:text-xs text-center"
               key={employee.id}
             >
               {/* <p className="w-full">{employee.id}</p> */}
               <td className="w-full  px-1 md:px-0">
                 {employee.employee_number}
               </td>
-              <td className="w-full px-10 md:px-0">{employee.user_name}</td>
-              <td className="w-full px-10 md:px-0">
-                {employee.first_name} {employee.last_name}
+              <td className=" w-full  md:px-0 ">{employee.user_name}</td>
+              <td className="flex flex-col md:flex-row justify-center flex-wrap md:px-0 md:gap-1">
+                <p>{employee.first_name}</p> <p>{employee.last_name}</p>
               </td>
-              {/* <td className="w-full px-10 md:px-0">{employee.last_name}</td> */}
-              <td className="w-full px-0 md:px-0 ">{employee.email}</td>
-              <td className="w-full px-10 md:px-0">{employee.home_phone}</td>
-              <td className="w-full px-10 md:px-0">{employee.cell_phone}</td>
-              <td className="w-full px-10 md:px-0">{employee.position}</td>
+              {/* <td className="w-full  md:px-0">{employee.last_name}</td> */}
+              <td className="w-full  hidden md:block">{employee.email}</td>
+              <td className="w-full  md:px-0 hidden md:block">
+                {employee.home_phone}
+              </td>
+              <td className="w-full  md:px-0">{employee.cell_phone}</td>
+              <td className="w-full  md:px-0 hidden md:block">
+                {employee.position}
+              </td>
               <td>
                 <ButtonsContainerCard>
                   <TableActionButton
@@ -81,12 +89,12 @@ export default function UsersManagement() {
                     <FaEdit className="text-blue-500 size-3 md:size-5" />
                   </TableActionButton>
 
-                  <TableActionButton
+                  {/* <TableActionButton
                     // onClick={() => handleDelete(timesheet.id)}
                     color={"red"}
                   >
                     <MdDeleteForever className="text-red-500 size-3 md:size-5" />
-                  </TableActionButton>
+                  </TableActionButton> */}
                 </ButtonsContainerCard>
               </td>
             </tr>

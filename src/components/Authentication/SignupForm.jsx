@@ -118,12 +118,14 @@ export default function SignupForm({ mode }) {
           placeholder="First Name"
           value={credentials.first_name}
           onChange={inputChangeHandler.bind(this, "first_name")}
+          label="First Name"
         />
         <FormInput
           type="text"
           placeholder="Last Name"
           value={credentials.last_name}
           onChange={inputChangeHandler.bind(this, "last_name")}
+          label="Last Name"
         />
       </InputCard>
       <InputCard>
@@ -132,12 +134,14 @@ export default function SignupForm({ mode }) {
           placeholder="Email"
           value={credentials.email}
           onChange={inputChangeHandler.bind(this, "email")}
+          label="Email"
         />
         <FormInput
           type="text"
           placeholder="Employee position"
           value={credentials.position}
           onChange={inputChangeHandler.bind(this, "position")}
+          label="Position"
         />
       </InputCard>
       <InputCard>
@@ -146,12 +150,14 @@ export default function SignupForm({ mode }) {
           placeholder="Cell Phone"
           value={credentials.cell_phone}
           onChange={inputChangeHandler.bind(this, "cell_phone")}
+          label="Cell #"
         />
         <FormInput
           type="tel"
           placeholder="Home Phone"
           value={credentials.home_phone}
           onChange={inputChangeHandler.bind(this, "home_phone")}
+          label="Home Phone #"
         />
       </InputCard>
       <InputCard>
@@ -160,12 +166,14 @@ export default function SignupForm({ mode }) {
           placeholder="Create password"
           value={credentials.create_password}
           onChange={inputChangeHandler.bind(this, "create_password")}
+          label="Password"
         />
         <FormInput
           type="password"
           placeholder="Confirm password"
           value={credentials.confirm_password}
           onChange={inputChangeHandler.bind(this, "confirm_password")}
+          label="Confirm Password"
         />
       </InputCard>
       <InputCard>
@@ -174,46 +182,69 @@ export default function SignupForm({ mode }) {
           placeholder="Employee Number"
           value={credentials.employee_number}
           onChange={inputChangeHandler.bind(this, "employee_number")}
+          label="Employee #"
         />
-        <FormInput
+        {/* <FormInput
           type="text"
           placeholder="Role ID"
           value={credentials.role_id}
           onChange={inputChangeHandler.bind(this, "role_id")}
-        />
+        />{" "} */}
+        <div className="flex justify-between items-center md:flex-col w-full my-2 text-center ">
+          <label className="text-start md:text-center text-blue-500 w-2/3">
+            Admin Level
+          </label>
+
+          <select
+            value={credentials.role_id}
+            className="w-1/2 md:w-full text-center py-2 border rounded-md "
+            onChange={inputChangeHandler.bind(this, "role_id")}
+          >
+            <option className="text-gray-100" value="Nothing"></option>
+            <option value={1}>Employee</option>
+            <option value={2}>Manager</option>
+            <option value={3}>Admin</option>
+          </select>
+        </div>
       </InputCard>
 
-      <div className="flex gap-0 md:gap-5 flex-col md:flex-row w-full text-center">
-        <div className="w-full ">
-          <label>Is Contractor?</label>
+      <div className="flex justify-between items-center md:flex-col gap-0 md:gap-5 flex-col w-full text-center">
+        <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2">
+          <label className="text-start md:text-center text-blue-500 w-2/3">
+            Is Contractor?
+          </label>
           <select
             value={credentials.is_contractor}
-            className="w-full text-center py-2 border rounded-md"
+            className="w-1/2 md:w-full text-center py-2 border rounded-md"
             onChange={inputChangeHandler.bind(this, "is_contractor")}
           >
-            <option value="Nothing">Nothing</option>
+            <option value="Nothing"></option>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
         </div>
-        <div className="w-full">
-          <label>Is Active?</label>
+        <div className="flex justify-between items-center md:flex-col w-full md:w-1/2 my-2 md:my-0">
+          <label className="text-start md:text-center text-blue-500 w-2/3">
+            Is Active?
+          </label>
           <select
             value={credentials.is_active}
-            className="w-full text-center py-2 border rounded-md"
+            className="w-1/2 md:w-full text-center py-2 border rounded-md"
             onChange={inputChangeHandler.bind(this, "is_active")}
           >
-            <option value="Nothing">Nothing</option>
+            <option value="Nothing"></option>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
         </div>
       </div>
-      <div className="text-center">
-        <label>Reports to:</label>
+      <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2 my-2">
+        <label className="text-start md:text-center text-blue-500 w-2/3">
+          Reports to:
+        </label>
         <select
           value={credentials.manager_id}
-          className="w-full text-center py-2 border rounded-md"
+          className="w-2/3 md:w-full text-center py-2 border rounded-md"
           onChange={inputChangeHandler.bind(this, "manager_id")}
         >
           <option value="Nothing">Nothing</option>

@@ -35,31 +35,32 @@ export default function ProjectsManagement() {
     fetchProjects();
   }, [adminCtx]);
 
-  console.log(projects);
-
   async function handleDelete(id) {
     adminCtx.deleteProjectById(id);
   }
 
   return (
-    <div className="bg-white rounded-md shadow-sm my-5 w-full overflow-x-scroll">
+    <div className="bg-white rounded-md shadow-sm my-5 w-full">
       <div className="flex justify-between p-5 w-full">
         {" "}
         <h1 className="text-xl">Projects List</h1>
         <AddProjectButton />
       </div>
 
-      <table className="bg-white  w-full">
+      <table className="bg-white w-full text-xs">
         <thead>
-          <tr className="flex justify-around items-center border-b py-1 px-10 my-0  rounded-sm text-sm font-semibold text-center">
+          <tr
+            className="grid grid-cols-[2fr,1fr,2fr,0.5fr] md:grid-cols-[0.5fr,1.5fr,1fr,0.5fr,0.5fr,0.5fr,1fr,0.5fr]
+            items-center border-b py-1 px-1 my-0  rounded-sm text-xs font-semibold text-center"
+          >
             {/* <p className="w-full">{project.id}</p> */}
-            <th className="w-full px-10 md:px-0">Project Number</th>
-            <th className="w-full px-10 md:px-0">Description</th>
-            <th className="w-full px-10 md:px-0">Short Name</th>
-            <th className="w-full px-10 md:px-0">Active</th>
-            <th className="w-full px-10 md:px-0">Overtime</th>
-            <th className="w-full px-10 md:px-0">SGA Flag</th>
-            <th className="w-full px-10 md:px-0">Customer</th>
+            <th className="w-full md:px-0">Project #</th>
+            <th className="w-full md:px-0 hidden md:block">Description</th>
+            <th className="w-full md:px-0">Short Name</th>
+            <th className="w-full md:px-0 hidden md:block">Active</th>
+            <th className="w-full md:px-0 hidden md:block">Overtime</th>
+            <th className="w-full md:px-0 hidden md:block">SGA Flag</th>
+            <th className="w-full md:px-0">Customer</th>
             <th>
               <ButtonsContainerCard>
                 <TableActionButton
@@ -69,12 +70,12 @@ export default function ProjectsManagement() {
                   <GoDash className="text-blue-500 size-3 md:size-5" />
                 </TableActionButton>
 
-                <TableActionButton
+                {/* <TableActionButton
                   // onClick={() => handleDelete(timesheet.id)}
                   color={"red"}
                 >
                   <GoDash className="text-red-500 size-3 md:size-5" />
-                </TableActionButton>
+                </TableActionButton> */}
               </ButtonsContainerCard>
             </th>
           </tr>
@@ -82,49 +83,50 @@ export default function ProjectsManagement() {
         <tbody>
           {projects.map((project) => (
             <tr
-              className="flex justify-around items-center py-1 px-10 my-0 border-b rounded-sm text-xs text-center"
+              className="grid grid-cols-[2fr,1fr,2fr,0.5fr] md:grid-cols-[0.5fr,1.5fr,1fr,0.5fr,0.5fr,0.5fr,1fr,0.5fr]
+               items-center py-1 md:py-0 px-1 my-0 border-b rounded-sm text-xs text-center "
               key={project.id}
             >
               {/* <p className="w-full px-10 md:px-0">{project.id}</p> */}
-              <td className="w-full px-10 md:px-0">{project.number}</td>
-              <td className="w-full px-10 md:px-0">
+              <td className="w-full md:px-0">{project.number}</td>
+              <td className="w-full md:px-0 hidden md:block">
                 {project.description === "" ? "-" : project.description}
               </td>
-              <td className="w-full px-10 md:px-0">{project.short_name}</td>
+              <td className="w-full md:px-0">{project.short_name}</td>
               <td
-                className={`w-full px-10 md:px-0 ${
+                className={`hidden md:block w-full md:px-0 ${
                   project.is_active ? "text-green-500" : "text-red-600"
                 }`}
               >
                 {project.is_active ? "Yes" : "No"}
               </td>
               <td
-                className={`w-full px-10 md:px-0 ${
+                className={`hidden md:block w-full md:px-0 ${
                   project.overtime ? "text-green-500" : "text-red-600"
                 }`}
               >
                 {project.overtime ? "Yes" : "No"}
               </td>
               <td
-                className={`w-full px-10 md:px-0 ${
+                className={`hidden md:block w-full md:px-0 ${
                   project.sga_flag ? "text-green-500" : "text-red-600"
                 }`}
               >
                 {project.sga_flag ? "Yes" : "No"}
               </td>
-              <td className="w-full px-10 md:px-0">{project.customer_name}</td>
+              <td className="w-full md:px-0">{project.customer_name}</td>
               {/* <p className="w-full">{project.cell_phone}</p>
             <p className="w-full">{project.position}</p> */}
               <td>
                 <ButtonsContainerCard>
                   <EditProjectButton project={project} />
 
-                  <TableActionButton
+                  {/* <TableActionButton
                     onClick={() => handleDelete(project.id)}
                     color={"red"}
                   >
                     <MdDeleteForever className="text-red-500 size-3 md:size-5 hover:text-red-600 duration-300" />
-                  </TableActionButton>
+                  </TableActionButton> */}
                 </ButtonsContainerCard>
               </td>
             </tr>

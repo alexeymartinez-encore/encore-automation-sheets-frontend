@@ -27,7 +27,7 @@ export default function FormActionsButtons({
             onClick={handleSave}
             icon={faFloppyDisk}
             disabled={disabled}
-            text={"Save"}
+            text={isSaving ? "Saving..." : "Save"}
             isSaving={isSaving}
           />
           <FormActionButton
