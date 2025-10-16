@@ -5,8 +5,8 @@ export default function MonthlyDatePicker({ onChange, selected, disabled }) {
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
 
   return (
-    <div className="flex gap-5 items-baseline text-xs">
-      <div className="flex gap-5 items-center justify-center bg-blue-500 px-3 py-1 rounded-md">
+    <div className="flex gap-5 items-baseline text-xs z-10 w-full md:w-1/3">
+      <div className="flex gap-5 items-center justify-center bg-blue-500 px-3 py-2 rounded-md w-full">
         <span className="text-white">Month Starting On:</span>
         <DatePicker
           selected={selected}

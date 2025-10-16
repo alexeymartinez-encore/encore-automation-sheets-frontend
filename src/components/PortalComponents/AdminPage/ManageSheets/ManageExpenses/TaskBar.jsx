@@ -71,7 +71,7 @@ export default function TaskBar({
       <div className="flex items-center justify-between gap-0 w-full border-b py-3">
         <button
           onClick={handleToggle}
-          className="border py-2 w-full px-1 mr-5 rounded-md bg-blue-500 text-white hover:bg-blue-400 transition duration-400 text-[0.5rem] md:text-xs"
+          className="border py-2 w-full px-1 mr-5 rounded-md bg-blue-500 text-white hover:bg-blue-400 transition duration-400 text-[0.7rem] md:text-xs"
         >
           {expenseMode}
         </button>
@@ -94,12 +94,6 @@ export default function TaskBar({
             date={selectedDate}
             handleState={isToggled}
           />
-        </div>
-        <div className="border text-[0.6rem] md:text-[1rem] text-blue-500 py-1 md:py-2 flex flex-wrap justify-center  md:gap-2 w-full rounded-sm ml-5">
-          <p className="">Signed:</p>
-          <p className="">
-            {completeExpenses} / {totalExpenses}
-          </p>
         </div>
       </div>
       <div className="flex justify-between items-center gap-5 w-full">
@@ -137,6 +131,12 @@ export default function TaskBar({
           >
             <TbReportMoney className="text-green-500 hover:text-green-700 transition duration-500 size-4" />
           </button>
+        </div>
+        <div className="border text-[0.6rem] md:text-[1rem] text-blue-500 py-1 md:py-2 flex flex-wrap justify-center  md:gap-2 w-full rounded-sm">
+          <p className="">Signed:</p>
+          <p className="">
+            {completeExpenses} / {totalExpenses}
+          </p>
         </div>
         {/* Reports Dropdown */}
         <div className="relative" ref={dropdownRef}>

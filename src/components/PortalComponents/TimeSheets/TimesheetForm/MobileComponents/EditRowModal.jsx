@@ -72,12 +72,12 @@ export default function EditRowModal({
 
   return (
     <tr
-      className=" flex flex-col bg-white text-sm md:text-xs w-1/2 px-5 py-10 rounded-md  gap-2"
+      className=" flex flex-col bg-white text-sm md:text-xs mx-10 px-5 py-10 rounded-md  gap-2"
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
     >
       {/* Project Selector */}
-      <td className="relative">
-        <label className="text-blue-500 py-1">Project</label>
+      <td className="flex items-center relative">
+        <label className="text-blue-500 py-1 w-full">Project</label>
 
         <select
           value={row.project_id ?? ""}
@@ -121,8 +121,8 @@ export default function EditRowModal({
       </td>
 
       {/* Phase Selector */}
-      <td className=" ">
-        <label className="text-blue-500 py-1">Phase</label>
+      <td className="flex items-center  ">
+        <label className="text-blue-500 py-1 w-full">Phase</label>
         <select
           value={row.phase_id ?? ""}
           className="border rounded-sm w-full text-start p-2"
@@ -157,8 +157,8 @@ export default function EditRowModal({
       </td>
 
       {/* Cost Code Selector */}
-      <td className=" ">
-        <label className="text-blue-500 py-1">Cost Code</label>
+      <td className="flex items-center ">
+        <label className="text-blue-500 py-1 w-full">Cost Code</label>
         <select
           value={row.cost_code_id ?? ""}
           className="border rounded-sm w-full text-start p-2"
@@ -195,7 +195,7 @@ export default function EditRowModal({
       </td>
 
       {/* Description */}
-      <td className="  text-center">
+      <td className="  text-center pb-2">
         <label className="text-blue-500 py-1">Description</label>
         <input
           type="text"
@@ -243,8 +243,8 @@ export default function EditRowModal({
       ))}
 
       {/* Total Hours */}
-      <td className="">
-        <label className="text-blue-500 py-1">Total</label>
+      <td className="flex items-center">
+        <label className="text-blue-500 py-1 w-full">TOTAL</label>
 
         <input
           type="number"

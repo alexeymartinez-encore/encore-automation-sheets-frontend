@@ -17,7 +17,7 @@ export default function TimesheetDetail() {
   const realId = params.timesheetId; // e.g. "4002"
   const encodedId = encode(realId); // e.g. "NDAwMg=="
 
-  // 🔹 Replace the visible URL after mount
+  // Replace the visible URL after mount
   useEffect(() => {
     const newUrl = `/employee-portal/dashboard/timesheets/${encodedId}${
       adminMode ? "?adminMode=true" : ""

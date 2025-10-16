@@ -61,13 +61,13 @@ export default function RowComponent({
 
   return (
     <tr
-      className={`text-xs overflow-scroll ${
+      className={`text-xs overflow-y-scroll ${
         isActive ? "bg-blue-200" : "bg-white"
       }`}
       onFocus={handleRowFocus}
       onBlur={handleRowBlur}
     >
-      <td className={`border px-0 text-center `}>
+      <td className={`border text-center p-2`}>
         <button
           className={` ${disabled ? " text-red-200/90" : "text-red-600"}`}
           onClick={onDeleteRow}
@@ -76,7 +76,7 @@ export default function RowComponent({
           -
         </button>
       </td>
-      <td className={`border px-0 text-center `}>
+      <td className={`border text-center p-2`}>
         <button
           className={` ${disabled ? " text-indigo-200/90" : "text-indigo-600"}`}
           onClick={onAddSubRow}
@@ -86,10 +86,10 @@ export default function RowComponent({
         </button>
       </td>
       <td className="border px-0 text-center">{row.day}</td>
-      <td className="border px-2">
+      <td className="border px-1">
         <select
           value={row.project_id}
-          className="w-full text-start px-0"
+          className="w-full text-start "
           onChange={(e) => onValueChange(index, "project_id", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}

@@ -1,3 +1,4 @@
+import LogoutButton from "../Shared/LogoutButton";
 import NavIcon from "./NavIcon";
 import NavIconsCard from "./NavIconsCard";
 import {
@@ -9,7 +10,6 @@ import {
   faClipboardUser,
 } from "@fortawesome/free-solid-svg-icons";
 import OuterCard from "./OuterCard";
-import LogoutButton from "../Shared/LogoutButton";
 
 export default function SideNavComponent({ onClick, isExpanded, padding }) {
   const role_id = localStorage.getItem("role_id");

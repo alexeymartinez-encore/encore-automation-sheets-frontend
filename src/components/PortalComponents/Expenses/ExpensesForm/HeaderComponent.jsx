@@ -7,7 +7,7 @@ export default function HeaderComponent() {
         <th className="border w-[0rem] px-1 py-1 text-center">+</th>
 
         <th className="border w-[0rem] px-0 py-1 text-center">Day</th>
-        <th className="border w-[3rem] px-0 py-1 text-center">Job</th>
+        <th className="border w-[3rem] px-5 md:px-0 py-1 text-center">Job</th>
         <th className="border w-[12rem] px-0 py-1 text-center">Purpose</th>
         <th className="border w-[5rem] px-2 py-1 text-center">Travel</th>
         <th className="border w-[0rem] px-0 py-1 text-center">Lodging</th>

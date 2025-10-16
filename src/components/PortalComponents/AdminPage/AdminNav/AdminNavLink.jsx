@@ -6,8 +6,8 @@ export default function AdminNavLink({ to, children, end }) {
       to={to}
       className={({ isActive }) =>
         isActive
-          ? "text-blue-500 bg-white w-[10rem]  py-2 rounded-lg flex items-center justify-center text-[0.6rem] md:text-sm"
-          : " text-blue-900 w-[10rem]  py-2 rounded-lg flex items-center text-[0.6rem] md:text-sm hover:bg-white hover:text-blue-500 transition duration-300 justify-center"
+          ? "text-blue-500 bg-white w-[10rem]  py-2 rounded-lg flex items-center justify-center text-[0.8rem] md:text-sm"
+          : " text-blue-900 w-[10rem]  py-2 rounded-lg flex items-center text-[0.8rem] md:text-sm hover:bg-white hover:text-blue-500 transition duration-300 justify-center"
       }
       end={end}
     >

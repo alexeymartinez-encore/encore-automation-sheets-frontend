@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import SideNavCard from "./SideNavigationComponents/SideNavCard";
-import UserIcon from "./SideNavigationComponents/UserIcon";
-import SideNavComponent from "./SideNavigationComponents/SideNavComponent";
+import SideNavCard from "./MobileNavigation/SideNavCard";
+import UserIcon from "./MobileNavigation/UserIcon";
+import SideNavComponent from "./MobileNavigation/SideNavComponent";
 
-export default function SideNavigation({ isExpanded, setIsExpanded }) {
+export default function MobileNavigation({ isExpanded, setIsExpanded }) {
   const toggleMenu = () => setIsExpanded((prev) => !prev);
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
@@ -22,12 +22,10 @@ export default function SideNavigation({ isExpanded, setIsExpanded }) {
 
   return (
     <div
-      className={`hidden md:block z-50 ${
-        isExpanded ? "fixed md:relative" : "fixed md:relative"
-      } top-0 left-0 h-full`}
+      className={`flex md:hidden w-full justify-center items-center bg-white py-2`}
     >
       <SideNavCard isExpanded={isExpanded}>
-        <UserIcon isExpanded={isExpanded} onClick={toggleMenu} />
+        {/* <UserIcon isExpanded={isExpanded} onClick={toggleMenu} /> */}
         <SideNavComponent
           onClick={logoutHandler}
           isExpanded={isExpanded}

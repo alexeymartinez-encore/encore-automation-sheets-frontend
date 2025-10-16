@@ -484,47 +484,46 @@ export default function ExpenseForm({
 
   return (
     <div>
-      <div className="flex gap-5 justify-between px-5 py-3 items-center">
-        <div className="flex items-center gap-5">
-          <MonthlyDatePicker
-            onChange={(date) => setSelectedDate(date)}
-            selected={selectedDate}
-            disabled={expense.approved}
-          />
-          <div className="flex">
-            <button
-              onClick={toggleModal}
-              title="Import Receipts"
-              className="flex items-center gap-3  bg-blue-500 py-1 px-3 rounded text-white
-                          hover:bg-blue-400 transition duration-300"
-              // disabled={expense.approved}
-            >
-              <FaReceipt color="white" size={18} />
-              <span>Receipts</span>
-            </button>
+      <div className="flex flex-col md:flex-row gap-5 justify-between px-3 md:px-5 py-3 items-center">
+        <MonthlyDatePicker
+          onChange={(date) => setSelectedDate(date)}
+          selected={selectedDate}
+          disabled={expense.approved}
+        />
 
-            {showModal && (
-              <div
-                className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
-                onClick={toggleModal}
-              >
-                <AddReceiptModal
-                  toggleModal={toggleModal}
-                  onSaveReceipts={handleSaveReceipts}
-                  savedFiles={expense.files || []}
-                  receiptFiles={receiptFiles}
-                  setReceiptFiles={setReceiptFiles}
-                  disabled={expense.approved}
-                />
-              </div>
-            )}
-          </div>
-        </div>
         {isAdmin && (
           <p className="text-red-500 font-bold text-xl">
             {selectedUser.first_name} {selectedUser.last_name}
           </p>
         )}
+        <div className="flex w-full">
+          <button
+            onClick={toggleModal}
+            title="Import Receipts"
+            className="flex items-center justify-center gap-3  bg-blue-500 py-2 px-3 rounded text-white
+                          hover:bg-blue-400 transition duration-300 w-full md:w-1/3"
+            // disabled={expense.approved}
+          >
+            <FaReceipt color="white" size={18} />
+            <span>Receipts</span>
+          </button>
+
+          {showModal && (
+            <div
+              className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+              onClick={toggleModal}
+            >
+              <AddReceiptModal
+                toggleModal={toggleModal}
+                onSaveReceipts={handleSaveReceipts}
+                savedFiles={expense.files || []}
+                receiptFiles={receiptFiles}
+                setReceiptFiles={setReceiptFiles}
+                disabled={expense.approved}
+              />
+            </div>
+          )}
+        </div>
 
         <FormActionsButtons
           handleSave={handleSave}
@@ -536,25 +535,27 @@ export default function ExpenseForm({
           handleCopy={handleCopy}
         />
       </div>
-      <table className="w-full border-collapse border ">
-        <HeaderComponent />
-        <SubheaderComponent />
-        <tbody className="overflow-scroll">
-          {rowData.map((row, index) => (
-            <RowComponent
-              key={index}
-              row={row}
-              index={index}
-              onValueChange={handleValueChange}
-              onAddSubRow={() => handleAddSubRow(index)}
-              onDeleteRow={() => handleDeleteRow(index)}
-              disabled={expense.approved}
-            />
-          ))}
-        </tbody>
+      <div className="overflow-x-auto p-2">
+        <table className="w-full border-collapse border  ">
+          <HeaderComponent />
+          <SubheaderComponent />
+          <tbody className="">
+            {rowData.map((row, index) => (
+              <RowComponent
+                key={index}
+                row={row}
+                index={index}
+                onValueChange={handleValueChange}
+                onAddSubRow={() => handleAddSubRow(index)}
+                onDeleteRow={() => handleDeleteRow(index)}
+                disabled={expense.approved}
+              />
+            ))}
+          </tbody>
 
-        <TableFooterComponent totals={calculateColumnTotals(rowData)} />
-      </table>
+          <TableFooterComponent totals={calculateColumnTotals(rowData)} />
+        </table>{" "}
+      </div>
     </div>
   );
 }

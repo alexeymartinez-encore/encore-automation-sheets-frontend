@@ -18,7 +18,9 @@ export default function ExpensesTable() {
   return (
     <div className="flex flex-col bg-white h-full shadow-md rounded-md my-5 text-xs">
       <ExpensesHeader />
-      <div className="flex flex-col py-0 md:py-5 overflow-scroll">
+      {/* <div className="flex flex-col py-0 md:py-5 overflow-scroll"> */}
+
+      <div className="flex flex-col py-0 md:py-5">
         {sortedExpenses.map((expense) => (
           <ExpenseTableContentRows key={expense.id} expense={expense} />
         ))}

@@ -21,7 +21,7 @@ export default function FormActionButton({
   return (
     <button
       onClick={onClick}
-      className={`flex justify-center gap-2 items-center w-full py-1 md:py-2  rounded-md duration-500 ${style} ${
+      className={`flex justify-center gap-2 items-center w-full py-2  rounded-md duration-500 ${style} ${
         isSaving ? "opacity-50 cursor-not-allowed" : ""
       } text-sm md:text-lg px-1 md:px-3`}
       disabled={disabled || isSaving}

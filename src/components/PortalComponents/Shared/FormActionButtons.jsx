@@ -42,14 +42,14 @@ export default function FormActionsButtons({
       )}
       <Link
         to={href}
-        className="flex  justify-center items-center w-full bg-blue-500 text-white py-1 md:py-2 rounded-md
+        className="flex  justify-center items-center w-full bg-blue-500 text-white py-2 rounded-md
          text-sm md:text-lg px-1 md:px-3 hover:bg-blue-400 transition duration-300"
       >
         + New
       </Link>
       <button
         onClick={handleCopy}
-        className="flex justify-center items-center w-full bg-blue-500 text-white py-1 md:py-2 rounded-md
+        className="flex justify-center items-center w-full bg-blue-500 text-white py-2 rounded-md
          text-sm md:text-lg px-1 md:px-3 hover:bg-blue-400 transition duration-300"
       >
         + Copy

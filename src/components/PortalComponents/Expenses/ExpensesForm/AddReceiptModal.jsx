@@ -87,14 +87,14 @@ export default function AddReceiptModal({
   }
   return (
     <div
-      className=" bg-white py-5 md:px-20 rounded-md text-center shadow-md w-[15rem] md:w-[30rem] relative"
+      className=" bg-white py-5 px-10 md:px-20 rounded-md text-center shadow-md w-[20rem] md:w-[30rem] relative"
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
     >
       <div className="flex flex-col items-center gap-3">
         <div className="flex flex-col items-center ">
           <p className="font-semibold text-sm text-gray-600 mb-2 ">Receipts</p>
           <label
-            className={`flex items-center justify-center w-[10rem] md:w-[20rem] h-[3rem] 
+            className={`flex items-center justify-center w-[15rem] md:w-[20rem] h-[3rem] 
                           rounded-md text-black border border-blue-500 cursor-pointer
                            transition-all duration-300 text-center ${
                              disabled
@@ -187,7 +187,7 @@ export default function AddReceiptModal({
           onClick={handleSave}
           className={`${
             disabled ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-400 "
-          }  w-[10rem] md:w-[20rem] text-white py-2 px-3 rounded-sm transition duration-400`}
+          }  w-[15rem] md:w-[20rem] text-white py-2 px-3 rounded-sm transition duration-400`}
           disabled={disabled}
         >
           Save Receipts
