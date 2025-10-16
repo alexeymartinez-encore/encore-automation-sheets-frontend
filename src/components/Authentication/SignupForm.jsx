@@ -191,13 +191,13 @@ export default function SignupForm({ mode }) {
           onChange={inputChangeHandler.bind(this, "role_id")}
         />{" "} */}
         <div className="flex justify-between items-center md:flex-col w-full my-2 text-center ">
-          <label className="text-start md:text-center text-blue-500 w-2/3">
+          <label className="text-start md:text-center text-blue-500 w-1/3">
             Admin Level
           </label>
 
           <select
             value={credentials.role_id}
-            className="w-1/2 md:w-full text-center py-2 border rounded-md "
+            className="w-full text-center py-2 border rounded-md "
             onChange={inputChangeHandler.bind(this, "role_id")}
           >
             <option className="text-gray-100" value="Nothing"></option>
@@ -210,12 +210,12 @@ export default function SignupForm({ mode }) {
 
       <div className="flex justify-between items-center md:flex-col gap-0 md:gap-5 flex-col w-full text-center">
         <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2">
-          <label className="text-start md:text-center text-blue-500 w-2/3">
+          <label className="text-start md:text-center text-blue-500 w-1/3">
             Is Contractor?
           </label>
           <select
             value={credentials.is_contractor}
-            className="w-1/2 md:w-full text-center py-2 border rounded-md"
+            className="w-full text-center py-2 border rounded-md"
             onChange={inputChangeHandler.bind(this, "is_contractor")}
           >
             <option value="Nothing"></option>
@@ -224,12 +224,12 @@ export default function SignupForm({ mode }) {
           </select>
         </div>
         <div className="flex justify-between items-center md:flex-col w-full md:w-1/2 my-2 md:my-0">
-          <label className="text-start md:text-center text-blue-500 w-2/3">
+          <label className="text-start md:text-center text-blue-500 w-1/3">
             Is Active?
           </label>
           <select
             value={credentials.is_active}
-            className="w-1/2 md:w-full text-center py-2 border rounded-md"
+            className="w-full text-center py-2 border rounded-md"
             onChange={inputChangeHandler.bind(this, "is_active")}
           >
             <option value="Nothing"></option>
@@ -239,12 +239,12 @@ export default function SignupForm({ mode }) {
         </div>
       </div>
       <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2 my-2">
-        <label className="text-start md:text-center text-blue-500 w-2/3">
+        <label className="text-start md:text-center text-blue-500 w-1/3">
           Reports to:
         </label>
         <select
           value={credentials.manager_id}
-          className="w-2/3 md:w-full text-center py-2 border rounded-md"
+          className="w-full text-center py-2 border rounded-md"
           onChange={inputChangeHandler.bind(this, "manager_id")}
         >
           <option value="Nothing">Nothing</option>
