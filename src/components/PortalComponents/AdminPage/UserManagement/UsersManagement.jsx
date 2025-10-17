@@ -45,13 +45,6 @@ export default function UsersManagement() {
                 >
                   <GoDash className="text-blue-500 size-3 md:size-5" />
                 </TableActionButton>
-                {/* 
-                <TableActionButton
-                  // onClick={() => handleDelete(timesheet.id)}
-                  color={"red"}
-                >
-                  <GoDash className="text-red-500 size-3 md:size-5" />
-                </TableActionButton> */}
               </ButtonsContainerCard>
             </th>
           </tr>
@@ -82,19 +75,9 @@ export default function UsersManagement() {
               </td>
               <td>
                 <ButtonsContainerCard>
-                  <TableActionButton
-                    // onClick={handleEdit}
-                    color={"blue"}
-                  >
+                  <TableActionButton color={"blue"}>
                     <FaEdit className="text-blue-500 size-3 md:size-5" />
                   </TableActionButton>
-
-                  {/* <TableActionButton
-                    // onClick={() => handleDelete(timesheet.id)}
-                    color={"red"}
-                  >
-                    <MdDeleteForever className="text-red-500 size-3 md:size-5" />
-                  </TableActionButton> */}
                 </ButtonsContainerCard>
               </td>
             </tr>

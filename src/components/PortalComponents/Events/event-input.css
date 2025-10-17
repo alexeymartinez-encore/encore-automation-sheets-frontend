@@ -9,3 +9,10 @@ select {
 input:focus {
   outline: none;
 }
+
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
+  appearance: checkbox;
+}

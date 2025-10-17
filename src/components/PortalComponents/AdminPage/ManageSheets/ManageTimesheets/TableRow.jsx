@@ -12,14 +12,14 @@ export default function TableRow({ timesheet, index, onValueChange }) {
       <p className="text-left">{timesheet.first_name}</p>
       {/* <p className="text-center hidden md:block">{timesheet.message}</p> */}
       <input
-        className=" md:text-center h-[0.5rem] md:h-[0.7rem]"
+        className=" md:text-center h-[0.5rem] md:h-[0.7rem] "
         type="checkbox"
         name="signed"
         checked={timesheet.signed}
         onChange={() => onValueChange(index, "signed")}
       />
       <input
-        className="md:text-center h-[0.5rem] md:h-[0.7rem]"
+        className="block md:text-center h-[0.5rem] md:h-[0.7rem]"
         type="checkbox"
         name="approved"
         checked={timesheet.approved}
