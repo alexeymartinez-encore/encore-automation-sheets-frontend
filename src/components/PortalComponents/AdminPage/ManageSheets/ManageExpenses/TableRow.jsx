@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function TableRow({ expense, index, onValueChange }) {
   return (
-    <div className="grid grid-cols-5 md:grid-cols-9  items-center py-1 px-3 text-[0.6rem] md:text-[0.7rem] ">
+    <div className="grid grid-cols-6 md:grid-cols-9  items-center py-1 px-3 text-[0.6rem] md:text-[0.7rem] ">
       <Link
         to={`/employee-portal/dashboard/expenses/${expense.id}?adminMode=true`}
         className="flex-1 text-left underline text-blue-500"
@@ -32,7 +32,7 @@ export default function TableRow({ expense, index, onValueChange }) {
       />
       {/* <p className="flex-1 text-center">{expense.paid ? "Yes" : "No"}</p> */}
       <input
-        className="flex-1 text-center h-[0.5rem] md:h-[0.7rem] hidden md:block"
+        className="flex-1 text-center h-[0.5rem] md:h-[0.7rem] "
         type="checkbox"
         name="paid"
         checked={expense.paid}

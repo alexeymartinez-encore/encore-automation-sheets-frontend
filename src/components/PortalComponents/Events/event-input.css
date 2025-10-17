@@ -1,0 +1,11 @@
+input,
+textarea,
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0; /* optional, to match your design */
+}
+input:focus {
+  outline: none;
+}
