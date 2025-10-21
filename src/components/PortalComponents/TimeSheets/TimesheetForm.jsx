@@ -307,7 +307,7 @@ export default function TimesheetForm({
         />
       </div>
       {!allow_overtime && (
-        <div className="pl-5 pb-5 text-yellow-600">
+        <div className="flex items-center justify-center p-1 rounded-md bg-yellow-600 text-white mx-2  md:mx-5 mb-5 text-center">
           <p>Overtime Not allowed</p>
         </div>
       )}

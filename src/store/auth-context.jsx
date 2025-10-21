@@ -47,6 +47,8 @@ export default function AuthContextProvider({ children }) {
       manager_id: credentials.manager_id,
       is_contractor: String(credentials.is_contractor).toLowerCase() === "true",
       is_active: String(credentials.is_active).toLowerCase() === "true",
+      allow_overtime:
+        String(credentials.allow_overtime).toLowerCase() === "true",
     };
 
     try {

@@ -23,6 +23,7 @@ const initialCredentials = {
   manager_id: "",
   is_contractor: "",
   is_active: "",
+  allow_overtime: "",
 };
 
 export default function SignupForm({ mode }) {
@@ -51,7 +52,6 @@ export default function SignupForm({ mode }) {
   }, []);
 
   function inputChangeHandler(inputIdentifier, event) {
-    console.log(typeof event.target.value);
     setCredentials((currentInputValues) => {
       return {
         ...currentInputValues,
@@ -107,6 +107,8 @@ export default function SignupForm({ mode }) {
 
     setCredentials(initialCredentials);
   }
+
+  console.log(credentials);
 
   return (
     <AuthForm onSubmit={handleSignUp}>
@@ -208,7 +210,7 @@ export default function SignupForm({ mode }) {
         </div>
       </InputCard>
 
-      <div className="flex justify-between items-center md:flex-col gap-0 md:gap-5 flex-col w-full text-center">
+      <div className="flex gap-5 w-full flex-col md:flex-row ">
         <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2">
           <label className="text-start md:text-center text-blue-500 w-1/3">
             Is Contractor?
@@ -238,22 +240,38 @@ export default function SignupForm({ mode }) {
           </select>
         </div>
       </div>
-      <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2 my-2">
-        <label className="text-start md:text-center text-blue-500 w-1/3">
-          Reports to:
-        </label>
-        <select
-          value={credentials.manager_id}
-          className="w-full text-center py-2 border rounded-md"
-          onChange={inputChangeHandler.bind(this, "manager_id")}
-        >
-          <option value="Nothing">Nothing</option>
-          {employees.map((employee) => (
-            <option key={employee.id} value={employee.id}>
-              {employee.first_name} {employee.last_name}
-            </option>
-          ))}
-        </select>
+      <div className="flex w-full gap-5 flex-col md:flex-row">
+        <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2 my-2">
+          <label className="text-start md:text-center text-blue-500 w-1/3">
+            Allow Overtime
+          </label>
+          <select
+            value={credentials.allow_overtime}
+            className="w-full text-center py-2 border rounded-md"
+            onChange={inputChangeHandler.bind(this, "allow_overtime")}
+          >
+            <option value="Nothing"></option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div className="flex justify-between items-center md:flex-col w-full  md:w-1/2 my-2">
+          <label className="text-start md:text-center text-blue-500 w-1/3">
+            Reports to:
+          </label>
+          <select
+            value={credentials.manager_id}
+            className="w-full text-center py-2 border rounded-md"
+            onChange={inputChangeHandler.bind(this, "manager_id")}
+          >
+            <option value="Nothing">Nothing</option>
+            {employees.map((employee) => (
+              <option key={employee.id} value={employee.id}>
+                {employee.first_name} {employee.last_name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <ButtonUI type="submit">Signup</ButtonUI>
       {mode === "adminMode" ? null : (

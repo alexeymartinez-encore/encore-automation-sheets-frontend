@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import { AdminContext } from "../../../../store/admin-context";
-import { FaEdit } from "react-icons/fa";
-import { MdDeleteForever } from "react-icons/md";
 import ButtonsContainerCard from "../../Shared/ButtonsContainerCard";
 import TableActionButton from "../../Shared/TableActionButton";
 import { GoDash } from "react-icons/go";
+import EditUserButton from "./EditUserButton";
 
 export default function UsersManagement() {
   const [employees, setEmployees] = useState([]);
   const adminCtx = useContext(AdminContext);
+
   useEffect(() => {
     const fetchEmployees = async () => {
       const fetchedEmployees = await adminCtx.getAllEmployees();
@@ -17,6 +17,7 @@ export default function UsersManagement() {
 
     fetchEmployees();
   }, [adminCtx]);
+
   return (
     <div className="bg-white rounded-md shadow-sm my-5 w-full overflow-x-scroll">
       <div className="flex justify-between p-5 ">
@@ -75,9 +76,7 @@ export default function UsersManagement() {
               </td>
               <td>
                 <ButtonsContainerCard>
-                  <TableActionButton color={"blue"}>
-                    <FaEdit className="text-blue-500 size-3 md:size-5" />
-                  </TableActionButton>
+                  <EditUserButton user={employee} />
                 </ButtonsContainerCard>
               </td>
             </tr>

@@ -22,6 +22,7 @@ export const AdminContext = createContext({
   createNewProject: (projectData) => {},
   deleteProjectById: (id) => {},
   editProjectById: (id) => {},
+  editUserById: (id) => {},
   fetchLaborData: () => {},
   getOpenExpenses: () => {},
   getOpenTimesheets: () => {},
@@ -393,7 +394,35 @@ export default function AdminContextProvider({ children }) {
       return;
     }
   }
+  async function editUserById(userId, user) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/employees/edit/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(user),
+        }
+      );
 
+      if (!response.ok) {
+        throw new Error("Error updating event");
+      }
+
+      const data = await response.json();
+      triggerUpdate();
+      triggerSucessOrFailMessage(data.internalStatus, data.message);
+      return data;
+    } catch (error) {
+      // console.error("Error Updating event: ", error);
+      triggerUpdate();
+      triggerSucessOrFailMessage("fail", "Edit Event Failed");
+      return;
+    }
+  }
   async function getUsersExpensesByDate(dateStart) {
     try {
       const response = await fetch(`${BASE_URL}/admin/expenses/${dateStart}`, {
@@ -549,6 +578,7 @@ export default function AdminContextProvider({ children }) {
     createNewProject: createNewProject,
     deleteProjectById: deleteProjectById,
     editProjectById: editProjectById,
+    editUserById: editUserById,
     fetchLaborData: fetchLaborData,
     fetchBereavementData: fetchBereavementData,
     fetchJuryDutyData: fetchJuryDutyData,

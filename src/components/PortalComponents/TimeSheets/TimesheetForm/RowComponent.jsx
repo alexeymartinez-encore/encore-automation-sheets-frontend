@@ -72,8 +72,8 @@ export default function RowComponent({
     : false;
 
   return (
-    <tr className="bg-white text-[0.5rem] md:text-xs w-full">
-      <td className="border px-2 text-center">{index + 1}</td>
+    <tr className="bg-white text-[0.5rem] md:text-xs w-full ">
+      <td className="border px-2 text-center py-2">{index + 1}</td>
 
       {/* Project Selector */}
       <td className="border px-2">
