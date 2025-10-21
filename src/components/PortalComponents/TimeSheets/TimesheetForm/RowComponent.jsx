@@ -211,6 +211,7 @@ export default function RowComponent({
             className="w-full text-center px-2"
             placeholder="Reg"
             min="0"
+            step={0.5}
             max={isRestrictedProject ? 8 : undefined}
             onChange={(e) => {
               let value = e.target.value;

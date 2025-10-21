@@ -257,23 +257,35 @@ export default function ManageTimesheetsTable({ openReportModal }) {
       }
     }
 
-    // 🟢 Sort rows by date
+    // Sort rows by date
     allRows.sort((a, b) => new Date(a.LaborDate) - new Date(b.LaborDate));
 
-    // 🟢 Build XML after sorting
+    // Build XML after sorting
     let xmlContent = "<ProjectLabor>\n";
     allRows.forEach((row) => {
-      xmlContent += `  <row
-    LaborDate="${row.LaborDate}T00:00:00"
-    EmployeeNumber="${escapeXml(row.EmployeeNumber)}"
-    EmployeeName="${escapeXml(row.EmployeeName)}"
-    RegHours="${row.RegHours}"
-    OTHours="${row.OTHours}"
-    ProjectNumber="${escapeXml(row.ProjectNumber)}"
-    Description="${escapeXml(row.Description)}"
-    Phase="${escapeXml(row.Phase)}"
-    CostCode="${escapeXml(row.CostCode)}"
-  />\n`;
+      xmlContent += `<row LaborDate="${
+        row.LaborDate
+      }T00:00:00" EmployeeNumber="${escapeXml(
+        row.EmployeeNumber
+      )}" EmployeeName="${escapeXml(row.EmployeeName)}" RegHours="${
+        row.RegHours
+      }" OTHours="${row.OTHours}" ProjectNumber="${escapeXml(
+        row.ProjectNumber
+      )}" Description="${escapeXml(row.Description)}" Phase="${escapeXml(
+        row.Phase
+      )}" CostCode="${escapeXml(row.CostCode)}" />\n`;
+
+      //     xmlContent += `  <row
+      //   LaborDate="${row.LaborDate}T00:00:00"
+      //   EmployeeNumber="${escapeXml(row.EmployeeNumber)}"
+      //   EmployeeName="${escapeXml(row.EmployeeName)}"
+      //   RegHours="${row.RegHours}"
+      //   OTHours="${row.OTHours}"
+      //   ProjectNumber="${escapeXml(row.ProjectNumber)}"
+      //   Description="${escapeXml(row.Description)}"
+      //   Phase="${escapeXml(row.Phase)}"
+      //   CostCode="${escapeXml(row.CostCode)}"
+      // />\n`;
     });
     xmlContent += "</ProjectLabor>";
 

@@ -286,19 +286,21 @@ export default function ManageExpensesTable() {
     // Step 3: Build XML after sorting
     let xmlContent = "<ProjectExpenses>\n";
     allRows.forEach((row) => {
-      xmlContent += `  <row
-      ExpenseDate="${row.ExpenseDate}T00:00:00"
-      EmployeeNumber="${row.EmployeeNumber}"
-      EmployeeName="${row.EmployeeName}"
-      Amount="${row.Amount}"
-      Type="${row.Type}"
-      TransportWhere="${row.TransportWhere}"
-      ProjectNumber="${row.ProjectNumber}"
-      Purpose="${row.Purpose}"
-      MiscDetail="${row.MiscDetail}"
-      MiscType="${row.MiscType}"
-      EntInfo="${row.EntInfo}"
-    />\n`;
+      xmlContent += `<row ExpenseDate="${row.ExpenseDate}T00:00:00" EmployeeNumber="${row.EmployeeNumber}" EmployeeName="${row.EmployeeName}" Amount="${row.Amount}" Type="${row.Type}" TransportWhere="${row.TransportWhere}" ProjectNumber="${row.ProjectNumber}" Purpose="${row.Purpose}" MiscDetail="${row.MiscDetail}" MiscType="${row.MiscType}" EntInfo="${row.EntInfo}" />\n`;
+      // xmlContent += `
+      // <row
+      //   ExpenseDate="${row.ExpenseDate}T00:00:00"
+      //   EmployeeNumber="${row.EmployeeNumber}"
+      //   EmployeeName="${row.EmployeeName}"
+      //   Amount="${row.Amount}"
+      //   Type="${row.Type}"
+      //   TransportWhere="${row.TransportWhere}"
+      //   ProjectNumber="${row.ProjectNumber}"
+      //   Purpose="${row.Purpose}"
+      //   MiscDetail="${row.MiscDetail}"
+      //   MiscType="${row.MiscType}"
+      //   EntInfo="${row.EntInfo}"
+      // />\n`;
     });
     xmlContent += "</ProjectExpenses>";
 

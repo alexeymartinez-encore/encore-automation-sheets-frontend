@@ -46,7 +46,7 @@ export default function ExpenseTableContentRows({ expense }) {
       <TableCellRegItem mobileStyle={"hidden md:block"}>
         {expense.submitted_by}
       </TableCellRegItem>
-      <TableCellRegItem mobileStyle={"hidden md:block"}>-</TableCellRegItem>
+      <TableCellRegItem mobileStyle={"hidden"}>-</TableCellRegItem>
       <TableCellRegItem>$ {expense.total.toFixed(2)}</TableCellRegItem>
       <ButtonsContainerCard>
         <TableActionButton onClick={handleEdit} color={"blue"}>
