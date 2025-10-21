@@ -14,6 +14,9 @@ export function fetchUser() {
     manager_id: localStorage.getItem("manager_id"),
     position: localStorage.getItem("position"),
     manager_name: localStorage.getItem("manager_name"),
+    allow_overtime: localStorage.getItem("allow_overtime"),
+    is_active: localStorage.getItem("is_active"),
+    is_contractor: localStorage.getItem("is_contractor"),
   };
 
   return user; // Return user data
@@ -35,7 +38,7 @@ export async function authRequest(requestBody, method, authType) {
   }
 
   const data = await response.json();
-  // console.log(data);
+  console.log(data);
   if (authType === "login") {
     // Store token in localStorage
     // localStorage.setItem("token", data.token);
@@ -51,7 +54,10 @@ export async function authRequest(requestBody, method, authType) {
     localStorage.setItem("manager_id", data.user.manager_id);
     localStorage.setItem("position", data.user.position);
     localStorage.setItem("manager_name", data.user.manager_name);
+    localStorage.setItem("is_active", data.user.is_active);
+    localStorage.setItem("is_contractor", data.user.is_contractor);
     localStorage.setItem("total_employees", data.totalEmployees);
+    localStorage.setItem("allow_overtime", data.user.allow_overtime);
   }
   return data;
 }

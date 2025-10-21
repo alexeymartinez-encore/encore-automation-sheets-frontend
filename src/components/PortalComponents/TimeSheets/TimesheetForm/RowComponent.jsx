@@ -14,6 +14,7 @@ export default function RowComponent({
   onDeleteRow,
   disabled,
 }) {
+  const allow_overtime = localStorage.getItem("allow_overtime") === "true";
   const miscCtx = useContext(MiscellaneousContext);
   const restrictedProjects = [
     "Admin",
@@ -126,7 +127,7 @@ export default function RowComponent({
             const newPhaseId = Number(e.target.value);
             onValueChange(index, "phase_id", newPhaseId);
 
-            // 🔥 Enforce a valid cost code when the phase changes (non-special projects)
+            // Enforce a valid cost code when the phase changes (non-special projects)
             if (!specialProject) {
               const allowedIds = getAllowedCostCodeIdsForPhaseId(newPhaseId);
               if (
@@ -214,14 +215,36 @@ export default function RowComponent({
             step={0.5}
             max={isRestrictedProject ? 8 : undefined}
             onChange={(e) => {
-              let value = e.target.value;
+              let value = Number(e.target.value);
+              if (isNaN(value)) return;
 
-              // Enforce numeric range
-              if (isRestrictedProject && Number(value) > 8) {
+              // Enforce per-day cap (for restricted projects)
+              if (isRestrictedProject && value > 8) {
                 value = 8;
               }
-              if (Number(value) < 0) {
-                value = 0;
+              if (value < 0) value = 0;
+
+              // --- Weekly total restriction ---
+              if (!allow_overtime) {
+                // Calculate the total excluding this day's current value
+                const currentTotal =
+                  Number(row.mon_reg || 0) +
+                  Number(row.tue_reg || 0) +
+                  Number(row.wed_reg || 0) +
+                  Number(row.thu_reg || 0) +
+                  Number(row.fri_reg || 0) +
+                  Number(row.sat_reg || 0) +
+                  Number(row.sun_reg || 0);
+
+                const previousDayValue = Number(row[`${day}_reg`] || 0);
+                const newTotal = currentTotal - previousDayValue + value;
+
+                if (newTotal > 40) {
+                  // Cap the total so weekly total doesn’t exceed 40
+                  const maxAllowedForThisInput =
+                    40 - (currentTotal - previousDayValue);
+                  value = Math.max(0, maxAllowedForThisInput);
+                }
               }
 
               onValueChange(index, `${day}_reg`, value);

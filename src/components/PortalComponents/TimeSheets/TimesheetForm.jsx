@@ -1,7 +1,5 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { TimesheetContext } from "../../../store/timesheet-context";
@@ -73,6 +71,8 @@ export default function TimesheetForm({
   timesheetId = null,
   isAdmin = false,
 }) {
+  const allow_overtime = localStorage.getItem("allow_overtime") === "true";
+  console.log(allow_overtime);
   const navigate = useNavigate();
 
   const [timesheet, setTimesheet] = useState(initialTimesheetData);
@@ -285,7 +285,7 @@ export default function TimesheetForm({
 
   return (
     <div className="pb-20">
-      <div className="relative flex flex-col md:flex-row gap-5 justify-between px-2 md:px-5 pb-10 items-center ">
+      <div className="relative flex flex-col md:flex-row gap-5 justify-between px-2 md:px-5 pb-5 items-center ">
         <DatePickerComponent
           onChange={(date) => setSelectedDate(date)}
           selected={formatWeekendDate(selectedDate)}
@@ -306,6 +306,11 @@ export default function TimesheetForm({
           handleCopy={handleCopy}
         />
       </div>
+      {!allow_overtime && (
+        <div className="pl-5 pb-5 text-yellow-600">
+          <p>Overtime Not allowed</p>
+        </div>
+      )}
       <FormTable
         data={rowData}
         onValueChange={handleValueChange}
