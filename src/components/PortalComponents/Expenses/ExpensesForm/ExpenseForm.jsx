@@ -70,7 +70,7 @@ function hasMeaningfulData(row) {
   const num = (v) => Number(v || 0);
   const str = (v) => (v ?? "").trim();
 
-  const anyPositiveAmount = [
+  const anyNonZeroAmount = [
     "destination_cost",
     "lodging_cost",
     "other_expense_cost",
@@ -80,12 +80,12 @@ function hasMeaningfulData(row) {
     "perdiem_cost",
     "entertainment_cost",
     "miscellaneous_amount",
-  ].some((k) => num(row[k]) > 0);
+  ].some((k) => num(row[k]) !== 0);
 
   const anyText = str(row.purpose) !== "" || str(row.destination_name) !== "";
 
   // IMPORTANT: Do NOT consider project_id alone as data (select defaults cause false positives)
-  return anyPositiveAmount || anyText;
+  return anyNonZeroAmount || anyText;
 }
 
 function isFirstRowForDay(rows, idx) {
