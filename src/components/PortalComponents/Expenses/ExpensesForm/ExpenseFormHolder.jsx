@@ -67,6 +67,7 @@ export default function ExpenseForm({
   const [expense, setExpense] = useState(initialExpenseData);
   const [rowData, setRowData] = useState(expenseEntriesData);
   const [saved, setSaved] = useState(expenseId ? true : false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const expenseCtx = useContext(ExpensesContext);
   let filteredExpense;
@@ -165,6 +166,8 @@ export default function ExpenseForm({
     );
   }
   async function handleSave() {
+    if (isSaving) return; // prevent double-submit
+    setIsSaving(true);
     const num_of_days = getDaysInMonth(selectedDate);
     const total = calculateColumnTotals(rowData);
 
@@ -233,6 +236,8 @@ export default function ExpenseForm({
         `Expense ${expenseId || expense.id ? "update" : "creation"} failed!`
       );
       console.error("Error saving Expense:", error);
+    } finally {
+      setIsSaving(false);
     }
   }
 
