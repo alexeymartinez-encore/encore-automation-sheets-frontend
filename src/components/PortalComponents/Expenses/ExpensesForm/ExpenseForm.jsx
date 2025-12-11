@@ -296,6 +296,32 @@ export default function ExpenseForm({
     // send only meaningful rows (prevents blank sub-rows)
     const filteredRows = rowData.filter(hasMeaningfulData);
 
+    // Deduplicate identical rows (same day + same values) before sending
+    const seen = new Set();
+    const dedupedRows = [];
+    for (const row of filteredRows) {
+      const key = JSON.stringify({
+        day: row.day ?? null,
+        project_id: row.project_id || null,
+        purpose: (row.purpose || "").trim(),
+        destination_name: (row.destination_name || "").trim(),
+        destination_cost: Number(row.destination_cost) || 0,
+        lodging_cost: Number(row.lodging_cost) || 0,
+        other_expense_cost: Number(row.other_expense_cost) || 0,
+        car_rental_cost: Number(row.car_rental_cost) || 0,
+        miles: Number(row.miles) || 0,
+        miles_cost: Number(row.miles_cost) || 0,
+        perdiem_cost: Number(row.perdiem_cost) || 0,
+        entertainment_cost: Number(row.entertainment_cost) || 0,
+        miscellaneous_description_id:
+          Number(row.miscellaneous_description_id) || 1,
+        miscellaneous_amount: Number(row.miscellaneous_amount) || 0,
+      });
+      if (seen.has(key)) continue;
+      seen.add(key);
+      dedupedRows.push(row);
+    }
+
     const currentUserId = localStorage.getItem("userId");
     const currentUserName = localStorage.getItem("user_name");
 
@@ -335,7 +361,7 @@ export default function ExpenseForm({
     try {
       const res = await saveExpenseSheet(
         expenseData,
-        filteredRows,
+        dedupedRows,
         receiptFiles,
         expenseId
       );
