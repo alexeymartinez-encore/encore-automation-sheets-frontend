@@ -130,7 +130,7 @@ export default function EventContextProvider({ children }) {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(event[0]),
+        body: JSON.stringify(event),
       });
 
       if (!response.ok) {

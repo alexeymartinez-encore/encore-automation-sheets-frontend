@@ -16,6 +16,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEventId, setEditingEventId] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -92,10 +93,13 @@ export default function FullCalendarComponent({ eventsData = [] }) {
     }
   }
 
-  function handleEditEvent(eventId) {
-    const event = events.filter((event) => eventId === event.id);
-    eventCtx.updateEventById(eventId, event);
-    setShowEditModal((prev) => !prev);
+  async function handleEditEvent(eventId) {
+    const eventToUpdate = events.find((event) => eventId === event.id);
+    if (!eventToUpdate) return;
+
+    await eventCtx.updateEventById(eventId, eventToUpdate);
+    setShowEditModal(false);
+    setEditingEventId(null);
   }
   function handleDeleteEvent(eventId) {
     eventCtx.deleteEventById(eventId);
@@ -117,9 +121,17 @@ export default function FullCalendarComponent({ eventsData = [] }) {
     setShowModal((prev) => !prev);
   }
 
-  function toggleEditModal() {
-    setShowEditModal((prev) => !prev);
+  function openEditModal(eventId) {
+    setEditingEventId(eventId);
+    setShowEditModal(true);
   }
+
+  function closeEditModal() {
+    setShowEditModal(false);
+    setEditingEventId(null);
+  }
+
+  const editingEvent = events.find((event) => event.id === editingEventId);
 
   return (
     <div>
@@ -187,6 +199,94 @@ export default function FullCalendarComponent({ eventsData = [] }) {
         />
       </div>
 
+      {showEditModal && editingEvent && (
+        <div
+          className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+          onClick={closeEditModal}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex flex-col items-center w-full md:w-1/3 mx-5 text-xs bg-white shadow-sm rounded-md gap-3 py-5"
+          >
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500 text-start">Start Date</label>
+              <input
+                type="date"
+                value={editingEvent.start}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "start")
+                }
+                className="text-center border rounded p-1  w-2/3"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500  text-start">End Date</label>
+              <input
+                type="date"
+                value={editingEvent.end_date}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "end_date")
+                }
+                className="text-center border rounded p-1 w-2/3"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500 text-start">Text</label>
+              <input
+                type="text"
+                value={editingEvent.title}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "title")
+                }
+                className="flex-1 text-center border rounded p-1 w-2/3"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500 text-start">Description</label>
+              <input
+                type="text"
+                value={editingEvent.long_description}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "long_description")
+                }
+                className="flex-1 text-center border rounded p-1 w-2/3"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500 text-start">
+                Background Color
+              </label>
+              <input
+                type="color"
+                value={editingEvent.back_color_id}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "back_color_id")
+                }
+                className="  cursor-pointer w-2/3"
+              />{" "}
+            </div>{" "}
+            <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
+              <label className="text-blue-500 text-start">Text Color</label>
+              <input
+                type="color"
+                value={editingEvent.fore_color_id}
+                onChange={(e) =>
+                  handleEventChange(e, editingEvent.id, "fore_color_id")
+                }
+                className="cursor-pointer w-2/3"
+              />
+            </div>
+            <button
+              type="button"
+              className="text-white bg-blue-500 hover:bg-blue-400 rounded-sm w-1/2 py-2 mt-3"
+              onClick={() => handleEditEvent(editingEvent.id)}
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* List of Events for Selected Date */}
       <div className="bg-white p-2 my-5 rounded-md shadow-sm text-xs py-5">
         <div className="flex flex-col md:flex-row items-center justify-between px-10 ">
@@ -218,101 +318,6 @@ export default function FullCalendarComponent({ eventsData = [] }) {
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
               <div key={event.id} className="px-0 border my-2 rounded-sm">
-                {showEditModal && (
-                  <div
-                    className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
-                    onClick={toggleEditModal}
-                  >
-                    <div
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex flex-col items-center w-full md:w-1/3 mx-5 text-xs bg-white shadow-sm rounded-md gap-3 py-5"
-                    >
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500 text-start">
-                          Start Date
-                        </label>
-                        <input
-                          type="date"
-                          value={event.start}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "start")
-                          }
-                          className="text-center border rounded p-1  w-2/3"
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500  text-start">
-                          End Date
-                        </label>
-                        <input
-                          type="date"
-                          value={event.end_date}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "end_date")
-                          }
-                          className="text-center border rounded p-1 w-2/3"
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500 text-start">Text</label>
-                        <input
-                          type="text"
-                          value={event.title}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "title")
-                          }
-                          className="flex-1 text-center border rounded p-1 w-2/3"
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500 text-start">
-                          Description
-                        </label>
-                        <input
-                          type="text"
-                          value={event.long_description}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "long_description")
-                          }
-                          className="flex-1 text-center border rounded p-1 w-2/3"
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500 text-start">
-                          Background Color
-                        </label>
-                        <input
-                          type="color"
-                          value={event.back_color_id}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "back_color_id")
-                          }
-                          className="  cursor-pointer w-2/3"
-                        />{" "}
-                      </div>{" "}
-                      <div className="flex flex-col items-center gap-1 justify-between w-full px-10">
-                        <label className="text-blue-500 text-start">
-                          Text Color
-                        </label>
-                        <input
-                          type="color"
-                          value={event.fore_color_id}
-                          onChange={(e) =>
-                            handleEventChange(e, event.id, "fore_color_id")
-                          }
-                          className="cursor-pointer w-2/3"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="text-white bg-blue-500 hover:bg-blue-400 rounded-sm w-1/2 py-2 mt-3"
-                        onClick={() => handleEditEvent(event.id)}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-                )}
                 <div className="grid grid-cols-[0.5fr,1.5fr,1.5fr,1.5fr,0.5fr] md:grid-cols-[1fr,1fr,1fr,2fr,2fr,0.5fr,0.5fr] items-center gap-4 py-2 w-full text-xs">
                   <div className="flex justify-around md:hidden">
                     {event.employee_id ===
@@ -321,8 +326,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                         <button
                           type="button"
                           className="rounded-sm md:hidden block"
-                          // onClick={() => handleEditEvent(event.id)}
-                          onClick={toggleEditModal}
+                          onClick={() => openEditModal(event.id)}
                         >
                           <FaEdit className="text-blue-500 size-4 md:size-5" />
                         </button>
@@ -368,7 +372,7 @@ export default function FullCalendarComponent({ eventsData = [] }) {
                         <button
                           type="button"
                           className="rounded-sm hidden md:block"
-                          onClick={toggleEditModal}
+                          onClick={() => openEditModal(event.id)}
                         >
                           <FaEdit className="text-blue-500 size-4 md:size-5" />
                         </button>
