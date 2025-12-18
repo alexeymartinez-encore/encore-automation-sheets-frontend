@@ -1,7 +1,7 @@
 export default function NavIconsCard({ children, padding, width }) {
   return (
     <div
-      className={`flex flex-row items-start ${padding} text-white mb-0 gap-5 ${width}`}
+      className={`flex items-center justify-between flex-row   ${padding} text-white mb-0  w-full ${width}`}
     >
       {children}
     </div>

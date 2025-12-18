@@ -63,8 +63,8 @@ export default function SideNavComponent({ onClick, isExpanded, padding }) {
             {isExpanded ? "Admin" : ""}
           </NavIcon>
         )}
+        <LogoutButton onClick={onClick} expanded={isExpanded} />
       </NavIconsCard>
-      <LogoutButton onClick={onClick} expanded={isExpanded} />
     </OuterCard>
   );
 }

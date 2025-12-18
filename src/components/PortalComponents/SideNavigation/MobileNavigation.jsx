@@ -21,17 +21,16 @@ export default function MobileNavigation({ isExpanded, setIsExpanded }) {
   };
 
   return (
-    <div
-      className={`flex md:hidden w-full justify-center items-center bg-white py-2`}
-    >
-      <SideNavCard isExpanded={isExpanded}>
-        {/* <UserIcon isExpanded={isExpanded} onClick={toggleMenu} /> */}
-        <SideNavComponent
-          onClick={logoutHandler}
-          isExpanded={isExpanded}
-          padding={isExpanded ? "p-4" : "p-1"}
-        />
-      </SideNavCard>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
+      <div className="">
+        <SideNavCard isExpanded={isExpanded}>
+          <SideNavComponent
+            onClick={logoutHandler}
+            isExpanded={false}
+            padding="py-2 px-3"
+          />
+        </SideNavCard>
+      </div>
     </div>
   );
 }

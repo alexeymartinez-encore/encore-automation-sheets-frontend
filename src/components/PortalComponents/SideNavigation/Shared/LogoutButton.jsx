@@ -5,11 +5,13 @@ export default function LogoutButton({ onClick, expanded }) {
   return (
     <div
       className={`${
-        expanded ? "flex flex-row justify-start items-center w-[8rem] pl-2" : ""
+        expanded
+          ? "flex flex-row justify-start items-center w-[8rem] pl-2"
+          : "flex-1 flex justify-center"
       }`}
     >
       <button
-        className=" text-red-600 py-1 px-3 rounded-md hover:text-red-400 transition duration-300"
+        className="text-red-600 py-1 px-3 rounded-md hover:text-red-400 transition duration-300 flex items-center justify-center"
         type="button"
         onClick={onClick}
       >

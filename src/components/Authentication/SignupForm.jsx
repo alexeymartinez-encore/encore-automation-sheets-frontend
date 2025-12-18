@@ -108,8 +108,6 @@ export default function SignupForm({ mode }) {
     setCredentials(initialCredentials);
   }
 
-  console.log(credentials);
-
   return (
     <AuthForm onSubmit={handleSignUp}>
       {success && <StatusUI status={"success"}>{success.message}</StatusUI>}
