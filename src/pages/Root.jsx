@@ -27,6 +27,7 @@ export default function RootLayout() {
     "/employee-portal/dashboard/timesheets/create-timesheet",
     "/employee-portal/dashboard/expenses/create-expense",
     "/employee-portal/dashboard/manager",
+    "/employee-portal/dashboard/admin/reports",
   ];
 
   const isHeaderHidden =

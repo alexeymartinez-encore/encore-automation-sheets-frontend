@@ -29,6 +29,7 @@ import AuthCheck from "./components/Authentication/AuthCheck";
 import UserContextProvider from "./store/user-context";
 import { checkIfAdmin, checkIfManager } from "./util/loaders";
 import ErrorPage from "./pages/Error";
+import CategoryEntriesReport from "./components/PortalComponents/AdminPage/Reports/CategoryEntriesReport";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,7 @@ const router = createBrowserRouter([
                 path: "project-management",
                 element: <ProjectsManagement />,
               },
+              { path: "reports", element: <CategoryEntriesReport /> },
             ],
           },
           {

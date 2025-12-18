@@ -14,6 +14,7 @@ export const AdminContext = createContext({
   fetchJuryDutyData: (date) => {},
   fetchSickData: (date) => {},
   fetchVacationData: (date) => {},
+  fetchCategoryEntriesData: () => {},
   fetchExpenseReportData: (date) => {},
   fetchOpenExpenseReportData: () => {},
   successOrFailMessage: null,
@@ -260,6 +261,32 @@ export default function AdminContextProvider({ children }) {
       return data.data || [];
     } catch (error) {
       console.error("Error deleting row: ", error);
+      return;
+    }
+  }
+
+  async function fetchCategoryEntriesData(payload) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/category-entries`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting timesheet entries");
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error("Error fetching category entries: ", error);
       return;
     }
   }
@@ -585,6 +612,7 @@ export default function AdminContextProvider({ children }) {
     fetchSickData: fetchSickData,
     fetchVacationData: fetchVacationData,
     fetchExpenseReportData: fetchExpenseReportData,
+    fetchCategoryEntriesData: fetchCategoryEntriesData,
     getOpenExpenses: getOpenExpenses,
     getOpenTimesheets: getOpenTimesheets,
     fetchOpenExpenseReportData: fetchOpenExpenseReportData,

@@ -16,6 +16,9 @@ export default function AdminNavBar() {
       <AdminNavLink to="/employee-portal/dashboard/admin/project-management">
         Projects
       </AdminNavLink>
+      <AdminNavLink to="/employee-portal/dashboard/admin/reports">
+        Reports
+      </AdminNavLink>
       {/* <AdminNavLink to="/employee-portal/dashboard/admin/other">
         Project Management
       </AdminNavLink> */}

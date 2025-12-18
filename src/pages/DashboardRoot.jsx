@@ -19,6 +19,7 @@ export default function DashboardRootLayout() {
     "/employee-portal/dashboard/admin/project-management",
     "/employee-portal/dashboard/admin/user-management",
     "/employee-portal/dashboard/manager",
+    "/employee-portal/dashboard/admin/reports",
   ];
 
   const isHeaderHidden =
