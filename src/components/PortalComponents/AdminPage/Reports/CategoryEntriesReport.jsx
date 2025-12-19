@@ -15,17 +15,10 @@ function parseDateUTC(dateStr) {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
-function addDaysUTC(dateObj, days) {
-  if (!dateObj) return null;
-  const d = new Date(dateObj);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d;
-}
-
 function formatDate(date) {
   if (!date) return "";
   try {
-    const parsed = addDaysUTC(parseDateUTC(date), 1); // shift to Sunday display
+    const parsed = parseDateUTC(date);
     if (!parsed) return date;
     const mm = parsed.getUTCMonth() + 1;
     const dd = parsed.getUTCDate();
@@ -47,15 +40,15 @@ function toMonthDayUTC(dateObj) {
 }
 
 function getWeekDates(weekEnding) {
-  const sunday = addDaysUTC(parseDateUTC(weekEnding), 1); // shift to Sunday
+  const sunday = parseDateUTC(weekEnding);
   if (!sunday) return {};
   return {
-    mon: toISODate(addDaysUTC(sunday, -6)),
-    tue: toISODate(addDaysUTC(sunday, -5)),
-    wed: toISODate(addDaysUTC(sunday, -4)),
-    thu: toISODate(addDaysUTC(sunday, -3)),
-    fri: toISODate(addDaysUTC(sunday, -2)),
-    sat: toISODate(addDaysUTC(sunday, -1)),
+    mon: toISODate(addDays(sunday, -6)),
+    tue: toISODate(addDays(sunday, -5)),
+    wed: toISODate(addDays(sunday, -4)),
+    thu: toISODate(addDays(sunday, -3)),
+    fri: toISODate(addDays(sunday, -2)),
+    sat: toISODate(addDays(sunday, -1)),
     sun: toISODate(sunday),
   };
 }
