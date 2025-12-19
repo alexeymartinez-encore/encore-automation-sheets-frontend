@@ -8,10 +8,29 @@ function sumFields(entry, fields) {
   );
 }
 
+function parseDateUTC(dateStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function addDaysUTC(dateObj, days) {
+  if (!dateObj) return null;
+  const d = new Date(dateObj);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d;
+}
+
 function formatDate(date) {
   if (!date) return "";
   try {
-    return new Date(date).toLocaleDateString();
+    const parsed = addDaysUTC(parseDateUTC(date), 1); // shift to Sunday display
+    if (!parsed) return date;
+    const mm = parsed.getUTCMonth() + 1;
+    const dd = parsed.getUTCDate();
+    const yyyy = parsed.getUTCFullYear();
+    return `${mm}/${dd}/${yyyy}`;
   } catch (err) {
     return date;
   }
@@ -21,27 +40,22 @@ function toISODate(dateObj) {
   return dateObj.toISOString().split("T")[0];
 }
 
-function toMonthDay(dateObj) {
-  const month = dateObj.getMonth() + 1;
-  const day = dateObj.getDate();
+function toMonthDayUTC(dateObj) {
+  const month = dateObj.getUTCMonth() + 1;
+  const day = dateObj.getUTCDate();
   return `${month}/${day}`;
 }
 
 function getWeekDates(weekEnding) {
-  if (!weekEnding) return {};
-  const sunday = new Date(weekEnding);
-  const addDays = (base, days) => {
-    const d = new Date(base);
-    d.setDate(d.getDate() + days);
-    return d;
-  };
+  const sunday = addDaysUTC(parseDateUTC(weekEnding), 1); // shift to Sunday
+  if (!sunday) return {};
   return {
-    mon: toISODate(addDays(sunday, -6)),
-    tue: toISODate(addDays(sunday, -5)),
-    wed: toISODate(addDays(sunday, -4)),
-    thu: toISODate(addDays(sunday, -3)),
-    fri: toISODate(addDays(sunday, -2)),
-    sat: toISODate(addDays(sunday, -1)),
+    mon: toISODate(addDaysUTC(sunday, -6)),
+    tue: toISODate(addDaysUTC(sunday, -5)),
+    wed: toISODate(addDaysUTC(sunday, -4)),
+    thu: toISODate(addDaysUTC(sunday, -3)),
+    fri: toISODate(addDaysUTC(sunday, -2)),
+    sat: toISODate(addDaysUTC(sunday, -1)),
     sun: toISODate(sunday),
   };
 }
@@ -83,7 +97,9 @@ function dayValues(entry, weekEnding) {
   return dayOrder.map(([key, label]) => {
     const reg = parseFloat(entry[`${key}_reg`] || 0);
     const ot = parseFloat(entry[`${key}_ot`] || 0);
-    const dateLabel = dayMap[key] ? toMonthDay(new Date(dayMap[key])) : "";
+    const dateLabel = dayMap[key]
+      ? toMonthDayUTC(parseDateUTC(dayMap[key]))
+      : "";
     return {
       key,
       label,
