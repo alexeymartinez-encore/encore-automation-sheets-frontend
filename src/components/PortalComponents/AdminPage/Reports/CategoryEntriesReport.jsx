@@ -15,6 +15,13 @@ function parseDateUTC(dateStr) {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
+function addDays(dateObj, days) {
+  if (!dateObj) return null;
+  const d = new Date(dateObj);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d;
+}
+
 function formatDate(date) {
   if (!date) return "";
   try {
