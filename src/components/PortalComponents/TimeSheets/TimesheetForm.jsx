@@ -72,7 +72,7 @@ export default function TimesheetForm({
   isAdmin = false,
 }) {
   const allow_overtime = localStorage.getItem("allow_overtime") === "true";
-  console.log(allow_overtime);
+  // console.log(allow_overtime);
   const navigate = useNavigate();
 
   const [timesheet, setTimesheet] = useState(initialTimesheetData);

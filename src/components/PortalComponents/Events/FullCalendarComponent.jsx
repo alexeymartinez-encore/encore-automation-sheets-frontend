@@ -168,6 +168,11 @@ export default function FullCalendarComponent({ eventsData = [] }) {
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,dayGridWeek,dayGridDay",
+          }}
           events={events}
           // buttonText={}
           titleFormat={{ year: "numeric", month: "long" }}

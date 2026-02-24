@@ -24,6 +24,9 @@ export default function RowComponent({
     "Sick",
   ];
 
+  const isProjectActive = (project) =>
+    project?.is_active !== false && project?.active !== false;
+
   // --- Project Sorting (unchanged) ---
   const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
     const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
@@ -32,6 +35,11 @@ export default function RowComponent({
     if (!aStartsLetter && bStartsLetter) return 1;
     return a.number.localeCompare(b.number, undefined, { sensitivity: "base" });
   });
+  const activeProjects = sortedProjects.filter(isProjectActive);
+  const selectedInactiveProject = sortedProjects.find(
+    (project) =>
+      Number(project.id) === Number(row.project_id) && !isProjectActive(project)
+  );
 
   // --- Enter key navigation (unchanged) ---
   function handleEnterKeyFocus(e) {
@@ -109,12 +117,22 @@ export default function RowComponent({
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         >
-          {sortedProjects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {/* {project.is_active} */}
-              {project.number} - {project.description}
-            </option>
-          ))}
+          <optgroup label="Active Projects">
+            {activeProjects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.number} - {project.description}
+              </option>
+            ))}
+          </optgroup>
+
+          {selectedInactiveProject && (
+            <optgroup label="Selected Inactive Project">
+              <option value={selectedInactiveProject.id}>
+                {selectedInactiveProject.number} -{" "}
+                {selectedInactiveProject.description} (inactive)
+              </option>
+            </optgroup>
+          )}
         </select>
       </td>
 

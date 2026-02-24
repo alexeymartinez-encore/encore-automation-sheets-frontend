@@ -12,6 +12,9 @@ export default function RowComponent({
   const [isActive, setIsActive] = useState(false);
 
   const miscCtx = useContext(MiscellaneousContext);
+  const isProjectActive = (project) =>
+    project?.is_active !== false && project?.active !== false;
+
   const sortedProjects = [...(miscCtx.projects || [])].sort((a, b) => {
     const aStartsLetter = /^[A-Za-z]/.test(a.number.trim());
     const bStartsLetter = /^[A-Za-z]/.test(b.number.trim());
@@ -25,6 +28,11 @@ export default function RowComponent({
       sensitivity: "base",
     });
   });
+  const activeProjects = sortedProjects.filter(isProjectActive);
+  const selectedInactiveProject = sortedProjects.find(
+    (project) =>
+      String(project.id) === String(row.project_id) && !isProjectActive(project)
+  );
   const totalAmount =
     Number(row.destination_cost || 0) +
     Number(row.lodging_cost || 0) +
@@ -95,11 +103,21 @@ export default function RowComponent({
           disabled={disabled}
         >
           <option value="Nothing"></option>
-          {sortedProjects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.number} - {project.description}
-            </option>
-          ))}
+          <optgroup label="Active Projects">
+            {activeProjects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.number} - {project.description}
+              </option>
+            ))}
+          </optgroup>
+          {selectedInactiveProject && (
+            <optgroup label="Selected Inactive Project">
+              <option value={selectedInactiveProject.id}>
+                {selectedInactiveProject.number} -{" "}
+                {selectedInactiveProject.description} (inactive)
+              </option>
+            </optgroup>
+          )}
         </select>
       </td>
       <td className="border px-1 text-center">

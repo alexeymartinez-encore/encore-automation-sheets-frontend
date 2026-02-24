@@ -53,6 +53,8 @@ export default function MiscellaneousContextProvider({ children }) {
     init(); // 👈 Call the wrapper async function
   }, [updated]);
 
+  console.log(projects);
+
   useEffect(() => {
     async function init() {
       const authenticated = await isAuth();
