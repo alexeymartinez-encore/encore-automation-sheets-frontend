@@ -259,7 +259,8 @@ export default function ManageExpensesTable() {
             amount: entry.entertainment_cost,
           });
         }
-
+        console.log("Expense:", expense);
+        console.log("Entry:", entry);
         rowsToCreate.forEach((row) => {
           allRows.push({
             ExpenseDate: expenseDate,
@@ -271,7 +272,7 @@ export default function ManageExpensesTable() {
             Type: withSGA(row.type, entry.sga_flag),
             TransportWhere: "",
             ProjectNumber: entry.project_number || "ProjOver",
-            Purpose: expense.message || "",
+            Purpose: entry.purpose || "",
             MiscDetail: row.miscDetail || "",
             MiscType: row.miscType || "",
             EntInfo: " ",
