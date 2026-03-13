@@ -259,8 +259,7 @@ export default function ManageExpensesTable() {
             amount: entry.entertainment_cost,
           });
         }
-        console.log("Expense:", expense);
-        console.log("Entry:", entry);
+
         rowsToCreate.forEach((row) => {
           allRows.push({
             ExpenseDate: expenseDate,
