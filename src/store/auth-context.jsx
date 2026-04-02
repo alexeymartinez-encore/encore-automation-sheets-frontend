@@ -54,13 +54,9 @@ export default function AuthContextProvider({ children }) {
   }, []);
 
   const handleUnauthorized = useCallback(() => {
+    // Avoid hard reload loops on repeated 401 responses.
+    // Protected routes already redirect through AuthCheck once auth state is cleared.
     clearSessionState();
-    if (
-      typeof window !== "undefined" &&
-      window.location.pathname !== "/employee-portal"
-    ) {
-      window.location.assign("/employee-portal");
-    }
   }, [clearSessionState]);
 
   useEffect(() => {
