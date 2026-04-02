@@ -1,9 +1,8 @@
-import { NavLink } from "react-router-dom";
 import AdminNavLink from "./AdminNavLink";
 
 export default function AdminNavBar() {
   return (
-    <div className=" flex gap-5 mt-5 py-2 bg-white shadow-sm rounded-md">
+    <div className="flex gap-2 md:gap-5 mt-5 py-2 px-2 bg-white shadow-sm rounded-md overflow-x-auto">
       <AdminNavLink to="/employee-portal/dashboard/admin" end>
         Sheets
       </AdminNavLink>
@@ -19,9 +18,9 @@ export default function AdminNavBar() {
       <AdminNavLink to="/employee-portal/dashboard/admin/reports">
         Reports
       </AdminNavLink>
-      {/* <AdminNavLink to="/employee-portal/dashboard/admin/other">
-        Project Management
-      </AdminNavLink> */}
+      <AdminNavLink to="/employee-portal/dashboard/admin/event-configuration">
+        Event Config
+      </AdminNavLink>
     </div>
   );
 }

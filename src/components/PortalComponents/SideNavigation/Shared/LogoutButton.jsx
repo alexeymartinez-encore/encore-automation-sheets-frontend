@@ -3,41 +3,23 @@ import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 export default function LogoutButton({ onClick, expanded }) {
   return (
-    <div
-      className={`${
-        expanded
-          ? "flex flex-row justify-start items-center w-[8rem] pl-2"
-          : "flex-1 flex justify-center"
-      }`}
-    >
+    <div className={expanded ? "w-[8rem] mx-auto" : "w-10 mx-auto"}>
       <button
-        className="text-red-600 py-1 px-3 rounded-md hover:text-red-400 transition duration-300 flex items-center justify-center"
+        className={`w-full text-red-600 py-1 px-2 rounded-md hover:text-red-400 transition-all duration-300 flex items-center ${
+          expanded ? "justify-start" : "justify-center"
+        }`}
         type="button"
         onClick={onClick}
       >
-        <FontAwesomeIcon
-          className={`${
-            expanded ? "text-red-600" : " text-red-500 py-1 px-3 rounded-md"
+        <FontAwesomeIcon className="text-red-600 h-4 w-4 shrink-0" icon={faRightFromBracket} />
+        <span
+          className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
+            expanded ? "max-w-[90px] opacity-100 ml-2" : "max-w-0 opacity-0 ml-0"
           }`}
-          icon={faRightFromBracket}
-        />
-        {expanded ? <span className="pl-2">Logout</span> : null}
+        >
+          Logout
+        </span>
       </button>
     </div>
   );
-}
-
-{
-  /* <div className="">
-<button
-  className=" text-red-500 py-1 px-3 rounded-md"
-  type="button"
-  onClick={logoutHandler}
->
-  <FontAwesomeIcon
-    className="text-red-500 "
-    icon={faRightFromBracket}
-  />
-</button>
-</div> */
 }

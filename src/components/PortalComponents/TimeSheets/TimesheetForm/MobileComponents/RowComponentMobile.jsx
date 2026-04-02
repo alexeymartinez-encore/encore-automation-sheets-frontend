@@ -14,6 +14,7 @@ export default function RowComponentMobile({
   onValueChange,
   onDeleteRow,
   disabled,
+  dayLabels,
 }) {
   const miscCtx = useContext(MiscellaneousContext);
   const restrictedProjects = ["Bereavement", "Holiday", "Vacation", "Sick"];
@@ -74,6 +75,7 @@ export default function RowComponentMobile({
           onValueChange={onValueChange}
           onDeleteRow={onDeleteRow}
           disabled={disabled}
+          dayLabels={dayLabels}
         />
       </td>
 

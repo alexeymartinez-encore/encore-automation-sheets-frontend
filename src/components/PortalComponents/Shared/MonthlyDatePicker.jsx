@@ -1,21 +1,25 @@
 import DatePicker from "react-datepicker";
 
 export default function MonthlyDatePicker({ onChange, selected, disabled }) {
-  // Allow only the first day of the month
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
+  const selectedDate =
+    selected instanceof Date ? selected : selected ? new Date(selected) : null;
 
   return (
-    <div className="flex gap-5 items-baseline text-xs z-10 w-full md:w-1/3">
-      <div className="flex gap-5 items-center justify-center bg-blue-500 px-3 py-2 rounded-md w-full">
-        <span className="text-white">Month Starting On:</span>
+    <div className="w-full xl:w-auto xl:min-w-[18rem]">
+      <div className="flex items-center gap-2 bg-blue-500 px-3 rounded-md w-full h-10">
+        <span className="text-white text-xs sm:text-sm font-medium whitespace-nowrap shrink-0">
+          Month Start:
+        </span>
         <DatePicker
-          selected={selected}
+          selected={selectedDate}
           onChange={onChange}
-          className="border text-center rounded-md py-1"
-          placeholderText="Select date"
-          filterDate={isFirstDayOfMonth} // Allow only the first day
-          dateFormat="dd MMMM yyyy" // Display as Month Year
-          showMonthYearPicker // Optional: pick by month
+          className="w-full h-8 border border-blue-200 text-center rounded-md px-2 text-xs sm:text-sm text-slate-800"
+          wrapperClassName="w-full"
+          placeholderText="Select month"
+          filterDate={isFirstDayOfMonth}
+          dateFormat="MM/yyyy"
+          showMonthYearPicker
           disabled={disabled}
         />
       </div>

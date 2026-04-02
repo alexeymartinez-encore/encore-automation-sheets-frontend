@@ -1,18 +1,25 @@
+/* eslint-disable react/prop-types */
 import { createContext, useState } from "react";
+import { toDateOnly } from "../util/dateOnly";
 
-// Create the context
 export const EventContext = createContext({
-  saveEvent: (event) => {},
+  saveEvent: () => {},
   fetchEventsByMonth: () => {},
-  updateEventById: (id, event) => {},
-  deleteEventById: (id) => {},
+  fetchEventsByRange: () => {},
+  fetchEventReport: () => {},
+  fetchEventTypes: () => {},
+  createEventType: () => {},
+  updateEventTypeById: () => {},
+  deleteEventTypeById: () => {},
+  updateEventById: () => {},
+  deleteEventById: () => {},
   successOrFailMessage: null,
   triggerSucessOrFailMessage: () => {},
   triggerUpdate: () => {},
   updated: false,
 });
 
-const monthNames = [
+const MONTH_NAMES = [
   "Jan",
   "Feb",
   "Mar",
@@ -27,6 +34,55 @@ const monthNames = [
   "Dec",
 ];
 
+function toMonthToken(value) {
+  const dateOnly = toDateOnly(value);
+  if (!dateOnly) return "";
+
+  const [year, month] = dateOnly.split("-");
+  const monthIndex = Number(month) - 1;
+  const monthName = MONTH_NAMES[monthIndex];
+
+  if (!monthName) return "";
+  return `${year}${monthName}`;
+}
+
+function normalizeEventRecord(eventRecord) {
+  if (!eventRecord) return null;
+
+  return {
+    ...eventRecord,
+    start: toDateOnly(eventRecord.start),
+    end_date: toDateOnly(eventRecord.end_date),
+  };
+}
+
+function normalizeEventCollection(eventRecords) {
+  if (!Array.isArray(eventRecords)) return [];
+
+  return eventRecords
+    .map((eventRecord) => normalizeEventRecord(eventRecord))
+    .filter(Boolean);
+}
+
+function normalizeEventReport(reportData) {
+  if (!reportData || typeof reportData !== "object") {
+    return { rows: [], summaryByType: {}, total: 0 };
+  }
+
+  return {
+    ...reportData,
+    rows: Array.isArray(reportData.rows)
+      ? reportData.rows.map((row) => ({
+          ...row,
+          start: toDateOnly(row.start),
+          end_date: toDateOnly(row.end_date),
+        }))
+      : [],
+    summaryByType: reportData.summaryByType || {},
+    total: Number(reportData.total) || 0,
+  };
+}
+
 export default function EventContextProvider({ children }) {
   const [updated, setUpdated] = useState(false);
   const [successOrFailMessage, setSuccessOrFailMessage] = useState({
@@ -36,84 +92,41 @@ export default function EventContextProvider({ children }) {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
-  async function saveEvent(eventData) {
-    const date = eventData.start;
-    // Extracting year and month from the date string
-    const [year, month] = date.split("-");
+  async function requestJson(path, options = {}) {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      credentials: "include",
+      ...options,
+    });
 
-    // Convert month number to month abbreviation
-    const formattedMonth = `${year}${monthNames[parseInt(month) - 1]}`;
-
-    eventData.formatted_month = formattedMonth;
-    const startDate = new Date(eventData.start);
-    const endDate = new Date(eventData.end_date);
-    eventData.start = startDate.toISOString().split("T")[0]; // Formats as YYYY-MM-DD
-    eventData.end_date = endDate.toISOString().split("T")[0]; // Formats as YYYY-MM-DD
-
+    let parsedData = null;
     try {
-      const response = await fetch(`${BASE_URL}/events/new-event`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(eventData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error saving event");
-      }
-      triggerUpdate();
-      triggerSucessOrFailMessage("success", "Saved Event Successfuly");
-      const data = await response.json();
-
-      return data;
-    } catch (error) {
-      console.error("Error saving event: ", error);
-      return;
+      parsedData = await response.json();
+    } catch {
+      parsedData = null;
     }
-  }
 
-  async function fetchEventsByMonth(date) {
-    // Extracting year and month from the date string
-    const [year, month] = date.split("-");
-
-    // Convert month number to month abbreviation
-    const formattedMonth = `${year}${monthNames[parseInt(month) - 1]}`;
-
-    try {
-      const response = await fetch(`${BASE_URL}/events/${formattedMonth}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Error saving event");
-      }
-
-      const data = await response.json();
-
-      return data;
-    } catch (error) {
-      console.error("Error saving event: ", error);
-      return;
+    if (!response.ok) {
+      const message = parsedData?.message || "Request failed.";
+      throw new Error(message);
     }
+
+    return parsedData;
   }
 
   function triggerUpdate() {
-    setUpdated(true);
+    setUpdated((prev) => !prev);
   }
 
   function triggerSucessOrFailMessage(status, message) {
     setSuccessOrFailMessage({
-      successStatus: status, // needs to be "success" or "fail"
-      message: message,
+      successStatus: status,
+      message,
     });
 
-    // Set a timeout to reset the state after 3 seconds (3000 ms)
     setTimeout(() => {
       setSuccessOrFailMessage({
         successStatus: "",
@@ -122,67 +135,245 @@ export default function EventContextProvider({ children }) {
     }, 5000);
   }
 
-  async function updateEventById(eventId, event) {
+  async function saveEvent(eventData) {
     try {
-      const response = await fetch(`${BASE_URL}/events/update/${eventId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(event),
+      const payload = {
+        ...eventData,
+        start: toDateOnly(eventData.start),
+        end_date: toDateOnly(eventData.end_date || eventData.start),
+      };
+
+      const data = await requestJson("/events/new-event", {
+        method: "POST",
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error("Error updating event");
-      }
-
-      const data = await response.json();
       triggerUpdate();
-      triggerSucessOrFailMessage(data.internalStatus, data.message);
-      return data;
+      triggerSucessOrFailMessage("success", data?.message || "Event saved.");
+      return normalizeEventRecord(data?.data?.[0]) || null;
     } catch (error) {
-      // console.error("Error Updating event: ", error);
+      console.error("Error saving event:", error);
+      triggerSucessOrFailMessage("fail", error.message || "Event save failed.");
+      return null;
+    }
+  }
+
+  async function updateEventById(eventId, eventData) {
+    try {
+      const payload = {
+        ...eventData,
+        start: toDateOnly(eventData.start),
+        end_date: toDateOnly(eventData.end_date || eventData.start),
+      };
+
+      const data = await requestJson(`/events/update/${eventId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
       triggerUpdate();
-      triggerSucessOrFailMessage("fail", "Edit Event Failed");
-      return;
+      triggerSucessOrFailMessage("success", data?.message || "Event updated.");
+      return normalizeEventRecord(data?.data?.[0]) || null;
+    } catch (error) {
+      console.error("Error updating event:", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Event update failed.",
+      );
+      return null;
     }
   }
 
   async function deleteEventById(eventId) {
     try {
-      const response = await fetch(`${BASE_URL}/events/delete/${eventId}`, {
+      const data = await requestJson(`/events/delete/${eventId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+      });
+      triggerUpdate();
+      triggerSucessOrFailMessage("success", data?.message || "Event deleted.");
+      return true;
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Event delete failed.",
+      );
+      return false;
+    }
+  }
+
+  async function fetchEventsByMonth(date) {
+    try {
+      const monthToken = toMonthToken(date);
+      if (!monthToken) return [];
+      const data = await requestJson(`/events/${monthToken}`, {
+        method: "GET",
       });
 
-      if (!response.ok) {
-        throw new Error("Error Deleting event");
+      return normalizeEventCollection(data?.data);
+    } catch (error) {
+      console.error("Error fetching events by month:", error);
+      return [];
+    }
+  }
+
+  async function fetchEventsByRange({
+    start,
+    end,
+    employeeIds = [],
+    eventTypeIds = [],
+    search = "",
+  }) {
+    try {
+      const params = new URLSearchParams();
+      params.set("start", toDateOnly(start));
+      params.set("end", toDateOnly(end));
+      if (employeeIds.length > 0) {
+        params.set("employeeIds", employeeIds.join(","));
+      }
+      if (eventTypeIds.length > 0) {
+        params.set("eventTypeIds", eventTypeIds.join(","));
+      }
+      if (search.trim()) {
+        params.set("search", search.trim());
       }
 
-      const data = await response.json();
-      triggerUpdate();
-      triggerSucessOrFailMessage(data.internalStatus, data.message);
-      return data;
+      const data = await requestJson(`/events/range?${params.toString()}`, {
+        method: "GET",
+      });
+
+      return normalizeEventCollection(data?.data);
     } catch (error) {
+      console.error("Error fetching events by range:", error);
+      return [];
+    }
+  }
+
+  async function fetchEventReport({
+    start,
+    end,
+    employeeIds = [],
+    eventTypeIds = [],
+    search = "",
+  }) {
+    try {
+      const params = new URLSearchParams();
+      params.set("start", toDateOnly(start));
+      params.set("end", toDateOnly(end));
+      if (employeeIds.length > 0) {
+        params.set("employeeIds", employeeIds.join(","));
+      }
+      if (eventTypeIds.length > 0) {
+        params.set("eventTypeIds", eventTypeIds.join(","));
+      }
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+
+      const data = await requestJson(`/events/report?${params.toString()}`, {
+        method: "GET",
+      });
+
+      return normalizeEventReport(data?.data);
+    } catch (error) {
+      console.error("Error fetching event report:", error);
+      return { rows: [], summaryByType: {}, total: 0 };
+    }
+  }
+
+  async function fetchEventTypes(includeInactive = false) {
+    try {
+      const params = includeInactive ? "?includeInactive=true" : "";
+      const data = await requestJson(`/events/types${params}`, {
+        method: "GET",
+      });
+      return data?.data || [];
+    } catch (error) {
+      console.error("Error fetching event types:", error);
+      return [];
+    }
+  }
+
+  async function createEventType(eventTypePayload) {
+    try {
+      const data = await requestJson("/events/types", {
+        method: "POST",
+        body: JSON.stringify(eventTypePayload),
+      });
       triggerUpdate();
-      triggerSucessOrFailMessage("fail", "Delete Event Failed");
-      return;
+      triggerSucessOrFailMessage(
+        "success",
+        data?.message || "Event type created.",
+      );
+      return data?.data || null;
+    } catch (error) {
+      console.error("Error creating event type:", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Create event type failed.",
+      );
+      return null;
+    }
+  }
+
+  async function updateEventTypeById(typeId, eventTypePayload) {
+    try {
+      const data = await requestJson(`/events/types/${typeId}`, {
+        method: "PUT",
+        body: JSON.stringify(eventTypePayload),
+      });
+      triggerUpdate();
+      triggerSucessOrFailMessage(
+        "success",
+        data?.message || "Event type updated.",
+      );
+      return data?.data || null;
+    } catch (error) {
+      console.error("Error updating event type:", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Update event type failed.",
+      );
+      return null;
+    }
+  }
+
+  async function deleteEventTypeById(typeId) {
+    try {
+      const data = await requestJson(`/events/types/${typeId}`, {
+        method: "DELETE",
+      });
+      triggerUpdate();
+      triggerSucessOrFailMessage(
+        "success",
+        data?.message || "Event type archived.",
+      );
+      return true;
+    } catch (error) {
+      console.error("Error archiving event type:", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Archive event type failed.",
+      );
+      return false;
     }
   }
 
   const contextValue = {
-    fetchEventsByMonth: fetchEventsByMonth,
-    saveEvent: saveEvent,
-    triggerUpdate: triggerUpdate,
-    triggerSucessOrFailMessage: triggerSucessOrFailMessage,
-    successOrFailMessage: successOrFailMessage,
-    updated: updated,
-    updateEventById: updateEventById,
-    deleteEventById: deleteEventById,
+    fetchEventsByMonth,
+    fetchEventsByRange,
+    fetchEventReport,
+    fetchEventTypes,
+    createEventType,
+    updateEventTypeById,
+    deleteEventTypeById,
+    saveEvent,
+    triggerUpdate,
+    triggerSucessOrFailMessage,
+    successOrFailMessage,
+    updated,
+    updateEventById,
+    deleteEventById,
   };
 
   return (

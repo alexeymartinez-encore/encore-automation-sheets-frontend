@@ -1,31 +1,38 @@
-import { createContext, useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { isAuth } from "../util/fetching";
 
 // Create the context and provide default values
 export const TimesheetContext = createContext({
   timesheets: [],
+  isLoading: false,
   updated: null,
   triggerUpdate: () => {},
   fetchTimesheets: () => {}, // Expose a function to refetch timesheets
   successOrFailMessage: null,
   triggerSucessOrFailMessage: () => {},
-  deleteTimesheetById: (id) => {},
+  deleteTimesheetById: () => {},
 });
 
 export default function TimesheetContextProvider({ children }) {
   const [timesheets, setTimesheets] = useState([]);
-  const [updated, setUpdated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [updated, setUpdated] = useState(0);
   const [successOrFailMessage, setSuccessOrFailMessage] = useState({
     successStatus: "",
     message: "",
   });
+  const latestFetchIdRef = useRef(0);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
-  async function fetchTimesheets() {
-    const userId = localStorage.getItem("userId");
+  const fetchTimesheets = useCallback(async () => {
+    const fetchId = latestFetchIdRef.current + 1;
+    latestFetchIdRef.current = fetchId;
+    setIsLoading(true);
+
     try {
-      const response = await fetch(`${BASE_URL}/timesheets/${userId}`, {
+      const response = await fetch(`${BASE_URL}/timesheets/me`, {
         headers: {
           // Authorization: "Bearer " + token,
         },
@@ -34,15 +41,23 @@ export default function TimesheetContextProvider({ children }) {
 
       const data = await response.json();
       if (response.ok) {
-        setTimesheets(data.data);
-        setUpdated(false);
+        if (fetchId === latestFetchIdRef.current) {
+          setTimesheets(data.data || []);
+        }
+        return data.data || [];
       } else {
         console.log("Error fetching timesheets");
+        return [];
       }
     } catch (error) {
       console.error("Error fetching timesheets:", error);
+      return [];
+    } finally {
+      if (fetchId === latestFetchIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }
+  }, [BASE_URL]);
 
   async function deleteTimesheetById(id) {
     if (id) {
@@ -83,10 +98,10 @@ export default function TimesheetContextProvider({ children }) {
       }
     }
     init();
-  }, [updated]);
+  }, [fetchTimesheets, updated]);
 
   function triggerUpdate() {
-    setUpdated(true);
+    setUpdated((previousValue) => previousValue + 1);
   }
 
   function triggerSucessOrFailMessage(status, message) {
@@ -106,6 +121,7 @@ export default function TimesheetContextProvider({ children }) {
 
   const timesheetsCtxValues = {
     timesheets: timesheets,
+    isLoading: isLoading,
     fetchTimesheets: fetchTimesheets,
     triggerUpdate: triggerUpdate,
     triggerSucessOrFailMessage: triggerSucessOrFailMessage,
@@ -119,3 +135,7 @@ export default function TimesheetContextProvider({ children }) {
     </TimesheetContext.Provider>
   );
 }
+
+TimesheetContextProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};

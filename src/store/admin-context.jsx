@@ -1,36 +1,41 @@
+import PropTypes from "prop-types";
 import { createContext, useState } from "react";
 
 // Create the context
 export const AdminContext = createContext({
   users: [],
-  getUsersTimesheetsByDate: (date) => {},
-  getUsersExpensesByDate: (date) => {},
-  saveTimesheetsStatusChanges: (timesheets) => {},
-  saveExpensesStatusChanges: (expenses) => {},
+  getUsersTimesheetsByDate: () => {},
+  getUsersExpensesByDate: () => {},
+  getMissingTimesheetsByDate: () => {},
+  getMissingExpensesByDate: () => {},
+  sendMissingTimesheetReminders: () => {},
+  sendMissingExpenseReminders: () => {},
+  saveTimesheetsStatusChanges: () => {},
+  saveExpensesStatusChanges: () => {},
   getAllEmployees: () => {},
   getAllProjects: () => {},
-  fetchOvertimeData: (date) => {},
-  fetchBereavementData: (date) => {},
-  fetchJuryDutyData: (date) => {},
-  fetchSickData: (date) => {},
-  fetchVacationData: (date) => {},
+  fetchOvertimeData: () => {},
+  fetchBereavementData: () => {},
+  fetchJuryDutyData: () => {},
+  fetchSickData: () => {},
+  fetchVacationData: () => {},
   fetchCategoryEntriesData: () => {},
-  fetchExpenseReportData: (date) => {},
+  fetchExpenseReportData: () => {},
   fetchOpenExpenseReportData: () => {},
   successOrFailMessage: null,
   triggerSucessOrFailMessage: () => {},
   triggerUpdate: () => {},
-  createNewProject: (projectData) => {},
-  deleteProjectById: (id) => {},
-  editProjectById: (id) => {},
-  editUserById: (id) => {},
+  createNewProject: () => {},
+  deleteProjectById: () => {},
+  editProjectById: () => {},
+  editUserById: () => {},
   fetchLaborData: () => {},
   getOpenExpenses: () => {},
   getOpenTimesheets: () => {},
 });
 
 export default function AdminContextProvider({ children }) {
-  const [updated, setUpdated] = useState(false);
+  const [, setUpdated] = useState(false);
   const [successOrFailMessage, setSuccessOrFailMessage] = useState({
     successStatus: "",
     message: "",
@@ -356,7 +361,7 @@ export default function AdminContextProvider({ children }) {
     } catch (error) {
       console.error("Error deleting row: ", error);
       triggerUpdate();
-      triggerSucessOrFailMessage(data.internalStatus, `${data.message}`);
+      triggerSucessOrFailMessage("fail", "Project creation failed");
       return;
     }
   }
@@ -415,7 +420,7 @@ export default function AdminContextProvider({ children }) {
       triggerSucessOrFailMessage(data.internalStatus, data.message);
       return data;
     } catch (error) {
-      // console.error("Error Updating event: ", error);
+      console.error("Error Updating event: ", error);
       triggerUpdate();
       triggerSucessOrFailMessage("fail", "Edit Event Failed");
       return;
@@ -444,7 +449,7 @@ export default function AdminContextProvider({ children }) {
       triggerSucessOrFailMessage(data.internalStatus, data.message);
       return data;
     } catch (error) {
-      // console.error("Error Updating event: ", error);
+      console.error("Error Updating event: ", error);
       triggerUpdate();
       triggerSucessOrFailMessage("fail", "Edit Event Failed");
       return;
@@ -513,6 +518,140 @@ export default function AdminContextProvider({ children }) {
     } catch (error) {
       console.error("Error getting open expenses: ", error);
       return;
+    }
+  }
+
+  async function getMissingTimesheetsByDate(weekEnding) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/timesheets/missing/${weekEnding}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting missing timesheets");
+      }
+
+      const data = await response.json();
+      return (
+        data.data || {
+          missingEmployees: [],
+          activeEmployeeCount: 0,
+          completedCount: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Error getting missing timesheets: ", error);
+      return {
+        missingEmployees: [],
+        activeEmployeeCount: 0,
+        completedCount: 0,
+      };
+    }
+  }
+
+  async function getMissingExpensesByDate(dateStart) {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/expenses/missing/${dateStart}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error getting missing expenses");
+      }
+
+      const data = await response.json();
+      return (
+        data.data || {
+          missingEmployees: [],
+          activeEmployeeCount: 0,
+          completedCount: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Error getting missing expenses: ", error);
+      return {
+        missingEmployees: [],
+        activeEmployeeCount: 0,
+        completedCount: 0,
+      };
+    }
+  }
+
+  async function sendMissingTimesheetReminders(payload) {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/timesheets/missing/remind`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Could not send timesheet reminders");
+      }
+
+      triggerSucessOrFailMessage(
+        data.internalStatus || "success",
+        data.message || "Timesheet reminders sent."
+      );
+      return data.data || null;
+    } catch (error) {
+      console.error("Error sending timesheet reminders: ", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Could not send timesheet reminders."
+      );
+      return null;
+    }
+  }
+
+  async function sendMissingExpenseReminders(payload) {
+    try {
+      const response = await fetch(`${BASE_URL}/admin/expenses/missing/remind`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Could not send expense reminders");
+      }
+
+      triggerSucessOrFailMessage(
+        data.internalStatus || "success",
+        data.message || "Expense reminders sent."
+      );
+      return data.data || null;
+    } catch (error) {
+      console.error("Error sending expense reminders: ", error);
+      triggerSucessOrFailMessage(
+        "fail",
+        error.message || "Could not send expense reminders."
+      );
+      return null;
     }
   }
 
@@ -594,6 +733,10 @@ export default function AdminContextProvider({ children }) {
   const contextValue = {
     getUsersTimesheetsByDate: getUsersTimesheetsByDate,
     getUsersExpensesByDate: getUsersExpensesByDate,
+    getMissingTimesheetsByDate: getMissingTimesheetsByDate,
+    getMissingExpensesByDate: getMissingExpensesByDate,
+    sendMissingTimesheetReminders: sendMissingTimesheetReminders,
+    sendMissingExpenseReminders: sendMissingExpenseReminders,
     saveTimesheetsStatusChanges: saveTimesheetsStatusChanges,
     saveExpensesStatusChanges: saveExpensesStatusChanges,
     triggerUpdate: triggerUpdate,
@@ -624,3 +767,7 @@ export default function AdminContextProvider({ children }) {
     </AdminContext.Provider>
   );
 }
+
+AdminContextProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};

@@ -1,35 +1,40 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useContext, useEffect } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { AuthContext } from "../../store/auth-context";
 
 export default function AuthCheck({ children }) {
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
-  const navigate = useNavigate();
+  const authCtx = useContext(AuthContext);
+  const location = useLocation();
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "";
   useEffect(() => {
-    fetch(`${BASE_URL}/auth/verify`, {
-      method: "GET",
-      credentials: "include", // Send the httpOnly cookie!
-    })
-      .then((res) => {
-        if (res.ok) {
-          setAuthenticated(true);
-        } else {
-          navigate("/employee-portal");
-        }
-      })
-      .catch(() => {
-        navigate("/employee-portal");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    if (!authCtx.isLoading && authCtx.isAuthenticated) {
+      authCtx.verifySession();
+    }
+  }, [
+    location.pathname,
+    authCtx.isLoading,
+    authCtx.isAuthenticated,
+    authCtx.verifySession,
+  ]);
 
-  if (loading) {
-    return <p className="flex items-center justify-center mt-40">Loading...</p>; // Or a nice spinner
+  if (authCtx.isLoading) {
+    return <p className="flex items-center justify-center mt-40">Loading...</p>;
   }
 
-  return authenticated ? children : null;
+  if (!authCtx.isAuthenticated) {
+    return (
+      <Navigate
+        to="/employee-portal"
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
+  }
+
+  return children;
 }
+
+AuthCheck.propTypes = {
+  children: PropTypes.node.isRequired,
+};

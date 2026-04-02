@@ -6,12 +6,11 @@ export default function FormTable({
   onValueChange,
   onDeleteRow,
   disabled,
-  timesheetId,
-  onAddDescription,
+  dayLabels,
 }) {
   return (
-    <table className="hidden md:table w-full overflow-x-auto">
-      <FormHeader />
+    <table className="w-full min-w-[1080px] table-auto">
+      <FormHeader dayLabels={dayLabels} />
       <FormBody
         data={data}
         onValueChange={onValueChange}

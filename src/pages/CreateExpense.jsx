@@ -1,18 +1,28 @@
 import { useLocation } from "react-router-dom";
+import FormContainerCard from "../components/PortalComponents/Shared/FormContainerCard";
 import ExpenseForm from "../components/PortalComponents/Expenses/ExpensesForm/ExpenseForm";
 
 export default function CreateExpensePage() {
   const location = useLocation();
-  const { prefillEntries } = location.state || {};
+  const { prefillEntries, prefillDate, adminCreate } = location.state || {};
+  const initialEmployee = adminCreate?.employeeId
+    ? {
+        id: adminCreate.employeeId,
+        first_name: adminCreate.first_name || "",
+        last_name: adminCreate.last_name || "",
+      }
+    : null;
 
   return (
-    <div className="my-5 bg-white shadow-md rounded-lg pb-10 overflow-x-scroll">
+    <FormContainerCard>
       <ExpenseForm
         expenseEntriesData={prefillEntries || []}
+        initialSelectedDate={prefillDate}
         expenseId={null}
         isEditing={false}
-        isAdmin={false}
+        isAdmin={Boolean(initialEmployee?.id)}
+        initialEmployee={initialEmployee}
       />
-    </div>
+    </FormContainerCard>
   );
 }

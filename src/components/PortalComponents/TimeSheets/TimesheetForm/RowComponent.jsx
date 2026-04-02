@@ -2,10 +2,12 @@ import React, { useContext } from "react";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MiscellaneousContext } from "../../../../store/miscellaneous-context";
+import { AuthContext } from "../../../../store/auth-context";
 import {
   phaseToAllowedCostCodes,
   projectsToAllowedMixPhasesCostCodes,
 } from "../../../../util/helper-vars";
+import { isUserOvertimeAllowed } from "../../../../util/authUser";
 
 export default function RowComponent({
   row,
@@ -14,7 +16,8 @@ export default function RowComponent({
   onDeleteRow,
   disabled,
 }) {
-  const allow_overtime = localStorage.getItem("allow_overtime") === "true";
+  const authCtx = useContext(AuthContext);
+  const allow_overtime = isUserOvertimeAllowed(authCtx.user);
   const miscCtx = useContext(MiscellaneousContext);
   const restrictedProjects = [
     "Admin",
@@ -80,14 +83,14 @@ export default function RowComponent({
     : false;
 
   return (
-    <tr className="bg-white text-[0.5rem] md:text-xs w-full ">
+    <tr className="bg-white text-[0.65rem] lg:text-xs w-full">
       <td className="border px-2 text-center py-2">{index + 1}</td>
 
       {/* Project Selector */}
       <td className="border px-2">
         <select
           value={row.project_id ?? ""}
-          className="w-full text-start px-2"
+          className="w-full text-start px-2 py-1"
           onChange={(e) => {
             const projectId = Number(e.target.value);
             const selectedProject = miscCtx.projects.find(
@@ -140,7 +143,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.phase_id ?? ""}
-          className="w-full text-start px-2"
+          className="w-full text-start px-2 py-1"
           onChange={(e) => {
             const newPhaseId = Number(e.target.value);
             onValueChange(index, "phase_id", newPhaseId);
@@ -175,7 +178,7 @@ export default function RowComponent({
       <td className="border px-2">
         <select
           value={row.cost_code_id ?? ""}
-          className="w-full text-start px-2"
+          className="w-full text-start px-2 py-1"
           onChange={(e) =>
             onValueChange(index, "cost_code_id", Number(e.target.value))
           }
@@ -213,7 +216,7 @@ export default function RowComponent({
         <input
           type="text"
           value={row.description}
-          className="w-full text-center px-2"
+          className="w-full text-center px-2 py-1"
           placeholder="Description"
           onChange={(e) => onValueChange(index, "description", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
@@ -227,7 +230,7 @@ export default function RowComponent({
           <input
             type="number"
             value={row[`${day}_reg`]}
-            className="w-full text-center px-2"
+            className="w-full text-center px-2 py-1"
             placeholder="Reg"
             min="0"
             step={0.5}
@@ -278,7 +281,7 @@ export default function RowComponent({
         <input
           type="number"
           value={row.total_hours}
-          className="w-full text-center px-2"
+          className="w-full text-center px-2 py-1"
           placeholder="Total"
           readOnly
           disabled={disabled}

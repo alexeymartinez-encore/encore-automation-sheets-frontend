@@ -65,7 +65,9 @@ export default function TimesheetCard({ timesheet, onDelete }) {
         <button
           type="button"
           onClick={() =>
-            navigate(`/employee-portal/dashboard/timesheets/${timesheet.id}`)
+            navigate(
+              `/employee-portal/dashboard/timesheets/details/${timesheet.id}`
+            )
           }
           className="inline-flex items-center gap-1 px-4 py-2 rounded-md text-sm font-medium bg-blue-500 text-white hover:bg-blue-400 transition"
         >

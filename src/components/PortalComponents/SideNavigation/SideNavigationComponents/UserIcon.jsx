@@ -1,23 +1,47 @@
+import { useContext } from "react";
 import { motion } from "framer-motion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { AuthContext } from "../../../../store/auth-context";
+
+function getUserInitials(user) {
+  const firstName = (user?.first_name || "").trim();
+  const lastName = (user?.last_name || "").trim();
+  const userName = (user?.user_name || "").trim();
+
+  if (firstName || lastName) {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`
+      .toUpperCase()
+      .trim() || "EP";
+  }
+
+  if (userName) {
+    const parts = userName.split(/[.\s_-]+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+    }
+    return userName.slice(0, 2).toUpperCase();
+  }
+
+  return "EP";
+}
 
 export default function UserIcon({ onClick, isExpanded }) {
+  const { user } = useContext(AuthContext);
+  const initials = getUserInitials(user);
+
   return (
     <div className="p-2">
       <motion.button onClick={onClick} className="text-white w-full py-4 px-2">
         <motion.div
-          animate={{ width: isExpanded ? "5rem" : "2rem" }}
+          animate={{
+            width: isExpanded ? "5rem" : "2rem",
+            height: isExpanded ? "5rem" : "2rem",
+          }}
           transition={{ duration: 0.5, type: "tween" }}
+          className={`mx-auto rounded-full bg-blue-500 text-white font-semibold flex items-center justify-center ${
+            isExpanded ? "text-2xl" : "text-xs"
+          }`}
         >
-          <FontAwesomeIcon
-            className={
-              isExpanded
-                ? "text-blue-500 h-[5rem] py-3"
-                : "text-blue-500 h-[2rem] py-3"
-            }
-            icon={faCircleUser}
-          />
+          {initials}
         </motion.div>
       </motion.button>
     </div>

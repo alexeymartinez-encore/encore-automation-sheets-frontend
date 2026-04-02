@@ -1,14 +1,14 @@
 import { useContext } from "react";
-import { UserContext } from "../../../store/user-context.jsx";
+import { AuthContext } from "../../../store/auth-context.jsx";
 
 export default function WelcomeHeader() {
-  const first_name = localStorage.getItem("first_name");
-  const last_name = localStorage.getItem("last_name");
-  const position = localStorage.getItem("position");
+  const { user } = useContext(AuthContext);
+  const first_name = user?.first_name;
+  const last_name = user?.last_name;
+  const position = user?.position;
 
-  // Check if userCtx.user exists before accessing properties
   if (!first_name || !last_name) {
-    return <p>Loading user data...</p>; // Display loading state while waiting for user data
+    return <p>Loading user data...</p>;
   }
 
   return (

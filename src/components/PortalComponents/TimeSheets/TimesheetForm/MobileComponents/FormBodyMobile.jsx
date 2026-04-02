@@ -5,6 +5,7 @@ export default function FormBodyMobile({
   onValueChange,
   onDeleteRow,
   disabled,
+  dayLabels,
 }) {
   return (
     <tbody className="w-full ">
@@ -16,6 +17,7 @@ export default function FormBodyMobile({
           onValueChange={onValueChange}
           onDeleteRow={onDeleteRow} // Pass delete handler
           disabled={disabled}
+          dayLabels={dayLabels}
         />
       ))}
     </tbody>

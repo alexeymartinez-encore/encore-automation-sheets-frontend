@@ -1,8 +1,13 @@
 import { redirect } from "react-router";
+import { getSessionUser } from "../store/session-store";
+import { getAuthUserRoleId } from "./authUser";
+
+function getSessionRoleId() {
+  return getAuthUserRoleId(getSessionUser());
+}
 
 export function checkIfAdmin() {
-  const role = localStorage.getItem("role_id");
-  if (role !== "3") {
+  if (getSessionRoleId() !== 3) {
     return redirect("/employee-portal/dashboard");
   } else {
     return null;
@@ -10,8 +15,7 @@ export function checkIfAdmin() {
 }
 
 export function checkIfManager() {
-  const role = localStorage.getItem("role_id");
-  if (role !== "2") {
+  if (getSessionRoleId() !== 2) {
     return redirect("/employee-portal/dashboard");
   } else {
     return null;

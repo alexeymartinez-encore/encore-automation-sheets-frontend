@@ -13,6 +13,8 @@ import {
   formatMonthDate,
 } from "../../../../util/helper";
 import MonthlyDatePicker from "../../Shared/MonthlyDatePicker";
+import { AuthContext } from "../../../../store/auth-context";
+import { getAuthUserId, getAuthUserName } from "../../../../util/authUser";
 
 const initialExpenseData = {
   approved: false,
@@ -70,6 +72,9 @@ export default function ExpenseForm({
   const [isSaving, setIsSaving] = useState(false);
 
   const expenseCtx = useContext(ExpensesContext);
+  const authCtx = useContext(AuthContext);
+  const currentUserId = getAuthUserId(authCtx.user);
+  const currentUserName = getAuthUserName(authCtx.user);
   let filteredExpense;
   useEffect(() => {
     if (expenseEntriesData && expenseId && expenseCtx.expenses.length) {
@@ -85,7 +90,7 @@ export default function ExpenseForm({
           ...prevExpense,
           signed: filteredExpense.signed,
           total: filteredExpense.total,
-          employee_id: localStorage.getItem("userId"),
+          employee_id: currentUserId ?? "",
         }));
       }
 
@@ -118,6 +123,7 @@ export default function ExpenseForm({
       setRowData(fullRows);
     }
   }, [
+    currentUserId,
     expenseEntriesData,
     expenseId,
     expenseCtx.expenses,
@@ -192,13 +198,13 @@ export default function ExpenseForm({
       approved: expense.approved,
       approved_by: expense.approved_by,
       date_paid: expense.date_paid,
-      employee_id: localStorage.getItem("userId"),
+      employee_id: currentUserId ?? "",
       id: Number(expense.id) || expenseId,
       message: expense.message,
       paid: expense.paid,
       processed_by: expense.processed_by,
       signed: expense.signed,
-      submitted_by: expense.signed ? localStorage.getItem("user_name") : "None",
+      submitted_by: expense.signed ? currentUserName || "None" : "None",
       num_of_days: Number(num_of_days),
       date_start: selectedDate,
       total: Number(total.grand_total.toFixed(2)),

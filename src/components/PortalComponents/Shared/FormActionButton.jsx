@@ -21,16 +21,13 @@ export default function FormActionButton({
   return (
     <button
       onClick={onClick}
-      className={`flex justify-center gap-2 items-center w-full py-2  rounded-md duration-500 ${style} ${
+      className={`inline-flex justify-center gap-2 items-center w-full sm:w-auto sm:min-w-[6.5rem] h-10 rounded-md duration-300 ${style} ${
         isSaving ? "opacity-50 cursor-not-allowed" : ""
-      } text-sm md:text-lg px-1 md:px-3`}
+      } text-xs sm:text-sm px-3`}
       disabled={disabled || isSaving}
     >
-      <FontAwesomeIcon
-        className="text-white md:pl-4 hidden md:block"
-        icon={icon}
-      />
-      <span className="text-white md:px-4">{text}</span>
+      <FontAwesomeIcon className="text-white hidden sm:block" icon={icon} />
+      <span className="text-white">{text}</span>
     </button>
   );
 }

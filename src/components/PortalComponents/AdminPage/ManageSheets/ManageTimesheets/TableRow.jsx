@@ -4,7 +4,7 @@ export default function TableRow({ timesheet, index, onValueChange }) {
   return (
     <div className="grid grid-cols-6 md:grid-cols-9 py-1 px-3  items-center text-[0.6rem] md:text-[0.7rem] rounded-b-md text-center">
       <Link
-        to={`/employee-portal/dashboard/timesheets/${timesheet.id}?adminMode=true`}
+        to={`/employee-portal/dashboard/timesheets/details/${timesheet.id}?adminMode=true`}
         className="text-left underline text-blue-500 "
       >
         {timesheet.last_name}

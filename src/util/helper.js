@@ -1,4 +1,5 @@
 import { addDays, startOfMonth } from "date-fns";
+import { toMonthStartDate } from "./dateOnly.js";
 
 // Function to calculate the end of the current week (Sunday)
 
@@ -116,24 +117,15 @@ export function formatWeekendDate(date) {
 }
 
 export function formatMonthDate(date) {
-  const monthStarting = new Date(date);
-
-  const nextMonthStart = new Date(
-    monthStarting.getFullYear(),
-    monthStarting.getMonth() + 1, // Move to the next month
-    1 // First day of the month
-  );
-
-  const formattedMonthStartingDate = nextMonthStart.toLocaleDateString(
-    "en-US",
-    {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    }
-  );
-
-  return formattedMonthStartingDate;
+  const monthStarting = toMonthStartDate(date);
+  if (!monthStarting) {
+    return "";
+  }
+  return monthStarting.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
 }
 
 // Format the selectedDate for display (e.g., MM/DD/YYYY)
@@ -144,4 +136,18 @@ export function formatDate(date) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+export function getWeekDayDateLabels(weekEndingDate) {
+  const weekEnding = getEndOfWeek(weekEndingDate || new Date());
+  const monday = addDays(weekEnding, -6);
+  const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+  return dayKeys.reduce((labels, key, offset) => {
+    labels[key] = addDays(monday, offset).toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+    });
+    return labels;
+  }, {});
 }

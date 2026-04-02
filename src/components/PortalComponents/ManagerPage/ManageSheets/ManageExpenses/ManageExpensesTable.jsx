@@ -5,74 +5,62 @@ import TaskBar from "./TaskBar";
 import { AdminContext } from "../../../../../store/admin-context";
 import { getStartOfMonth } from "../../../../../util/helper";
 import { ExpensesContext } from "../../../../../store/expense-context";
+import { AuthContext } from "../../../../../store/auth-context";
+import { getAuthUserId, getAuthUserName } from "../../../../../util/authUser";
+import LoadingState from "../../../Shared/LoadingState";
+import ConfirmActionModal from "../../../Shared/ConfirmActionModal";
+import useActionConfirmation from "../../../../../hooks/useActionConfirmation";
 
 export default function ManageExpensesTable() {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
   const [expenses, setExpenses] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
+  const authCtx = useContext(AuthContext);
+  const currentUserId = getAuthUserId(authCtx.user);
+  const currentUserName = getAuthUserName(authCtx.user) || "Unknown User";
+  const {
+    confirmationDialog,
+    requestConfirmation,
+    confirmConfirmation,
+    cancelConfirmation,
+  } = useActionConfirmation();
 
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
-  // // const isSunday = (date) => date.getDay() === 0;
-  // async function handleToggle() {
-
-  //   setIsToggled((prevState) => !prevState);
-  //   const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
-
-  //   const res = await adminCtx.getOpenExpenses();
-  //   const filtered = (res || []).filter((ts) => ts.manager_id === userId);
-
-  //   setExpenses(filtered || []);
-  // }
   async function handleToggle() {
     const nextState = !isToggled; // what we're switching to
     setIsToggled(nextState);
-
-    const userId = Number(localStorage.getItem("userId"));
+    setIsLoading(true);
+    if (!currentUserId) {
+      setExpenses([]);
+      setIsLoading(false);
+      return;
+    }
     const isoDate = new Date(selectedDate).toISOString();
 
     // Same logic as your first snippet:
     // true  -> getOpenExpenses
     // false -> getUsersExpensesByDate(selectedDate)
-    const res = nextState
-      ? await adminCtx.getOpenExpenses()
-      : await adminCtx.getUsersExpensesByDate(isoDate);
+    try {
+      const res = nextState
+        ? await adminCtx.getOpenExpenses()
+        : await adminCtx.getUsersExpensesByDate(isoDate);
 
-    const filtered = (res ?? []).filter(
-      (ts) => Number(ts.manager_id) === userId
-    );
-
-    setExpenses(filtered);
-  }
-
-  async function handleToggle2() {
-    setIsToggled((prevState) => {
-      const newState = !prevState;
-      const isoDate = new Date(selectedDate).toISOString();
-      const userId = Number(localStorage.getItem("userId"));
-      let res;
-      if (newState) {
-        // Going to Open Expenses
-        res = adminCtx.getOpenExpenses();
-      } else {
-        // Going back to Expenses By Date
-        res = adminCtx.getUsersExpensesByDate(isoDate);
-      }
       const filtered = (res ?? []).filter(
-        (ts) => Number(ts.manager_id) === userId
+        (ts) => Number(ts.manager_id) === currentUserId
       );
-      setExpenses(filtered);
 
-      return newState;
-    });
+      setExpenses(filtered);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleValueChange(index, field, value) {
-    const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
-
     setExpenses((prevExpenses) => {
       const updatedExpenses = [...prevExpenses];
       const isChecked =
@@ -81,9 +69,9 @@ export default function ManageExpensesTable() {
       updatedExpenses[index] = {
         ...updatedExpenses[index],
         [field]: isChecked, // Update the checkbox field
-        ...(field === "signed" && isChecked && { submitted_by: userName }),
-        ...(field === "approved" && isChecked && { approved_by: userName }),
-        ...(field === "paid" && isChecked && { processed_by: userName }),
+        ...(field === "signed" && isChecked && { submitted_by: currentUserName }),
+        ...(field === "approved" && isChecked && { approved_by: currentUserName }),
+        ...(field === "paid" && isChecked && { processed_by: currentUserName }),
       };
 
       return updatedExpenses;
@@ -108,17 +96,26 @@ export default function ManageExpensesTable() {
 
   useEffect(() => {
     async function getExpenses() {
-      const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
+      setIsLoading(true);
+      if (!currentUserId) {
+        setExpenses([]);
+        setIsLoading(false);
+        return;
+      }
       const isoDate = new Date(selectedDate).toISOString();
 
-      const res = await adminCtx.getUsersExpensesByDate(isoDate);
-      const filtered = (res || []).filter(
-        (ts) => Number(ts.manager_id) === userId
-      );
-      setExpenses(filtered || []);
+      try {
+        const res = await adminCtx.getUsersExpensesByDate(isoDate);
+        const filtered = (res || []).filter(
+          (ts) => Number(ts.manager_id) === currentUserId
+        );
+        setExpenses(filtered || []);
+      } finally {
+        setIsLoading(false);
+      }
     }
     getExpenses();
-  }, [selectedDate]);
+  }, [adminCtx, currentUserId, selectedDate]);
 
   //   useEffect(() => {
   //   async function getExpenses() {
@@ -139,32 +136,64 @@ export default function ManageExpensesTable() {
     }
   }
 
-  function handleSetAllApproved() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
+  async function handleSaveStatusChangesWithConfirmation() {
+    const shouldSave = await requestConfirmation({
+      title: "Save Status Changes?",
+      message:
+        "This will apply the modified signed/approved/paid status values to these expense sheets.",
+      confirmLabel: "Save",
+    });
+    if (!shouldSave) return;
 
+    await handleSaveStatusChanges();
+  }
+
+  function handleSetAllApproved() {
     setExpenses((prevExpenses) => {
       const allApproved = prevExpenses.every((expense) => expense.approved);
 
       return prevExpenses.map((expense) => ({
         ...expense,
         approved: !allApproved, // Toggle the approved state
-        approved_by: !allApproved ? userName : "", // Set approved_by only if approving
+        approved_by: !allApproved ? currentUserName : "", // Set approved_by only if approving
       }));
     });
   }
 
-  function handleSetAllProcessed() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
+  async function handleSetAllApprovedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Approved'?",
+      message:
+        "This will toggle the Approved status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
 
+    handleSetAllApproved();
+  }
+
+  function handleSetAllProcessed() {
     setExpenses((prevExpenses) => {
       const allProcessed = prevExpenses.every((expense) => expense.paid);
 
       return prevExpenses.map((expense) => ({
         ...expense,
         paid: !allProcessed, // Toggle the processed state
-        processed_by: !allProcessed ? userName : "", // Set processed_by only if processing
+        processed_by: !allProcessed ? currentUserName : "", // Set processed_by only if processing
       }));
     });
+  }
+
+  async function handleSetAllProcessedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Paid'?",
+      message:
+        "This will toggle the Paid status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
+
+    handleSetAllProcessed();
   }
 
   // console.log("SELECTED DATE: ", selectedDate);
@@ -189,8 +218,18 @@ export default function ManageExpensesTable() {
       "Cell Phone": "CellPhn",
       "Employee Education / Training": "EmplEd",
       "Supplies / Part": "SupplsPrts",
-      "Employee Relations": "EmpRel",
+      "Employee Relations": "EmplyRelat",
     };
+
+    const normalizeReportType = (type) =>
+      (
+        {
+          Bereavement: "Bereavem",
+          EmpRelat: "EmplyRelat",
+          EmpRelatSGA: "EmplyRelatSGA",
+          EmpRel: "EmplyRelat",
+        }
+      )[type] || type;
 
     newExpenses.forEach((expenseWrapper) => {
       const expense = expenseWrapper.expense;
@@ -277,7 +316,7 @@ export default function ManageExpensesTable() {
       EmployeeNumber="${employee?.employee_number || ""}"
       EmployeeName="${employee?.first_name || ""} ${employee?.last_name || ""}"
       Amount="${Number(row.amount).toFixed(4)}"
-      Type="${row.type}"
+      Type="${normalizeReportType(row.type)}"
       TransportWhere=""
       ProjectNumber="${entry.project_number || "ProjOver"}"
       Purpose="${expense.message || ""}"
@@ -307,9 +346,9 @@ export default function ManageExpensesTable() {
         selectedDate={selectedDate}
         goToPreviousMonth={goToPreviousMonth}
         goToNextMonth={goToNextMonth}
-        saveChanges={handleSaveStatusChanges}
-        setAllApproved={handleSetAllApproved}
-        setAllPaid={handleSetAllProcessed}
+        saveChanges={handleSaveStatusChangesWithConfirmation}
+        setAllApproved={handleSetAllApprovedWithConfirmation}
+        setAllPaid={handleSetAllProcessedWithConfirmation}
         generateReport={generateExpenseReport}
         isToggled={isToggled}
         handleToggle={handleToggle}
@@ -317,7 +356,12 @@ export default function ManageExpensesTable() {
       />
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
-        {expenses && expenses.length > 0 ? (
+        {isLoading ? (
+          <LoadingState
+            label="Loading manager expenses..."
+            className="bg-transparent py-6"
+          />
+        ) : expenses && expenses.length > 0 ? (
           expenses.map((expense, index) => (
             <TableRow
               key={expense.id}
@@ -332,6 +376,16 @@ export default function ManageExpensesTable() {
           </p>
         )}
       </div>
+      <ConfirmActionModal
+        isOpen={confirmationDialog.isOpen}
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmLabel={confirmationDialog.confirmLabel}
+        cancelLabel={confirmationDialog.cancelLabel}
+        tone={confirmationDialog.tone}
+        onConfirm={confirmConfirmation}
+        onCancel={cancelConfirmation}
+      />
     </div>
   );
 }

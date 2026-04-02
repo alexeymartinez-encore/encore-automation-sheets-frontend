@@ -28,12 +28,19 @@ export default function RootLayout() {
     "/employee-portal/dashboard/expenses/create-expense",
     "/employee-portal/dashboard/manager",
     "/employee-portal/dashboard/admin/reports",
+    "/employee-portal/dashboard/admin/event-configuration",
+    "/employee-portal/dashboard/admin/event-types",
+    "/employee-portal/dashboard/admin/event-reports",
   ];
 
   const isHeaderHidden =
     noHeaderRoutes.includes(location.pathname) ||
     matchPath(
-      "/employee-portal/dashboard/timesheets/:timesheetId",
+      "/employee-portal/dashboard/timesheets/details/:timesheetId",
+      location.pathname
+    ) ||
+    matchPath(
+      "/employee-portal/dashboard/expenses/details/:expenseId",
       location.pathname
     ) ||
     matchPath(
