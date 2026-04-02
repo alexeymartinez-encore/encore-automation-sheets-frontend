@@ -3,29 +3,17 @@ import { useContext, useEffect, useState } from "react";
 import { TimesheetContext } from "../store/timesheet-context";
 import FormContainerCard from "../components/PortalComponents/Shared/FormContainerCard";
 import TimesheetForm from "../components/PortalComponents/TimeSheets/TimesheetForm";
-import { encode, decode } from "js-base64";
 
 export default function TimesheetDetail() {
   const params = useParams();
-  const [searchParams] = useSearchParams(); // gets query params like adminMode=true
+  const [searchParams] = useSearchParams();
 
   const [timesheetEntriesData, setTimesheetEntriesData] = useState([]);
   const timesheetCtx = useContext(TimesheetContext);
-  const adminMode = searchParams?.get("adminMode") === "true"; // boolean
+  const adminMode = searchParams?.get("adminMode") === "true";
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
-  const realId = params.timesheetId; // e.g. "4002"
-  const encodedId = encode(realId); // e.g. "NDAwMg=="
-
-  // // Replace the visible URL after mount
-  // useEffect(() => {
-  //   const newUrl = `/employee-portal/dashboard/timesheets/${encodedId}${
-  //     adminMode ? "?adminMode=true" : ""
-  //   }`;
-
-  //   // Replace only the visible URL — doesn’t trigger navigation
-  //   window.history.replaceState(null, "", newUrl);
-  // }, [encodedId, adminMode]);
+  const realId = params.timesheetId;
 
   useEffect(() => {
     async function fetchTimesheetEntriesData() {
@@ -53,7 +41,7 @@ export default function TimesheetDetail() {
     }
 
     fetchTimesheetEntriesData();
-  }, [timesheetCtx.timesheets]);
+  }, [baseUrl, realId, timesheetCtx.timesheets]);
 
   return (
     <FormContainerCard>

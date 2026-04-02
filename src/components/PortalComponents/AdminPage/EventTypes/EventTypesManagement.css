@@ -1,0 +1,35 @@
+.circle-color-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 9999px;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  cursor: pointer;
+}
+
+.circle-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.circle-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+
+.circle-color-input::-moz-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+
+.color-swatch-circle {
+  display: inline-block;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 2px solid #cbd5e1;
+}

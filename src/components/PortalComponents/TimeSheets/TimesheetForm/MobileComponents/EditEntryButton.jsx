@@ -9,6 +9,7 @@ export default function EditEntryButton({
   onValueChange,
   onDeleteRow,
   disabled,
+  dayLabels,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -24,7 +25,7 @@ export default function EditEntryButton({
 
       {showModal && (
         <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50"
+          className="fixed inset-0 z-50 bg-gray-900/55 flex justify-center items-start sm:items-center p-3 sm:p-4 overflow-y-auto"
           onClick={toggleModal}
         >
           <EditRowModal
@@ -34,6 +35,7 @@ export default function EditEntryButton({
             onValueChange={onValueChange}
             onDeleteRow={onDeleteRow}
             disabled={disabled}
+            dayLabels={dayLabels}
           />
         </div>
       )}

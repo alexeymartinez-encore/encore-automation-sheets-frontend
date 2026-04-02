@@ -4,7 +4,7 @@ export default function TableRow({ expense, index, onValueChange }) {
   return (
     <div className="grid grid-cols-6 md:grid-cols-9  items-center py-1 px-3 text-[0.6rem] md:text-[0.7rem] ">
       <Link
-        to={`/employee-portal/dashboard/expenses/${expense.id}?adminMode=true`}
+        to={`/employee-portal/dashboard/expenses/details/${expense.id}?adminMode=true`}
         className="flex-1 text-left underline text-blue-500"
       >
         {expense.last_name}

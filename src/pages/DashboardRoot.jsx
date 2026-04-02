@@ -1,12 +1,24 @@
 import SideNavigation from "../components/PortalComponents/SideNavigation/SideNavigation";
 import WelcomeHeader from "../components/PortalComponents/PortalHome/WelcomeHeader";
 import { Outlet, useLocation, matchPath } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MobileNavigation from "../components/PortalComponents/SideNavigation/MobileNavigation";
+
+const SIDENAV_STORAGE_KEY = "encore_sidebar_expanded";
 
 export default function DashboardRootLayout() {
   const location = useLocation();
-  const [isNavExpanded, setIsNavExpanded] = useState(true); // shared state
+  const [isNavExpanded, setIsNavExpanded] = useState(() => {
+    const saved =
+      typeof window !== "undefined"
+        ? localStorage.getItem(SIDENAV_STORAGE_KEY)
+        : null;
+    return saved === null ? true : saved === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(SIDENAV_STORAGE_KEY, String(isNavExpanded));
+  }, [isNavExpanded]);
 
   const noHeaderRoutes = [
     "/employee-portal/dashboard/timesheets/create-timesheet",
@@ -20,12 +32,19 @@ export default function DashboardRootLayout() {
     "/employee-portal/dashboard/admin/user-management",
     "/employee-portal/dashboard/manager",
     "/employee-portal/dashboard/admin/reports",
+    "/employee-portal/dashboard/admin/event-configuration",
+    "/employee-portal/dashboard/admin/event-types",
+    "/employee-portal/dashboard/admin/event-reports",
   ];
 
   const isHeaderHidden =
     noHeaderRoutes.includes(location.pathname) ||
     matchPath(
-      "/employee-portal/dashboard/timesheets/:timesheetId",
+      "/employee-portal/dashboard/timesheets/details/:timesheetId",
+      location.pathname
+    ) ||
+    matchPath(
+      "/employee-portal/dashboard/expenses/details/:expenseId",
       location.pathname
     ) ||
     matchPath(

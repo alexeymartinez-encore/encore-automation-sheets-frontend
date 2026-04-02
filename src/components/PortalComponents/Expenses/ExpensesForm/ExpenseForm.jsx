@@ -1,42 +1,44 @@
 import { useState, useEffect, useContext, useRef } from "react";
+import PropTypes from "prop-types";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { startOfMonth, getDaysInMonth } from "date-fns";
 import HeaderComponent from "./HeaderComponent";
 import SubheaderComponent from "./SubheaderComponent";
 import RowComponent from "./RowComponent";
+import FormTableMobile from "./MobileComponents/FormTableMobile";
 import FormActionsButtons from "../../Shared/FormActionButtons";
 import TableFooterComponent from "./TableFooterComponent";
 import { ExpensesContext } from "../../../../store/expense-context";
 import { saveExpenseSheet } from "../../../../util/fetching";
-import {
-  calculateColumnTotals,
-  formatMonthDate,
-} from "../../../../util/helper";
+import { calculateColumnTotals } from "../../../../util/helper";
+import { toMonthStartDate } from "../../../../util/dateOnly";
 import MonthlyDatePicker from "../../Shared/MonthlyDatePicker";
 import { useNavigate } from "react-router-dom";
 import { FaReceipt } from "react-icons/fa";
 import AddReceiptModal from "./AddReceiptModal";
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
-const initialExpenseData = {
-  approved: false,
-  approved_by: "None",
-  createdAt: "",
-  date_paid: null,
-  employee_id: "",
-  employee_name: "",
-  id: null,
-  message: "None",
-  paid: false,
-  processed_by: "None",
-  signed: false,
-  submitted_by: "None",
-  num_of_days: "",
-  updatedAt: "",
-  date_start: "",
-  total: "",
-};
+function getInitialExpenseData(employeeId = null) {
+  return {
+    approved: false,
+    approved_by: "None",
+    createdAt: "",
+    date_paid: null,
+    employee_id: employeeId ?? "",
+    employee_name: "",
+    id: null,
+    message: "None",
+    paid: false,
+    processed_by: "None",
+    signed: false,
+    submitted_by: "None",
+    num_of_days: "",
+    updatedAt: "",
+    date_start: "",
+    total: "",
+  };
+}
 
 const intitialEntriesData = [
   {
@@ -65,6 +67,17 @@ const intitialEntriesData = [
 const getStartOfMonth = (date) => {
   return startOfMonth(date);
 };
+
+function getInitialExpenseMonth(value) {
+  if (value) {
+    const monthStart = toMonthStartDate(value);
+    if (monthStart) {
+      return monthStart;
+    }
+  }
+
+  return getStartOfMonth(new Date());
+}
 
 function hasMeaningfulData(row) {
   const num = (v) => Number(v || 0);
@@ -120,7 +133,9 @@ async function safeParse(res) {
   if (ct.includes("application/json")) {
     try {
       return JSON.parse(text);
-    } catch {}
+    } catch (error) {
+      console.error("Error parsing expense response:", error);
+    }
   }
   return { message: text, internalStatus: "fail" };
 }
@@ -130,25 +145,81 @@ export default function ExpenseForm({
   expenseId = null,
   isEditing = false,
   isAdmin = false,
+  initialSelectedDate = null,
+  initialEmployee = null,
 }) {
-  const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
-  const [expense, setExpense] = useState(initialExpenseData);
+  const initialEmployeeId = initialEmployee?.id ?? null;
+  const initialFirstName = initialEmployee?.first_name || "";
+  const initialLastName = initialEmployee?.last_name || "";
+
+  const [selectedDate, setSelectedDate] = useState(() =>
+    getInitialExpenseMonth(initialSelectedDate)
+  );
+  const [expense, setExpense] = useState(() =>
+    getInitialExpenseData(initialEmployeeId)
+  );
   const [rowData, setRowData] = useState(expenseEntriesData);
   const [showModal, setShowModal] = useState(false);
   const [receiptFiles, setReceiptFiles] = useState([]);
-  const [savedFilesByEntry, setSavedFilesByEntry] = useState({});
   const [isSaving, setIsSaving] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState({
-    id: null,
-    first_name: "",
-    last_name: "",
+    id: initialEmployeeId,
+    first_name: initialFirstName,
+    last_name: initialLastName,
   });
 
   const expenseCtx = useContext(ExpensesContext);
   const navigate = useNavigate();
 
   const hydratedRef = useRef(null);
+  const expenseEntriesRef = useRef(expenseEntriesData);
+  const expensesRef = useRef(expenseCtx.expenses);
+
+  useEffect(() => {
+    expenseEntriesRef.current = expenseEntriesData;
+  }, [expenseEntriesData]);
+
+  useEffect(() => {
+    expensesRef.current = expenseCtx.expenses;
+  }, [expenseCtx.expenses]);
+
+  useEffect(() => {
+    if (expenseId) {
+      return;
+    }
+
+    setSelectedDate(getInitialExpenseMonth(initialSelectedDate));
+  }, [expenseId, initialSelectedDate]);
+
+  useEffect(() => {
+    if (expenseId) {
+      return;
+    }
+
+    if (initialEmployeeId) {
+      setExpense((prevExpense) => ({
+        ...prevExpense,
+        employee_id: Number(initialEmployeeId),
+      }));
+      setSelectedUser({
+        id: Number(initialEmployeeId),
+        first_name: initialFirstName,
+        last_name: initialLastName,
+      });
+      return;
+    }
+
+    setExpense((prevExpense) => ({
+      ...prevExpense,
+      employee_id: "",
+    }));
+    setSelectedUser({
+      id: null,
+      first_name: "",
+      last_name: "",
+    });
+  }, [expenseId, initialEmployeeId, initialFirstName, initialLastName]);
 
   useEffect(() => {
     async function init() {
@@ -156,8 +227,8 @@ export default function ExpenseForm({
       hydratedRef.current = expenseId;
 
       let filteredExpense = null;
-      if (expenseEntriesData && expenseId) {
-        filteredExpense = expenseCtx.expenses.find(
+      if (expenseEntriesRef.current && expenseId) {
+        filteredExpense = expensesRef.current.find(
           (expense) => expense.id === parseInt(expenseId)
         );
 
@@ -185,10 +256,9 @@ export default function ExpenseForm({
         }
 
         if (filteredExpense) {
-          const filteredDate = formatMonthDate(
-            new Date(filteredExpense.date_start)
-          );
-          setSelectedDate(filteredDate);
+          const monthStartDate =
+            toMonthStartDate(filteredExpense.date_start) || getStartOfMonth(new Date());
+          setSelectedDate(monthStartDate);
           setExpense((prevExpense) => ({
             ...prevExpense,
             ...filteredExpense,
@@ -198,13 +268,12 @@ export default function ExpenseForm({
             total: filteredExpense.total,
           }));
 
-          // Use filteredDate here, not selectedDate (which hasn't updated yet)
-          const realDate = new Date(filteredDate);
+          const realDate = monthStartDate;
           const daysInMonth = getDaysInMonth(realDate);
           const fullRows = [];
 
           for (let day = 1; day <= daysInMonth; day++) {
-            const matchingEntries = expenseEntriesData.filter(
+            const matchingEntries = expenseEntriesRef.current.filter(
               (entry) => entry.day === day
             );
             if (matchingEntries.length > 0) {
@@ -223,18 +292,6 @@ export default function ExpenseForm({
           }
 
           setRowData(fullRows);
-
-          const filesMap = {};
-          expenseEntriesData.forEach((entry) => {
-            if (entry.files && entry.files.length > 0) {
-              filesMap[entry.id] = entry.files.map((file) => ({
-                id: file.id,
-                url: file.url,
-                upload_date: file.upload_date,
-              }));
-            }
-          });
-          setSavedFilesByEntry(filesMap);
         }
       }
     }
@@ -354,7 +411,7 @@ export default function ExpenseForm({
       signed: expense.signed,
       submitted_by: submittedByToSend,
       num_of_days: Number(numDays),
-      date_start: selectedDate,
+      date_start: toMonthStartDate(selectedDate) || selectedDate,
       total: Number(total.grand_total.toFixed(2)),
     };
 
@@ -368,11 +425,12 @@ export default function ExpenseForm({
 
       if (res.internalStatus === "success") {
         if (!isEditing) {
+          const adminQuery = isAdmin ? "?adminMode=true" : "";
           navigate(
-            `/employee-portal/dashboard/expenses/${res.data.expense.id}`
+            `/employee-portal/dashboard/expenses/details/${res.data.expense.id}${adminQuery}`
           );
         }
-        expenseCtx.triggerUpdate();
+        await expenseCtx.fetchExpenses();
         expenseCtx.triggerSucessOrFailMessage("success", res.message);
         // setReceiptFiles([]);
       } else {
@@ -494,23 +552,38 @@ export default function ExpenseForm({
 
   async function handleCopy() {
     try {
+      const nextState = {
+        prefillEntries: rowData.map((row) => ({
+          ...row,
+          id: null, // reset so backend treats as new
+          expense_id: null, // should be expense_id
+        })),
+        prefillDate: selectedDate,
+      };
+
+      if (isAdmin) {
+        nextState.adminCreate = {
+          employeeId: Number(expense.employee_id || selectedUser.id),
+          first_name: selectedUser.first_name || "",
+          last_name: selectedUser.last_name || "",
+        };
+      }
+
       navigate("/employee-portal/dashboard/expenses/create-expense", {
-        state: {
-          prefillEntries: rowData.map((row) => ({
-            ...row,
-            id: null, // reset so backend treats as new
-            expense_id: null, // 👈 should be expense_id, not timesheet_id
-          })),
-        },
+        state: nextState,
       });
     } catch (err) {
       console.error("Error copying timesheet:", err);
     }
   }
 
+  const totals = calculateColumnTotals(rowData);
+  const receiptButtonStyles =
+    "inline-flex justify-center items-center gap-2 w-full sm:w-auto sm:min-w-[6.5rem] h-10 bg-blue-500 text-white rounded-md text-xs sm:text-sm px-3 hover:bg-blue-400 transition duration-300";
+
   return (
-    <div>
-      <div className="flex flex-col md:flex-row gap-5 justify-between px-3 md:px-5 py-3 items-center">
+    <div className="pb-16 md:pb-20">
+      <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
         <MonthlyDatePicker
           onChange={(date) => setSelectedDate(date)}
           selected={selectedDate}
@@ -519,37 +592,16 @@ export default function ExpenseForm({
         <button
           onClick={toggleModal}
           title="Import Receipts"
-          className="flex items-center justify-center gap-3  bg-blue-500 py-2 px-3 rounded text-white
-                          hover:bg-blue-400 transition duration-300 w-full md:w-1/3"
-          // disabled={expense.approved}
+          className={receiptButtonStyles}
         >
-          <FaReceipt color="white" size={24} />
+          <FaReceipt size={16} />
           <span>Receipts</span>
-        </button>{" "}
+        </button>
         {isAdmin && (
-          <p className="text-red-500 font-bold text-xl">
+          <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
             {selectedUser.first_name} {selectedUser.last_name}
           </p>
         )}
-        <div
-          className={`${showModal ? "" : "hidden"} flex justify-center w-full`}
-        >
-          {showModal && (
-            <div
-              className={` fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50`}
-              onClick={toggleModal}
-            >
-              <AddReceiptModal
-                toggleModal={toggleModal}
-                onSaveReceipts={handleSaveReceipts}
-                savedFiles={expense.files || []}
-                receiptFiles={receiptFiles}
-                setReceiptFiles={setReceiptFiles}
-                disabled={expense.approved}
-              />
-            </div>
-          )}
-        </div>
         <FormActionsButtons
           handleSave={handleSave}
           isSaving={isSaving}
@@ -560,27 +612,87 @@ export default function ExpenseForm({
           handleCopy={handleCopy}
         />
       </div>
-      <div className="overflow-x-auto p-2">
-        <table className="w-full border-collapse border  ">
-          <HeaderComponent />
-          <SubheaderComponent />
-          <tbody className="">
-            {rowData.map((row, index) => (
-              <RowComponent
-                key={index}
-                row={row}
-                index={index}
-                onValueChange={handleValueChange}
-                onAddSubRow={() => handleAddSubRow(index)}
-                onDeleteRow={() => handleDeleteRow(index)}
-                disabled={expense.approved}
-              />
-            ))}
-          </tbody>
 
-          <TableFooterComponent totals={calculateColumnTotals(rowData)} />
-        </table>{" "}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 bg-gray-900/55 flex justify-center items-center p-3 sm:p-4"
+          onClick={toggleModal}
+        >
+          <AddReceiptModal
+            toggleModal={toggleModal}
+            onSaveReceipts={handleSaveReceipts}
+            savedFiles={expense.files || []}
+            receiptFiles={receiptFiles}
+            setReceiptFiles={setReceiptFiles}
+            disabled={expense.approved}
+          />
+        </div>
+      )}
+
+      <div className="hidden md:block px-2 md:px-5">
+        <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <table className="w-full min-w-[1280px] border-collapse table-auto">
+            <HeaderComponent />
+            <SubheaderComponent />
+            <tbody>
+              {rowData.map((row, index) => (
+                <RowComponent
+                  key={`${row.id || "new"}-${index}`}
+                  row={row}
+                  index={index}
+                  onValueChange={handleValueChange}
+                  onAddSubRow={() => handleAddSubRow(index)}
+                  onDeleteRow={() => handleDeleteRow(index)}
+                  disabled={expense.approved}
+                />
+              ))}
+            </tbody>
+            <TableFooterComponent totals={totals} />
+          </table>
+        </div>
+      </div>
+
+      <div className="md:hidden px-2">
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          <FormTableMobile
+            data={rowData}
+            onValueChange={handleValueChange}
+            onAddSubRow={handleAddSubRow}
+            onDeleteRow={handleDeleteRow}
+            disabled={expense.approved}
+          />
+        </div>
+      </div>
+
+      <div className="md:hidden px-2 mt-3">
+        <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 flex items-center justify-between">
+          <p className="text-xs font-medium text-slate-600">Month Total</p>
+          <p className="text-sm font-semibold text-blue-600">
+            ${totals.grand_total.toFixed(2)}
+          </p>
+        </div>
       </div>
     </div>
   );
 }
+
+ExpenseForm.propTypes = {
+  expenseEntriesData: PropTypes.array,
+  expenseId: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+    PropTypes.oneOf([null]),
+  ]),
+  isEditing: PropTypes.bool,
+  isAdmin: PropTypes.bool,
+  initialSelectedDate: PropTypes.oneOfType([
+    PropTypes.instanceOf(Date),
+    PropTypes.string,
+    PropTypes.oneOf([null]),
+  ]),
+  initialEmployee: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    first_name: PropTypes.string,
+    last_name: PropTypes.string,
+  }),
+};

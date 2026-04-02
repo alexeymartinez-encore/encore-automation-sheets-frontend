@@ -1,12 +1,28 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 import TaskBar from "./TaskBar";
 import { AdminContext } from "../../../../../store/admin-context";
 import { getStartOfMonth } from "../../../../../util/helper";
 import { ExpensesContext } from "../../../../../store/expense-context";
+import MissingSubmissionPanel from "../ManageSheetsShared/MissingSubmissionPanel";
 
-export default function ManageExpensesTable() {
+function buildMonthIsoDate(date) {
+  return new Date(date).toISOString();
+}
+
+function formatMonthLabel(date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+export default function ManageExpensesTable({
+  activeEmployeeCount = 0,
+  refreshToken = 0,
+}) {
   let monthDate;
 
   if (localStorage.getItem("month_date") === null) {
@@ -18,40 +34,58 @@ export default function ManageExpensesTable() {
   const [selectedDate, setSelectedDate] = useState(monthDate);
   const [expenses, setExpenses] = useState([]);
   const [signedCount, setSignedCount] = useState(0);
+  const [isToggled, setIsToggled] = useState(false);
+  const [isMissingPanelOpen, setIsMissingPanelOpen] = useState(false);
+  const [isMissingLoading, setIsMissingLoading] = useState(false);
+  const [isSendingAllReminders, setIsSendingAllReminders] = useState(false);
+  const [sendingReminderIds, setSendingReminderIds] = useState([]);
+  const [missingSummary, setMissingSummary] = useState({
+    missingEmployees: [],
+    activeEmployeeCount,
+    completedCount: 0,
+  });
 
   const adminCtx = useContext(AdminContext);
   const expenseCtx = useContext(ExpensesContext);
-  const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Go To Open" : "Go To By Date";
 
-  async function handleToggle() {
-    const newState = !isToggled; // use current state
-    setIsToggled(newState);
-
-    const isoDate = new Date(selectedDate).toISOString();
-
-    let res;
-    if (newState) {
-      // Going to Open Expenses
-      res = await adminCtx.getOpenExpenses(selectedDate);
-    } else {
-      // Going back to Expenses By Date
-      res = await adminCtx.getUsersExpensesByDate(isoDate);
-    }
-
-    const sorted = (res || []).sort((a, b) => {
-      const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
-      const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
-      return lastNameA.localeCompare(lastNameB);
+  function handleToggle() {
+    setIsToggled((previousValue) => {
+      const nextValue = !previousValue;
+      if (nextValue) {
+        setIsMissingPanelOpen(false);
+      }
+      return nextValue;
     });
+  }
 
-    setExpenses(sorted || []);
-    // const count = (sorted || []).filter((ts) => ts.paid === true).length;
-    // setSignedCount(count);
+  const loadMissingSummary = useCallback(async () => {
+    if (isToggled) return;
+
+    setIsMissingLoading(true);
+    const summary = await adminCtx.getMissingExpensesByDate(
+      buildMonthIsoDate(selectedDate)
+    );
+    setMissingSummary({
+      missingEmployees: summary?.missingEmployees || [],
+      activeEmployeeCount:
+        summary?.activeEmployeeCount ?? activeEmployeeCount ?? 0,
+      completedCount: summary?.completedCount || 0,
+    });
+    setIsMissingLoading(false);
+  }, [activeEmployeeCount, adminCtx, isToggled, selectedDate]);
+
+  async function handleToggleMissingPanel() {
+    const nextOpen = !isMissingPanelOpen;
+    setIsMissingPanelOpen(nextOpen);
+
+    if (nextOpen) {
+      await loadMissingSummary();
+    }
   }
 
   function handleValueChange(index, field, value) {
-    const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
+    const userName = localStorage.getItem("user_name");
 
     setExpenses((prevExpenses) => {
       const updatedExpenses = [...prevExpenses];
@@ -60,7 +94,7 @@ export default function ManageExpensesTable() {
 
       updatedExpenses[index] = {
         ...updatedExpenses[index],
-        [field]: isChecked, // Update the checkbox field
+        [field]: isChecked,
         ...(field === "signed" && isChecked && { submitted_by: userName }),
         ...(field === "approved" && isChecked && { approved_by: userName }),
         ...(field === "paid" && isChecked && { processed_by: userName }),
@@ -70,48 +104,83 @@ export default function ManageExpensesTable() {
     });
   }
 
-  const goToPreviousMonth = () => {
+  function goToPreviousMonth() {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setMonth(newDate.getMonth() - 1); // Go back 1 month
-      const monthDate = getStartOfMonth(newDate);
-      localStorage.setItem("month_date", monthDate);
-      return monthDate; // Ensure it is the start of the month
+      newDate.setMonth(newDate.getMonth() - 1);
+      const nextMonthDate = getStartOfMonth(newDate);
+      localStorage.setItem("month_date", nextMonthDate);
+      return nextMonthDate;
     });
-  };
-  const goToNextMonth = () => {
+  }
+
+  function goToNextMonth() {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setMonth(newDate.getMonth() + 1); // Go forward 1 month
-      const monthDate = getStartOfMonth(newDate);
-      localStorage.setItem("month_date", monthDate);
-      return monthDate; // Ensure it is the start of the month
+      newDate.setMonth(newDate.getMonth() + 1);
+      const nextMonthDate = getStartOfMonth(newDate);
+      localStorage.setItem("month_date", nextMonthDate);
+      return nextMonthDate;
     });
-  };
+  }
+
+  const loadExpenses = useCallback(async () => {
+    const isoDate = buildMonthIsoDate(selectedDate);
+    const result = isToggled
+      ? await adminCtx.getOpenExpenses(selectedDate)
+      : await adminCtx.getUsersExpensesByDate(isoDate);
+
+    const sorted = (result || []).sort((a, b) => {
+      const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+      const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+      return lastNameA.localeCompare(lastNameB);
+    });
+
+    setExpenses(sorted || []);
+    const count = (sorted || []).filter((expense) => expense.signed).length;
+    setSignedCount(count);
+  }, [adminCtx, isToggled, selectedDate]);
 
   useEffect(() => {
-    async function getExpenses() {
-      const isoDate = new Date(selectedDate).toISOString();
+    loadExpenses();
+  }, [loadExpenses, refreshToken]);
 
-      const res = await adminCtx.getUsersExpensesByDate(isoDate);
-
-      const sorted = (res || []).sort((a, b) => {
-        const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
-        const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
-        return lastNameA.localeCompare(lastNameB);
-      });
-      setExpenses(sorted || []);
-      const count = (sorted || []).filter((ts) => ts.signed === true).length;
-      setSignedCount(count);
+  useEffect(() => {
+    if (isMissingPanelOpen && !isToggled) {
+      loadMissingSummary();
     }
-    getExpenses();
-  }, [selectedDate]);
+  }, [isMissingPanelOpen, isToggled, loadMissingSummary]);
 
   async function handleSaveStatusChanges() {
     const res = await adminCtx.saveExpensesStatusChanges(expenses);
     if (res.internalStatus === "success") {
       expenseCtx.triggerUpdate();
     }
+  }
+
+  async function handleSendReminder(employeeId) {
+    setSendingReminderIds((currentIds) =>
+      currentIds.includes(employeeId) ? currentIds : [...currentIds, employeeId]
+    );
+
+    await adminCtx.sendMissingExpenseReminders({
+      dateStart: buildMonthIsoDate(selectedDate),
+      employeeIds: [employeeId],
+    });
+
+    setSendingReminderIds((currentIds) =>
+      currentIds.filter((currentId) => currentId !== employeeId)
+    );
+    await loadMissingSummary();
+  }
+
+  async function handleSendAllReminders() {
+    setIsSendingAllReminders(true);
+    await adminCtx.sendMissingExpenseReminders({
+      dateStart: buildMonthIsoDate(selectedDate),
+    });
+    setIsSendingAllReminders(false);
+    await loadMissingSummary();
   }
 
   function handleSetAllApproved() {
@@ -122,8 +191,8 @@ export default function ManageExpensesTable() {
 
       return prevExpenses.map((expense) => ({
         ...expense,
-        approved: !allApproved, // Toggle the approved state
-        approved_by: !allApproved ? userName : "", // Set approved_by only if approving
+        approved: !allApproved,
+        approved_by: !allApproved ? userName : "",
       }));
     });
   }
@@ -136,8 +205,8 @@ export default function ManageExpensesTable() {
 
       return prevExpenses.map((expense) => ({
         ...expense,
-        paid: !allProcessed, // Toggle the processed state
-        processed_by: !allProcessed ? userName : "", // Set processed_by only if processing
+        paid: !allProcessed,
+        processed_by: !allProcessed ? userName : "",
       }));
     });
   }
@@ -150,7 +219,7 @@ export default function ManageExpensesTable() {
       newExpenses = await adminCtx.fetchExpenseReportData(selectedDate);
     }
 
-    const pad = (n) => String(n).padStart(2, "0");
+    const pad = (value) => String(value).padStart(2, "0");
 
     const formatMonthYear = (date) =>
       date.toLocaleString("default", { month: "long" }) +
@@ -172,15 +241,22 @@ export default function ManageExpensesTable() {
     const withSGA = (baseType, flag) =>
       flag === true || flag === 1 || flag === "1" ? `${baseType}SGA` : baseType;
 
-    // --- Helper to normalize expense date ---
+    const normalizeReportType = (type) =>
+      (
+        {
+          Bereavement: "Bereavem",
+          EmpRelat: "EmplyRelat",
+          EmpRelatSGA: "EmplyRelatSGA",
+          EmpRel: "EmplyRelat",
+        }
+      )[type] || type;
+
     function normalizeExpenseDate(dateStart, entryDay) {
-      // Extract just the yyyy-mm-dd portion
       const [year, month, day] = dateStart.split("T")[0].split("-").map(Number);
 
       let baseYear = year;
-      let baseMonth = month; // 1–12
+      let baseMonth = month;
 
-      // If it's not already the 1st, bump to the next month
       if (day !== 1) {
         baseMonth += 1;
         if (baseMonth > 12) {
@@ -189,7 +265,6 @@ export default function ManageExpensesTable() {
         }
       }
 
-      // Clamp entry.day to valid range
       const dayNumRaw = Number(entryDay);
       const daysInMonth = new Date(baseYear, baseMonth, 0).getDate();
       const clampedDay = Math.min(Math.max(dayNumRaw || 1, 1), daysInMonth);
@@ -197,7 +272,6 @@ export default function ManageExpensesTable() {
       return `${baseYear}-${pad(baseMonth)}-${pad(clampedDay)}`;
     }
 
-    // Step 1: Collect rows instead of appending directly
     const allRows = [];
 
     newExpenses.forEach((expenseWrapper) => {
@@ -207,10 +281,8 @@ export default function ManageExpensesTable() {
 
       entries.forEach((entry) => {
         const rowsToCreate = [];
-
         const expenseDate = normalizeExpenseDate(expense.date_start, entry.day);
 
-        // Miscellaneous
         if (entry.miscellaneous_amount && entry.miscellaneous_amount !== 0) {
           const miscDesc = entry.miscellaneous_description || "Nothing";
           const mappedType = miscTypeMapping[miscDesc] || "Nothing";
@@ -222,7 +294,6 @@ export default function ManageExpensesTable() {
           });
         }
 
-        // Other cost-based types
         if (entry.miles_cost && entry.miles_cost > 0) {
           rowsToCreate.push({ type: "Mileage", amount: entry.miles_cost });
         }
@@ -268,7 +339,7 @@ export default function ManageExpensesTable() {
               employee?.last_name || ""
             }`,
             Amount: Number(row.amount).toFixed(4),
-            Type: withSGA(row.type, entry.sga_flag),
+            Type: normalizeReportType(withSGA(row.type, entry.sga_flag)),
             TransportWhere: "",
             ProjectNumber: entry.project_number || "ProjOver",
             Purpose: entry.purpose || "",
@@ -280,31 +351,14 @@ export default function ManageExpensesTable() {
       });
     });
 
-    // Step 2: Sort rows by date
-    allRows.sort((a, b) => new Date(a.ExpenseDate) - new Date(b.ExpenseDate));
+    allRows.sort((first, second) => new Date(first.ExpenseDate) - new Date(second.ExpenseDate));
 
-    // Step 3: Build XML after sorting
     let xmlContent = "<ProjectExpenses>\n";
     allRows.forEach((row) => {
       xmlContent += `<row ExpenseDate="${row.ExpenseDate}T00:00:00" EmployeeNumber="${row.EmployeeNumber}" EmployeeName="${row.EmployeeName}" Amount="${row.Amount}" Type="${row.Type}" TransportWhere="${row.TransportWhere}" ProjectNumber="${row.ProjectNumber}" Purpose="${row.Purpose}" MiscDetail="${row.MiscDetail}" MiscType="${row.MiscType}" EntInfo="${row.EntInfo}" />\n`;
-      // xmlContent += `
-      // <row
-      //   ExpenseDate="${row.ExpenseDate}T00:00:00"
-      //   EmployeeNumber="${row.EmployeeNumber}"
-      //   EmployeeName="${row.EmployeeName}"
-      //   Amount="${row.Amount}"
-      //   Type="${row.Type}"
-      //   TransportWhere="${row.TransportWhere}"
-      //   ProjectNumber="${row.ProjectNumber}"
-      //   Purpose="${row.Purpose}"
-      //   MiscDetail="${row.MiscDetail}"
-      //   MiscType="${row.MiscType}"
-      //   EntInfo="${row.EntInfo}"
-      // />\n`;
     });
     xmlContent += "</ProjectExpenses>";
 
-    // Save file
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -329,7 +383,33 @@ export default function ManageExpensesTable() {
         handleToggle={handleToggle}
         expenseMode={expenseMode}
         completeExpenses={signedCount}
+        totalEmployeesCount={activeEmployeeCount}
+        toggleMissingPanel={handleToggleMissingPanel}
+        isMissingPanelOpen={isMissingPanelOpen}
+        missingButtonDisabled={isToggled}
       />
+
+      {isMissingPanelOpen ? (
+        <div className="my-2">
+          <MissingSubmissionPanel
+            title="Missing Expense Sheets"
+            periodLabel={formatMonthLabel(selectedDate)}
+            missingEmployees={missingSummary.missingEmployees}
+            activeEmployeeCount={
+              missingSummary.activeEmployeeCount || activeEmployeeCount || 0
+            }
+            completedCount={missingSummary.completedCount}
+            isLoading={isMissingLoading}
+            isSendingAll={isSendingAllReminders}
+            sendingEmployeeIds={sendingReminderIds}
+            onRefresh={loadMissingSummary}
+            onSendAll={handleSendAllReminders}
+            onSendSingle={handleSendReminder}
+            emptyMessage="Everyone active has submitted a signed expense sheet for this month."
+          />
+        </div>
+      ) : null}
+
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {expenses && expenses.length > 0 ? (
@@ -350,3 +430,8 @@ export default function ManageExpensesTable() {
     </div>
   );
 }
+
+ManageExpensesTable.propTypes = {
+  activeEmployeeCount: PropTypes.number,
+  refreshToken: PropTypes.number,
+};

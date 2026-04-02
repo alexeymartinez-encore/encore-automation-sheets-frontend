@@ -6,15 +6,17 @@ export default function FormTableMobile({
   onValueChange,
   onDeleteRow,
   disabled,
+  dayLabels,
 }) {
   return (
-    <table className="table md:hidden w-full overflow-x-auto">
+    <table className="table w-full">
       <FormHeaderMobile />
       <FormBodyMobile
         data={data}
         onValueChange={onValueChange}
         onDeleteRow={onDeleteRow}
         disabled={disabled}
+        dayLabels={dayLabels}
       />
     </table>
   );

@@ -1,4 +1,10 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  Navigate,
+  RouterProvider,
+  createBrowserRouter,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import RootLayout from "./pages/Root";
 import "./App.css";
 import DashboardRootLayout from "./pages/DashboardRoot";
@@ -30,6 +36,51 @@ import UserContextProvider from "./store/user-context";
 import { checkIfAdmin, checkIfManager } from "./util/loaders";
 import ErrorPage from "./pages/Error";
 import CategoryEntriesReport from "./components/PortalComponents/AdminPage/Reports/CategoryEntriesReport";
+import EventConfiguration from "./components/PortalComponents/AdminPage/EventConfiguration/EventConfiguration";
+import PropTypes from "prop-types";
+
+function LegacyTimesheetDetailRedirect() {
+  const { timesheetId } = useParams();
+  const [searchParams] = useSearchParams();
+  const adminMode = searchParams.get("adminMode") === "true";
+
+  return (
+    <Navigate
+      replace
+      to={`/employee-portal/dashboard/timesheets/details/${timesheetId}${
+        adminMode ? "?adminMode=true" : ""
+      }`}
+    />
+  );
+}
+
+function LegacyExpenseDetailRedirect() {
+  const { expenseId } = useParams();
+  const [searchParams] = useSearchParams();
+  const adminMode = searchParams.get("adminMode") === "true";
+
+  return (
+    <Navigate
+      replace
+      to={`/employee-portal/dashboard/expenses/details/${expenseId}${
+        adminMode ? "?adminMode=true" : ""
+      }`}
+    />
+  );
+}
+
+function LegacyAdminEventRedirect({ tab }) {
+  return (
+    <Navigate
+      replace
+      to={`/employee-portal/dashboard/admin/event-configuration?tab=${tab}`}
+    />
+  );
+}
+
+LegacyAdminEventRedirect.propTypes = {
+  tab: PropTypes.string.isRequired,
+};
 
 const router = createBrowserRouter([
   {
@@ -50,13 +101,27 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <PortalPage /> },
           { path: "timesheets", element: <TimesheetPage /> },
-          { path: "timesheets/:timesheetId", element: <TimesheetDetail /> },
+          {
+            path: "timesheets/:timesheetId",
+            element: <LegacyTimesheetDetailRedirect />,
+          },
+          {
+            path: "timesheets/details/:timesheetId",
+            element: <TimesheetDetail />,
+          },
           {
             path: "timesheets/create-timesheet",
             element: <CreateTimesheetPage />,
           },
           { path: "expenses", element: <ExpensenPage /> },
-          { path: "expenses/:expenseId", element: <ExpenseDetail /> },
+          {
+            path: "expenses/:expenseId",
+            element: <LegacyExpenseDetailRedirect />,
+          },
+          {
+            path: "expenses/details/:expenseId",
+            element: <ExpenseDetail />,
+          },
           {
             path: "expenses/create-expense",
             element: <CreateExpensePage />,
@@ -78,6 +143,18 @@ const router = createBrowserRouter([
                 element: <ProjectsManagement />,
               },
               { path: "reports", element: <CategoryEntriesReport /> },
+              {
+                path: "event-configuration",
+                element: <EventConfiguration />,
+              },
+              {
+                path: "event-types",
+                element: <LegacyAdminEventRedirect tab="types" />,
+              },
+              {
+                path: "event-reports",
+                element: <LegacyAdminEventRedirect tab="reports" />,
+              },
             ],
           },
           {

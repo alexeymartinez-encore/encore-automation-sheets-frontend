@@ -18,7 +18,7 @@ export default function ExpenseTableContentRows({ expense }) {
   const navigate = useNavigate();
 
   function handleEdit() {
-    navigate(`/employee-portal/dashboard/expenses/${expense.id}`);
+    navigate(`/employee-portal/dashboard/expenses/details/${expense.id}`);
   }
 
   async function handleDelete(id) {

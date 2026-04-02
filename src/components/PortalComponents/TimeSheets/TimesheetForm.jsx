@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -6,8 +7,8 @@ import { TimesheetContext } from "../../../store/timesheet-context";
 import AddEntryButton from "./TimesheetForm/AddEntryButton";
 import {
   calculateHours,
-  formatWeekendDate,
   getEndOfWeek,
+  getWeekDayDateLabels,
 } from "../../../util/helper";
 import FormActionsButtons from "../Shared/FormActionButtons";
 import FormHoursTotal from "./TimesheetForm/FormHoursTotal";
@@ -22,23 +23,25 @@ import DatePickerComponent from "../Shared/DatePickerComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
-const initialTimesheetData = {
-  approved: false,
-  approved_by: "None",
-  createdAt: "",
-  date_processed: null,
-  employee_id: localStorage.getItem("userId"),
-  id: null,
-  message: "None",
-  processed: false,
-  processed_by: "None",
-  signed: false,
-  submitted_by: "None",
-  total_overtime: 0,
-  total_reg_hours: 0,
-  updatedAt: "",
-  week_ending: "",
-};
+function getInitialTimesheetData(employeeId = null) {
+  return {
+    approved: false,
+    approved_by: "None",
+    createdAt: "",
+    date_processed: null,
+    employee_id: employeeId ?? localStorage.getItem("userId"),
+    id: null,
+    message: "None",
+    processed: false,
+    processed_by: "None",
+    signed: false,
+    submitted_by: "None",
+    total_overtime: 0,
+    total_reg_hours: 0,
+    updatedAt: "",
+    week_ending: "",
+  };
+}
 
 const intitialEntriesData = [
   {
@@ -66,39 +69,92 @@ const intitialEntriesData = [
   },
 ];
 
+function getInitialWeekEndingDate(value) {
+  const candidate = value ? new Date(value) : new Date();
+  return Number.isNaN(candidate.getTime()) ? getEndOfWeek(new Date()) : getEndOfWeek(candidate);
+}
+
 export default function TimesheetForm({
   timesheetEntriesData = intitialEntriesData,
   timesheetId = null,
   isAdmin = false,
+  initialSelectedDate = null,
+  initialEmployee = null,
 }) {
   const allow_overtime = localStorage.getItem("allow_overtime") === "true";
   // console.log(allow_overtime);
   const navigate = useNavigate();
+  const initialEmployeeId = initialEmployee?.id ?? null;
+  const initialFirstName = initialEmployee?.first_name || "";
+  const initialLastName = initialEmployee?.last_name || "";
 
-  const [timesheet, setTimesheet] = useState(initialTimesheetData);
+  const [timesheet, setTimesheet] = useState(() =>
+    getInitialTimesheetData(initialEmployeeId)
+  );
   const [rowData, setRowData] = useState(timesheetEntriesData);
-  const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() =>
+    getInitialWeekEndingDate(initialSelectedDate)
+  );
   const [selectedUser, setSelectedUser] = useState({
-    id: null,
-    first_name: "",
-    last_name: "",
+    id: initialEmployeeId,
+    first_name: initialFirstName,
+    last_name: initialLastName,
   });
 
   const timesheetCtx = useContext(TimesheetContext);
 
-  let filteredTimesheet;
+  useEffect(() => {
+    if (timesheetId) {
+      return;
+    }
+
+    setSelectedDate(getInitialWeekEndingDate(initialSelectedDate));
+  }, [initialSelectedDate, timesheetId]);
+
+  useEffect(() => {
+    if (timesheetId) {
+      return;
+    }
+
+    if (initialEmployeeId) {
+      setTimesheet((prevTimesheet) => ({
+        ...prevTimesheet,
+        employee_id: Number(initialEmployeeId),
+      }));
+      setSelectedUser({
+        id: Number(initialEmployeeId),
+        first_name: initialFirstName,
+        last_name: initialLastName,
+      });
+      return;
+    }
+
+    setTimesheet((prevTimesheet) => ({
+      ...prevTimesheet,
+      employee_id: localStorage.getItem("userId"),
+    }));
+    setSelectedUser({
+      id: null,
+      first_name: "",
+      last_name: "",
+    });
+  }, [
+    initialEmployeeId,
+    initialFirstName,
+    initialLastName,
+    isAdmin,
+    timesheetId,
+  ]);
+
   useEffect(() => {
     async function init() {
       if (timesheetEntriesData && timesheetId) {
-        filteredTimesheet = timesheetCtx.timesheets.find(
+        let filteredTimesheet = timesheetCtx.timesheets.find(
           (timesheet) => timesheet.id === parseInt(timesheetId)
         );
 
         if (filteredTimesheet) {
-          const filteredDate = formatWeekendDate(
-            new Date(filteredTimesheet.week_ending)
-          );
-          setSelectedDate(filteredDate);
+          setSelectedDate(getEndOfWeek(new Date(filteredTimesheet.week_ending)));
           setTimesheet((prevTimesheet) => ({
             ...prevTimesheet,
             signed: filteredTimesheet.signed,
@@ -119,10 +175,9 @@ export default function TimesheetForm({
             if (response.ok) {
               filteredTimesheet = data.data[0];
               setSelectedUser(data.data[0].Employee);
-              const filteredDate = formatWeekendDate(
-                new Date(filteredTimesheet.week_ending)
+              setSelectedDate(
+                getEndOfWeek(new Date(filteredTimesheet.week_ending))
               );
-              setSelectedDate(new Date(filteredDate));
               setTimesheet(filteredTimesheet);
             } else {
               console.error("Error fetching expense");
@@ -150,7 +205,7 @@ export default function TimesheetForm({
       timesheet.employee_id = isAdmin
         ? timesheet.employee_id
         : localStorage.getItem("userId");
-      timesheet.week_ending = selectedDate;
+      timesheet.week_ending = getEndOfWeek(selectedDate);
       timesheet.id = timesheetId || timesheet.id;
 
       const timesheetRequestBody = {
@@ -163,10 +218,10 @@ export default function TimesheetForm({
       if (res.internalStatus === "success" && res.data) {
         if (!timesheetId) {
           const createdTimesheetId = res.data.timesheet.id;
+          const adminQuery = isAdmin ? "?adminMode=true" : "";
           navigate(
-            `/employee-portal/dashboard/timesheets/${createdTimesheetId}`
+            `/employee-portal/dashboard/timesheets/details/${createdTimesheetId}${adminQuery}`
           );
-          timesheetCtx.triggerUpdate();
         }
 
         if (timesheetId) {
@@ -176,12 +231,12 @@ export default function TimesheetForm({
           setTimesheet(
             res.data.timesheet.length > 0
               ? res.data.timesheet
-              : initialTimesheetData
+              : getInitialTimesheetData(initialEmployeeId)
           );
         }
 
+        await timesheetCtx.fetchTimesheets();
         timesheetCtx.triggerSucessOrFailMessage("success", res.message);
-        timesheetCtx.triggerUpdate();
       } else {
         timesheetCtx.triggerSucessOrFailMessage(
           "fail",
@@ -269,30 +324,43 @@ export default function TimesheetForm({
 
   async function handleCopy() {
     try {
+      const nextState = {
+        prefillEntries: rowData.map((row) => ({
+          ...row,
+          id: null, // reset so backend treats as new
+          timesheet_id: null, // detach from old timesheet
+        })),
+        prefillDate: selectedDate,
+      };
+
+      if (isAdmin) {
+        nextState.adminCreate = {
+          employeeId: Number(timesheet.employee_id || selectedUser.id),
+          first_name: selectedUser.first_name || "",
+          last_name: selectedUser.last_name || "",
+        };
+      }
+
       navigate("/employee-portal/dashboard/timesheets/create-timesheet", {
-        state: {
-          prefillEntries: rowData.map((row) => ({
-            ...row,
-            id: null, // reset so backend treats as new
-            timesheet_id: null, // detach from old timesheet
-          })),
-        },
+        state: nextState,
       });
     } catch (err) {
       console.error("Error copying timesheet:", err);
     }
   }
 
+  const weekDayDateLabels = getWeekDayDateLabels(selectedDate);
+
   return (
-    <div className="pb-20">
-      <div className="relative flex flex-col md:flex-row gap-5 justify-between px-2 md:px-5 pb-5 items-center ">
+    <div className="pb-16 md:pb-20">
+      <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
         <DatePickerComponent
-          onChange={(date) => setSelectedDate(date)}
-          selected={formatWeekendDate(selectedDate)}
+          onChange={(date) => date && setSelectedDate(getEndOfWeek(date))}
+          selected={selectedDate}
           disabled={timesheet.approved}
         />
         {isAdmin && (
-          <p className="text-red-500 font-bold text-xl">
+          <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
             {selectedUser.first_name} {selectedUser.last_name}
           </p>
         )}
@@ -311,21 +379,28 @@ export default function TimesheetForm({
           <p>Overtime Not allowed</p>
         </div>
       )}
-      <FormTable
-        data={rowData}
-        onValueChange={handleValueChange}
-        onDeleteRow={handleDeleteRow}
-        timesheetId={timesheetId}
-        disabled={timesheet.approved}
-      />
-      {/* Only On Phone */}
-      <FormTableMobile
-        data={rowData}
-        onValueChange={handleValueChange}
-        onDeleteRow={handleDeleteRow}
-        timesheetId={timesheetId}
-        disabled={timesheet.approved}
-      />
+      <div className="hidden md:block px-2 md:px-5">
+        <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <FormTable
+            data={rowData}
+            onValueChange={handleValueChange}
+            onDeleteRow={handleDeleteRow}
+            disabled={timesheet.approved}
+            dayLabels={weekDayDateLabels}
+          />
+        </div>
+      </div>
+      <div className="md:hidden px-2">
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          <FormTableMobile
+            data={rowData}
+            onValueChange={handleValueChange}
+            onDeleteRow={handleDeleteRow}
+            disabled={timesheet.approved}
+            dayLabels={weekDayDateLabels}
+          />
+        </div>
+      </div>
 
       <div
         className={`flex md:flex-row flex-col ${
@@ -338,12 +413,9 @@ export default function TimesheetForm({
           <> </>
         ) : (
           <>
-            <div className="hidden md:block">
+            <div>
               <AddEntryButton onClick={handleAddRow} />
-            </div>{" "}
-            <div className="block md:hidden">
-              <AddEntryButton onClick={handleAddRow} />
-            </div>{" "}
+            </div>
           </>
         )}
         <div className="flex items-center justify-between md:justify-end gap-2">
@@ -358,3 +430,23 @@ export default function TimesheetForm({
     </div>
   );
 }
+
+TimesheetForm.propTypes = {
+  timesheetEntriesData: PropTypes.array,
+  timesheetId: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+    PropTypes.oneOf([null]),
+  ]),
+  isAdmin: PropTypes.bool,
+  initialSelectedDate: PropTypes.oneOfType([
+    PropTypes.instanceOf(Date),
+    PropTypes.string,
+    PropTypes.oneOf([null]),
+  ]),
+  initialEmployee: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    first_name: PropTypes.string,
+    last_name: PropTypes.string,
+  }),
+};

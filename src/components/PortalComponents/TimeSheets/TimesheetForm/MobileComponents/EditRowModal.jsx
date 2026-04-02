@@ -1,6 +1,4 @@
-import React, { useContext } from "react";
-import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useContext } from "react";
 import { MiscellaneousContext } from "../../../../../store/miscellaneous-context";
 import {
   phaseToAllowedCostCodes,
@@ -13,6 +11,7 @@ export default function EditRowModal({
   index,
   onValueChange,
   disabled,
+  dayLabels = {},
 }) {
   const miscCtx = useContext(MiscellaneousContext);
   const restrictedProjects = [
@@ -36,10 +35,11 @@ export default function EditRowModal({
   function handleEnterKeyFocus(e) {
     if (e.key === "Enter") {
       e.preventDefault();
+      const modalContainer = e.target.closest("[data-edit-row-modal]");
+      if (!modalContainer) return;
+
       const formElements = Array.from(
-        e.target
-          .closest("tr")
-          .querySelectorAll("input, select, textarea, button")
+        modalContainer.querySelectorAll("input, select, textarea, button")
       ).filter((el) => !el.disabled && el.tabIndex !== -1);
 
       const currentIndex = formElements.indexOf(e.target);
@@ -69,19 +69,36 @@ export default function EditRowModal({
   const isRestrictedProject = selectedProject
     ? restrictedProjects.includes(selectedProject.number)
     : false;
+  const rowClass = "grid grid-cols-[6.4rem_minmax(0,1fr)] items-center gap-2";
+  const labelClass =
+    "text-blue-500 font-semibold uppercase tracking-wide text-[0.7rem]";
+  const controlClass =
+    "h-9 border border-slate-300 rounded-sm w-full text-start px-2 text-[0.8rem]";
 
   return (
-    <tr
-      className=" flex flex-col bg-white text-sm md:text-xs mx-10 px-5 py-10 rounded-md  gap-2"
+    <div
+      data-edit-row-modal
+      className="w-[min(92vw,26rem)] max-h-[88vh] overflow-y-auto bg-white text-xs sm:text-sm px-3 sm:px-4 py-3 sm:py-4 rounded-xl shadow-xl flex flex-col gap-2"
       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
     >
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-1">
+        <p className="font-semibold text-blue-600">Edit Entry</p>
+        <button
+          type="button"
+          onClick={toggleModal}
+          className="text-[0.72rem] text-slate-500 hover:text-slate-700"
+        >
+          Close
+        </button>
+      </div>
+
       {/* Project Selector */}
-      <td className="flex items-center relative">
-        <label className="text-blue-500 py-1 w-full">Project</label>
+      <div className={rowClass}>
+        <label className={labelClass}>Project</label>
 
         <select
           value={row.project_id ?? ""}
-          className=" border rounded-sm w-full text-start p-2 "
+          className={controlClass}
           onChange={(e) => {
             const projectId = Number(e.target.value);
             const selectedProject = miscCtx.projects.find(
@@ -118,14 +135,14 @@ export default function EditRowModal({
             </option>
           ))}
         </select>
-      </td>
+      </div>
 
       {/* Phase Selector */}
-      <td className="flex items-center  ">
-        <label className="text-blue-500 py-1 w-full">Phase</label>
+      <div className={rowClass}>
+        <label className={labelClass}>Phase</label>
         <select
           value={row.phase_id ?? ""}
-          className="border rounded-sm w-full text-start p-2"
+          className={controlClass}
           onChange={(e) => {
             const newPhaseId = Number(e.target.value);
             onValueChange(index, "phase_id", newPhaseId);
@@ -147,21 +164,21 @@ export default function EditRowModal({
           }}
           onKeyDown={handleEnterKeyFocus}
           disabled={!!specialProject}
-        >
-          {miscCtx.phases.map((phase) => (
-            <option key={phase.id} value={phase.id}>
+          >
+            {miscCtx.phases.map((phase) => (
+              <option key={phase.id} value={phase.id}>
               {phase.number} - {phase.description}
             </option>
-          ))}
-        </select>
-      </td>
+            ))}
+          </select>
+      </div>
 
       {/* Cost Code Selector */}
-      <td className="flex items-center ">
-        <label className="text-blue-500 py-1 w-full">Cost Code</label>
+      <div className={rowClass}>
+        <label className={labelClass}>Cost Code</label>
         <select
           value={row.cost_code_id ?? ""}
-          className="border rounded-sm w-full text-start p-2"
+          className={controlClass}
           onChange={(e) =>
             onValueChange(index, "cost_code_id", Number(e.target.value))
           }
@@ -192,78 +209,77 @@ export default function EditRowModal({
               ));
           })()}
         </select>
-      </td>
+      </div>
 
       {/* Description */}
-      <td className="  text-center pb-2">
-        <label className="text-blue-500 py-1">Description</label>
+      <div className={rowClass}>
+        <label className={labelClass}>Description</label>
         <input
           type="text"
           value={row.description}
-          className="border rounded-sm w-full text-center p-2"
+          className={`${controlClass} text-center`}
           placeholder="Description"
           onChange={(e) => onValueChange(index, "description", e.target.value)}
           onKeyDown={handleEnterKeyFocus}
           disabled={disabled}
         />
-      </td>
+      </div>
 
       {/* Daily Fields */}
       {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => (
-        <td key={day} className="flex flex-wrap">
-          <div className="flex w-full items-center">
-            <label className="text-blue-500 py-1 w-full">
-              {day.toUpperCase()}
-            </label>
-            <input
-              type="number"
-              value={row[`${day}_reg`]}
-              className="border rounded-sm w-full text-center p-2"
-              placeholder={day}
-              min="0"
-              max={isRestrictedProject ? 8 : undefined}
-              onChange={(e) => {
-                let value = e.target.value;
+        <div key={day} className={rowClass}>
+          <label className={labelClass}>
+            {day.toUpperCase()} {dayLabels[day] ? `(${dayLabels[day]})` : ""}
+          </label>
+          <input
+            type="number"
+            value={row[`${day}_reg`]}
+            className={`${controlClass} text-center`}
+            placeholder={day}
+            min="0"
+            max={isRestrictedProject ? 8 : undefined}
+            onChange={(e) => {
+              let value = e.target.value;
 
-                // Enforce numeric range
-                if (isRestrictedProject && Number(value) > 8) {
-                  value = 8;
-                }
-                if (Number(value) < 0) {
-                  value = 0;
-                }
+              // Enforce numeric range
+              if (isRestrictedProject && Number(value) > 8) {
+                value = 8;
+              }
+              if (Number(value) < 0) {
+                value = 0;
+              }
 
-                onValueChange(index, `${day}_reg`, value);
-              }}
-              onKeyDown={handleEnterKeyFocus}
-              disabled={disabled}
-            />
-          </div>
-        </td>
+              onValueChange(index, `${day}_reg`, value);
+            }}
+            onKeyDown={handleEnterKeyFocus}
+            disabled={disabled}
+          />
+        </div>
       ))}
 
       {/* Total Hours */}
-      <td className="flex items-center">
-        <label className="text-blue-500 py-1 w-full">TOTAL</label>
+      <div className={rowClass}>
+        <label className={labelClass}>Total</label>
 
         <input
           type="number"
           value={row.total_hours}
-          className="border rounded-sm w-full text-center p-2"
+          className={`${controlClass} text-center`}
           placeholder="Total"
           readOnly
           disabled={disabled}
         />
-      </td>
+      </div>
 
-      <td className="flex justify-center items-center">
+      <div className="sticky bottom-0 bg-white pt-2">
         <button
+          type="button"
           onClick={toggleModal}
-          className="w-full bg-blue-500 py-2 text-white rounded-sm"
+          className="w-full h-10 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition duration-300"
         >
           Done
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 }

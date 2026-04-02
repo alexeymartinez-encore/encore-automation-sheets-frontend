@@ -1,12 +1,33 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 import TaskBar from "./TaskBar";
 import { getEndOfWeek } from "../../../../../util/helper";
 import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
+import MissingSubmissionPanel from "../ManageSheetsShared/MissingSubmissionPanel";
 
-export default function ManageTimesheetsTable({ openReportModal }) {
+function buildWeekIsoDate(date) {
+  const normalizedDate = new Date(date);
+  const hours = Number(import.meta.env.VITE_UTC_CONFIGURATION ?? 4);
+  normalizedDate.setUTCHours(hours, 0, 0, 0);
+  return normalizedDate.toISOString();
+}
+
+function formatWeekLabel(date) {
+  return `Week ending ${new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date))}`;
+}
+
+export default function ManageTimesheetsTable({
+  openReportModal,
+  activeEmployeeCount = 0,
+  refreshToken = 0,
+}) {
   let weekDate;
 
   if (localStorage.getItem("week_date") === null) {
@@ -14,67 +35,90 @@ export default function ManageTimesheetsTable({ openReportModal }) {
   } else {
     weekDate = getEndOfWeek(new Date(localStorage.getItem("week_date")));
   }
+
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(weekDate);
   const [isToggled, setIsToggled] = useState(false);
   const [signedCount, setSignedCount] = useState(0);
+  const [isMissingPanelOpen, setIsMissingPanelOpen] = useState(false);
+  const [isMissingLoading, setIsMissingLoading] = useState(false);
+  const [isSendingAllReminders, setIsSendingAllReminders] = useState(false);
+  const [sendingReminderIds, setSendingReminderIds] = useState([]);
+  const [missingSummary, setMissingSummary] = useState({
+    missingEmployees: [],
+    activeEmployeeCount,
+    completedCount: 0,
+  });
 
   const timesheetMode = !isToggled ? "Go to Open" : "Go to By Date";
 
   const adminCtx = useContext(AdminContext);
   const timesheetCtx = useContext(TimesheetContext);
 
-  useEffect(() => {
-    async function getTimesheets() {
-      // Convert to ISO 8601. Always set to 4:00
+  const loadTimesheets = useCallback(async () => {
+    const isoDate = buildWeekIsoDate(selectedDate);
+    const result = isToggled
+      ? await adminCtx.getOpenTimesheets()
+      : await adminCtx.getUsersTimesheetsByDate(isoDate);
 
-      const date = new Date(selectedDate);
-      const hours = import.meta.env.VITE_UTC_CONFIGURATION;
-      // Force to 4:00 AM UTC
-      date.setUTCHours(hours, 0, 0, 0);
-
-      const isoDate = date.toISOString();
-      const res = await adminCtx.getUsersTimesheetsByDate(isoDate);
-      const sorted = (res || []).sort((a, b) => {
-        const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
-        const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
-        return lastNameA.localeCompare(lastNameB);
-      });
-      setTimesheets(sorted || []);
-      const count = (sorted || []).filter((ts) => ts.signed === true).length;
-      setSignedCount(count);
-    }
-    getTimesheets();
-  }, [selectedDate]);
-
-  async function handleToggle() {
-    const newState = !isToggled; // use current state
-    setIsToggled(newState);
-
-    const isoDate = new Date(selectedDate).toISOString();
-
-    let res;
-    if (newState) {
-      // Going to Open Expenses
-      res = await adminCtx.getOpenTimesheets();
-    } else {
-      // Going back to Expenses By Date
-      res = await adminCtx.getUsersTimesheetsByDate(isoDate);
-    }
-
-    const sorted = (res || []).sort((a, b) => {
+    const sorted = (result || []).sort((a, b) => {
       const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
       const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
       return lastNameA.localeCompare(lastNameB);
     });
 
     setTimesheets(sorted || []);
-    // const count = (sorted || []).filter((ts) => ts.signed === true).length;
-    // setSignedCount(count);
+    const count = (sorted || []).filter((timesheet) => timesheet.signed).length;
+    setSignedCount(count);
+  }, [adminCtx, isToggled, selectedDate]);
+
+  useEffect(() => {
+    loadTimesheets();
+  }, [loadTimesheets, refreshToken]);
+
+  const loadMissingSummary = useCallback(async () => {
+    if (isToggled) return;
+
+    setIsMissingLoading(true);
+    const summary = await adminCtx.getMissingTimesheetsByDate(
+      buildWeekIsoDate(selectedDate)
+    );
+    setMissingSummary({
+      missingEmployees: summary?.missingEmployees || [],
+      activeEmployeeCount:
+        summary?.activeEmployeeCount ?? activeEmployeeCount ?? 0,
+      completedCount: summary?.completedCount || 0,
+    });
+    setIsMissingLoading(false);
+  }, [activeEmployeeCount, adminCtx, isToggled, selectedDate]);
+
+  useEffect(() => {
+    if (isMissingPanelOpen && !isToggled) {
+      loadMissingSummary();
+    }
+  }, [isMissingPanelOpen, isToggled, loadMissingSummary]);
+
+  function handleToggle() {
+    setIsToggled((previousValue) => {
+      const nextValue = !previousValue;
+      if (nextValue) {
+        setIsMissingPanelOpen(false);
+      }
+      return nextValue;
+    });
+  }
+
+  async function handleToggleMissingPanel() {
+    const nextOpen = !isMissingPanelOpen;
+    setIsMissingPanelOpen(nextOpen);
+
+    if (nextOpen) {
+      await loadMissingSummary();
+    }
   }
 
   function handleValueChange(index, field, value) {
-    const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
+    const userName = localStorage.getItem("user_name");
 
     setTimesheets((prevTimesheets) => {
       const updatedTimesheets = [...prevTimesheets];
@@ -83,7 +127,7 @@ export default function ManageTimesheetsTable({ openReportModal }) {
 
       updatedTimesheets[index] = {
         ...updatedTimesheets[index],
-        [field]: isChecked, // Update the checkbox field
+        [field]: isChecked,
         ...(field === "signed" && isChecked && { submitted_by: userName }),
         ...(field === "approved" && isChecked && { approved_by: userName }),
         ...(field === "processed" && isChecked && { processed_by: userName }),
@@ -97,10 +141,9 @@ export default function ManageTimesheetsTable({ openReportModal }) {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() - 7);
-      const weekDate = getEndOfWeek(newDate);
-      localStorage.setItem("week_date", weekDate);
-      return weekDate;
-      // return newDate;
+      const nextWeekDate = getEndOfWeek(newDate);
+      localStorage.setItem("week_date", nextWeekDate);
+      return nextWeekDate;
     });
   }
 
@@ -108,9 +151,9 @@ export default function ManageTimesheetsTable({ openReportModal }) {
     setSelectedDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() + 7);
-      const weekDate = getEndOfWeek(newDate);
-      localStorage.setItem("week_date", weekDate);
-      return weekDate;
+      const nextWeekDate = getEndOfWeek(newDate);
+      localStorage.setItem("week_date", nextWeekDate);
+      return nextWeekDate;
     });
   }
 
@@ -119,6 +162,31 @@ export default function ManageTimesheetsTable({ openReportModal }) {
     if (res.internalStatus === "success") {
       timesheetCtx.triggerUpdate();
     }
+  }
+
+  async function handleSendReminder(employeeId) {
+    setSendingReminderIds((currentIds) =>
+      currentIds.includes(employeeId) ? currentIds : [...currentIds, employeeId]
+    );
+
+    await adminCtx.sendMissingTimesheetReminders({
+      weekEnding: buildWeekIsoDate(selectedDate),
+      employeeIds: [employeeId],
+    });
+
+    setSendingReminderIds((currentIds) =>
+      currentIds.filter((currentId) => currentId !== employeeId)
+    );
+    await loadMissingSummary();
+  }
+
+  async function handleSendAllReminders() {
+    setIsSendingAllReminders(true);
+    await adminCtx.sendMissingTimesheetReminders({
+      weekEnding: buildWeekIsoDate(selectedDate),
+    });
+    setIsSendingAllReminders(false);
+    await loadMissingSummary();
   }
 
   function handleSetAllApproved() {
@@ -131,8 +199,8 @@ export default function ManageTimesheetsTable({ openReportModal }) {
 
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
-        approved: !allApproved, // Toggle the approved state
-        approved_by: !allApproved ? userName : "", // Set approved_by only if approving
+        approved: !allApproved,
+        approved_by: !allApproved ? userName : "",
       }));
     });
   }
@@ -147,46 +215,38 @@ export default function ManageTimesheetsTable({ openReportModal }) {
 
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
-        processed: !allProcessed, // Toggle the processed state
-        processed_by: !allProcessed ? userName : "", // Set processed_by only if processing
+        processed: !allProcessed,
+        processed_by: !allProcessed ? userName : "",
       }));
     });
   }
 
   async function generateLaborReport() {
-    // --- inputs & fetch ---
-    const date = new Date(selectedDate);
-    const hours = Number(import.meta.env.VITE_UTC_CONFIGURATION ?? 4); // fallback to 4 if unset
-    date.setUTCHours(hours, 0, 0, 0);
-    const isoDate = date.toISOString();
-
+    const isoDate = buildWeekIsoDate(selectedDate);
     const resp = await adminCtx.fetchLaborData(isoDate);
 
-    // --- helpers ---
-    const escapeXml = (s) =>
-      String(s ?? "")
+    const escapeXml = (value) =>
+      String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&apos;");
 
-    // Parse "YYYY-MM-DD" as a UTC date
     const parseDateUTC = (ymd) => {
       if (!ymd) return new Date(NaN);
       if (typeof ymd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
-        const [y, m, d] = ymd.split("-").map(Number);
-        return new Date(Date.UTC(y, m - 1, d));
+        const [year, month, day] = ymd.split("-").map(Number);
+        return new Date(Date.UTC(year, month - 1, day));
       }
       return new Date(ymd);
     };
 
-    const formatDateForFile = (d) =>
+    const formatDateForFile = (date) =>
       new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" })
-        .format(d)
+        .format(date)
         .replace(" ", "");
 
-    // file name from biweekly range (selectedDate back 13 days)
     const endDate = new Date(selectedDate);
     const startDate = new Date(selectedDate);
     startDate.setDate(startDate.getDate() - 13);
@@ -194,24 +254,22 @@ export default function ManageTimesheetsTable({ openReportModal }) {
       startDate
     )}to${formatDateForFile(endDate)}_${startDate.getFullYear()}.xml`;
 
-    // Collect rows here
     const allRows = [];
 
     for (const ts of resp) {
       const weekEndingDate = parseDateUTC(ts.week_ending);
-      const daysToSubstract = import.meta.env.VITE_DAYS_REPORT;
+      const daysToSubtract = Number(import.meta.env.VITE_DAYS_REPORT ?? 6);
 
       const weekDates = Array.from({ length: 7 }, (_, index) => {
-        const d = new Date(weekEndingDate);
-        d.setUTCDate(weekEndingDate.getUTCDate() - daysToSubstract + index);
-        return d.toISOString().split("T")[0];
+        const date = new Date(weekEndingDate);
+        date.setUTCDate(weekEndingDate.getUTCDate() - daysToSubtract + index);
+        return date.toISOString().split("T")[0];
       });
 
       const employeeNumber = ts.employee_id ?? "";
       const employeeName =
-        `${ts.Employee?.first_name ?? ""} ${
-          ts.Employee?.last_name ?? ""
-        }`.trim() || "Unknown";
+        `${ts.Employee?.first_name ?? ""} ${ts.Employee?.last_name ?? ""}`.trim() ||
+        "Unknown";
 
       const entries = Array.isArray(ts.TimesheetEntries)
         ? ts.TimesheetEntries
@@ -240,10 +298,8 @@ export default function ManageTimesheetsTable({ openReportModal }) {
           const ot = Number(entry[`${day}_ot`] ?? 0);
           if (reg === 0 && ot === 0) continue;
 
-          const laborDate = weekDates[index];
-
           allRows.push({
-            LaborDate: laborDate,
+            LaborDate: weekDates[index],
             EmployeeNumber: employeeNumber,
             EmployeeName: employeeName,
             RegHours: reg.toFixed(15),
@@ -257,15 +313,11 @@ export default function ManageTimesheetsTable({ openReportModal }) {
       }
     }
 
-    // Sort rows by date
-    allRows.sort((a, b) => new Date(a.LaborDate) - new Date(b.LaborDate));
+    allRows.sort((first, second) => new Date(first.LaborDate) - new Date(second.LaborDate));
 
-    // Build XML after sorting
     let xmlContent = "<ProjectLabor>\n";
     allRows.forEach((row) => {
-      xmlContent += `<row LaborDate="${
-        row.LaborDate
-      }T00:00:00" EmployeeNumber="${escapeXml(
+      xmlContent += `<row LaborDate="${row.LaborDate}T00:00:00" EmployeeNumber="${escapeXml(
         row.EmployeeNumber
       )}" EmployeeName="${escapeXml(row.EmployeeName)}" RegHours="${
         row.RegHours
@@ -274,22 +326,9 @@ export default function ManageTimesheetsTable({ openReportModal }) {
       )}" Description="${escapeXml(row.Description)}" Phase="${escapeXml(
         row.Phase
       )}" CostCode="${escapeXml(row.CostCode)}" />\n`;
-
-      //     xmlContent += `  <row
-      //   LaborDate="${row.LaborDate}T00:00:00"
-      //   EmployeeNumber="${escapeXml(row.EmployeeNumber)}"
-      //   EmployeeName="${escapeXml(row.EmployeeName)}"
-      //   RegHours="${row.RegHours}"
-      //   OTHours="${row.OTHours}"
-      //   ProjectNumber="${escapeXml(row.ProjectNumber)}"
-      //   Description="${escapeXml(row.Description)}"
-      //   Phase="${escapeXml(row.Phase)}"
-      //   CostCode="${escapeXml(row.CostCode)}"
-      // />\n`;
     });
     xmlContent += "</ProjectLabor>";
 
-    // --- download file ---
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -317,7 +356,33 @@ export default function ManageTimesheetsTable({ openReportModal }) {
         timesheetMode={timesheetMode}
         isToggled={isToggled}
         completeTimesheets={signedCount}
+        totalEmployeesCount={activeEmployeeCount}
+        toggleMissingPanel={handleToggleMissingPanel}
+        isMissingPanelOpen={isMissingPanelOpen}
+        missingButtonDisabled={isToggled}
       />
+
+      {isMissingPanelOpen ? (
+        <div className="my-2">
+          <MissingSubmissionPanel
+            title="Missing Timesheets"
+            periodLabel={formatWeekLabel(selectedDate)}
+            missingEmployees={missingSummary.missingEmployees}
+            activeEmployeeCount={
+              missingSummary.activeEmployeeCount || activeEmployeeCount || 0
+            }
+            completedCount={missingSummary.completedCount}
+            isLoading={isMissingLoading}
+            isSendingAll={isSendingAllReminders}
+            sendingEmployeeIds={sendingReminderIds}
+            onRefresh={loadMissingSummary}
+            onSendAll={handleSendAllReminders}
+            onSendSingle={handleSendReminder}
+            emptyMessage="Everyone active has submitted a signed timesheet for this week."
+          />
+        </div>
+      ) : null}
+
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
         {timesheets && timesheets.length > 0 ? (
@@ -338,3 +403,9 @@ export default function ManageTimesheetsTable({ openReportModal }) {
     </div>
   );
 }
+
+ManageTimesheetsTable.propTypes = {
+  openReportModal: PropTypes.func.isRequired,
+  activeEmployeeCount: PropTypes.number,
+  refreshToken: PropTypes.number,
+};

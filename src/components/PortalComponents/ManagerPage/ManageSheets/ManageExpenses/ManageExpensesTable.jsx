@@ -189,8 +189,18 @@ export default function ManageExpensesTable() {
       "Cell Phone": "CellPhn",
       "Employee Education / Training": "EmplEd",
       "Supplies / Part": "SupplsPrts",
-      "Employee Relations": "EmpRel",
+      "Employee Relations": "EmplyRelat",
     };
+
+    const normalizeReportType = (type) =>
+      (
+        {
+          Bereavement: "Bereavem",
+          EmpRelat: "EmplyRelat",
+          EmpRelatSGA: "EmplyRelatSGA",
+          EmpRel: "EmplyRelat",
+        }
+      )[type] || type;
 
     newExpenses.forEach((expenseWrapper) => {
       const expense = expenseWrapper.expense;
@@ -277,7 +287,7 @@ export default function ManageExpensesTable() {
       EmployeeNumber="${employee?.employee_number || ""}"
       EmployeeName="${employee?.first_name || ""} ${employee?.last_name || ""}"
       Amount="${Number(row.amount).toFixed(4)}"
-      Type="${row.type}"
+      Type="${normalizeReportType(row.type)}"
       TransportWhere=""
       ProjectNumber="${entry.project_number || "ProjOver"}"
       Purpose="${expense.message || ""}"

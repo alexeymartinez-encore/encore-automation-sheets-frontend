@@ -20,7 +20,7 @@ export default function TableContentRows({ timesheet }) {
   const navigate = useNavigate();
 
   function handleEdit() {
-    navigate(`/employee-portal/dashboard/timesheets/${timesheet.id}`);
+    navigate(`/employee-portal/dashboard/timesheets/details/${timesheet.id}`);
   }
 
   async function handleDelete(id) {

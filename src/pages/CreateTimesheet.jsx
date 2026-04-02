@@ -4,13 +4,23 @@ import TimesheetForm from "../components/PortalComponents/TimeSheets/TimesheetFo
 
 export default function CreateTimesheetPage() {
   const location = useLocation();
-  const { prefillEntries } = location.state || {};
+  const { prefillEntries, prefillDate, adminCreate } = location.state || {};
+  const initialEmployee = adminCreate?.employeeId
+    ? {
+        id: adminCreate.employeeId,
+        first_name: adminCreate.first_name || "",
+        last_name: adminCreate.last_name || "",
+      }
+    : null;
+
   return (
     <FormContainerCard>
       <TimesheetForm
         timesheetEntriesData={prefillEntries} // prefill if copying
+        initialSelectedDate={prefillDate}
         timesheetId={null} // always new
-        isAdmin={false}
+        isAdmin={Boolean(initialEmployee?.id)}
+        initialEmployee={initialEmployee}
       />
     </FormContainerCard>
   );
