@@ -264,13 +264,22 @@ export default function ExpenseForm({
 
           if (!filteredExpense) {
             try {
-              const response = await fetch(
+              const adminResponse = await fetch(
                 `${BASE_URL}/admin/expense/${expenseId}`,
                 {
                   headers: { "Content-Type": "application/json" },
                   credentials: "include",
                 }
               );
+
+              let response = adminResponse;
+              if (adminResponse.status === 403) {
+                response = await fetch(`${BASE_URL}/manager/expense/${expenseId}`, {
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                });
+              }
+
               const data = await response.json();
               if (response.ok) {
                 filteredExpense = data.data[0];
