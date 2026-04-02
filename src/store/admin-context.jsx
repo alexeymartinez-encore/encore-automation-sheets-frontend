@@ -42,10 +42,23 @@ export default function AdminContextProvider({ children }) {
   });
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
+  async function fetchWithRoleFallback(adminPath, managerPath, options) {
+    const adminUrl = `${BASE_URL}${adminPath}`;
+    let response = await fetch(adminUrl, options);
+
+    if (response.status === 403 && managerPath) {
+      const managerUrl = `${BASE_URL}${managerPath}`;
+      response = await fetch(managerUrl, options);
+    }
+
+    return response;
+  }
+
   async function getUsersTimesheetsByDate(weekEnding) {
     try {
-      const response = await fetch(
-        `${BASE_URL}/admin/timesheets/${weekEnding}`,
+      const response = await fetchWithRoleFallback(
+        `/admin/timesheets/${weekEnding}`,
+        `/manager/timesheets/${weekEnding}`,
         {
           method: "GET",
           headers: {
@@ -69,8 +82,9 @@ export default function AdminContextProvider({ children }) {
 
   async function fetchOvertimeData(date) {
     try {
-      const response = await fetch(
-        `${BASE_URL}/admin/timesheets/overtime-report/${date}`,
+      const response = await fetchWithRoleFallback(
+        `/admin/timesheets/overtime-report/${date}`,
+        `/manager/timesheets/overtime-report/${date}`,
         {
           method: "GET",
           headers: {
@@ -197,8 +211,9 @@ export default function AdminContextProvider({ children }) {
 
   async function fetchLaborData(date) {
     try {
-      const response = await fetch(
-        `${BASE_URL}/admin/timesheets/labor-report/${date}`,
+      const response = await fetchWithRoleFallback(
+        `/admin/timesheets/labor-report/${date}`,
+        `/manager/timesheets/labor-report/${date}`,
         {
           method: "GET",
           headers: {
@@ -222,8 +237,9 @@ export default function AdminContextProvider({ children }) {
 
   async function fetchExpenseReportData(date) {
     try {
-      const response = await fetch(
-        `${BASE_URL}/admin/expenses/expense-report/${date}`,
+      const response = await fetchWithRoleFallback(
+        `/admin/expenses/expense-report/${date}`,
+        `/manager/timesheets/expense-report/${date}`,
         {
           method: "GET",
           headers: {
@@ -298,13 +314,17 @@ export default function AdminContextProvider({ children }) {
 
   async function getAllEmployees() {
     try {
-      const response = await fetch(`${BASE_URL}/admin/employees/get-all`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithRoleFallback(
+        "/admin/employees/get-all",
+        "/manager/employees/get-all",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error getting timesheets server");
@@ -320,13 +340,17 @@ export default function AdminContextProvider({ children }) {
 
   async function getAllProjects() {
     try {
-      const response = await fetch(`${BASE_URL}/admin/projects/get-all`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithRoleFallback(
+        "/admin/projects/get-all",
+        "/manager/projects/get-all",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error getting projects server");
@@ -457,13 +481,17 @@ export default function AdminContextProvider({ children }) {
   }
   async function getUsersExpensesByDate(dateStart) {
     try {
-      const response = await fetch(`${BASE_URL}/admin/expenses/${dateStart}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithRoleFallback(
+        `/admin/expenses/${dateStart}`,
+        `/manager/expenses/${dateStart}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error getting expenses server");
@@ -479,13 +507,18 @@ export default function AdminContextProvider({ children }) {
 
   async function getOpenExpenses(date) {
     try {
-      const response = await fetch(`${BASE_URL}/admin/open-expenses/${date}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const selectedDate = date || new Date();
+      const response = await fetchWithRoleFallback(
+        `/admin/open-expenses/${selectedDate}`,
+        "/manager/open-expenses",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error getting expenses server");
@@ -657,8 +690,9 @@ export default function AdminContextProvider({ children }) {
 
   async function saveTimesheetsStatusChanges(timesheetData) {
     try {
-      const response = await fetch(
-        `${BASE_URL}/admin/timesheets/status-change`,
+      const response = await fetchWithRoleFallback(
+        "/admin/timesheets/status-change",
+        "/manager/timesheets/status-change",
         {
           method: "PUT",
           headers: {
@@ -687,14 +721,18 @@ export default function AdminContextProvider({ children }) {
 
   async function saveExpensesStatusChanges(expenseData) {
     try {
-      const response = await fetch(`${BASE_URL}/admin/expenses/status-change`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(expenseData),
-      });
+      const response = await fetchWithRoleFallback(
+        "/admin/expenses/status-change",
+        "/manager/expenses/status-change",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(expenseData),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error getting expenses server");
