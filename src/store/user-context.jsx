@@ -19,6 +19,9 @@ export default function UserContextProvider({ children }) {
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          return [];
+        }
         throw new Error("Error getting timesheets server");
       }
 

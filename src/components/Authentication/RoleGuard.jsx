@@ -1,22 +1,15 @@
 import PropTypes from "prop-types";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../store/auth-context";
 
-export default function AuthCheck({ children }) {
-  const authCtx = useContext(AuthContext);
+export default function RoleGuard({
+  allowedRoles,
+  fallbackPath = "/employee-portal/dashboard",
+  children,
+}) {
   const location = useLocation();
-
-  useEffect(() => {
-    if (!authCtx.isLoading && authCtx.isAuthenticated) {
-      authCtx.verifySession();
-    }
-  }, [
-    location.pathname,
-    authCtx.isLoading,
-    authCtx.isAuthenticated,
-    authCtx.verifySession,
-  ]);
+  const authCtx = useContext(AuthContext);
 
   if (authCtx.isLoading) {
     return <p className="flex items-center justify-center mt-40">Loading...</p>;
@@ -32,9 +25,15 @@ export default function AuthCheck({ children }) {
     );
   }
 
+  if (!allowedRoles.includes(Number(authCtx.roleId))) {
+    return <Navigate to={fallbackPath} replace />;
+  }
+
   return children;
 }
 
-AuthCheck.propTypes = {
+RoleGuard.propTypes = {
+  allowedRoles: PropTypes.arrayOf(PropTypes.number).isRequired,
+  fallbackPath: PropTypes.string,
   children: PropTypes.node.isRequired,
 };

@@ -56,8 +56,7 @@ export default function TaskBar({
   missingButtonDisabled,
 }) {
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
-  const totalExpenses =
-    totalEmployeesCount || Number(localStorage.getItem("total_employees")) || 0;
+  const totalExpenses = Number(totalEmployeesCount) || 0;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 

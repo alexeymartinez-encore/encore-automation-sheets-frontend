@@ -20,6 +20,15 @@ import {
   saveTimesheet,
 } from "../../../util/fetching";
 import DatePickerComponent from "../Shared/DatePickerComponent";
+import ConfirmActionModal from "../Shared/ConfirmActionModal";
+import LoadingState from "../Shared/LoadingState";
+import { AuthContext } from "../../../store/auth-context";
+import {
+  getAuthUserId,
+  getAuthUserName,
+  isUserOvertimeAllowed,
+} from "../../../util/authUser";
+import useActionConfirmation from "../../../hooks/useActionConfirmation";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
@@ -29,7 +38,7 @@ function getInitialTimesheetData(employeeId = null) {
     approved_by: "None",
     createdAt: "",
     date_processed: null,
-    employee_id: employeeId ?? localStorage.getItem("userId"),
+    employee_id: employeeId ?? "",
     id: null,
     message: "None",
     processed: false,
@@ -81,15 +90,17 @@ export default function TimesheetForm({
   initialSelectedDate = null,
   initialEmployee = null,
 }) {
-  const allow_overtime = localStorage.getItem("allow_overtime") === "true";
-  // console.log(allow_overtime);
+  const authCtx = useContext(AuthContext);
+  const currentUserId = getAuthUserId(authCtx.user);
+  const currentUserName = getAuthUserName(authCtx.user);
+  const allow_overtime = isUserOvertimeAllowed(authCtx.user);
   const navigate = useNavigate();
   const initialEmployeeId = initialEmployee?.id ?? null;
   const initialFirstName = initialEmployee?.first_name || "";
   const initialLastName = initialEmployee?.last_name || "";
 
   const [timesheet, setTimesheet] = useState(() =>
-    getInitialTimesheetData(initialEmployeeId)
+    getInitialTimesheetData(initialEmployeeId ?? currentUserId)
   );
   const [rowData, setRowData] = useState(timesheetEntriesData);
   const [selectedDate, setSelectedDate] = useState(() =>
@@ -100,6 +111,16 @@ export default function TimesheetForm({
     first_name: initialFirstName,
     last_name: initialLastName,
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isHydratingTimesheet, setIsHydratingTimesheet] = useState(
+    Boolean(timesheetId)
+  );
+  const {
+    confirmationDialog,
+    requestConfirmation,
+    confirmConfirmation,
+    cancelConfirmation,
+  } = useActionConfirmation();
 
   const timesheetCtx = useContext(TimesheetContext);
 
@@ -131,14 +152,15 @@ export default function TimesheetForm({
 
     setTimesheet((prevTimesheet) => ({
       ...prevTimesheet,
-      employee_id: localStorage.getItem("userId"),
+      employee_id: currentUserId ?? "",
     }));
     setSelectedUser({
-      id: null,
+      id: currentUserId,
       first_name: "",
       last_name: "",
     });
   }, [
+    currentUserId,
     initialEmployeeId,
     initialFirstName,
     initialLastName,
@@ -148,63 +170,71 @@ export default function TimesheetForm({
 
   useEffect(() => {
     async function init() {
-      if (timesheetEntriesData && timesheetId) {
-        let filteredTimesheet = timesheetCtx.timesheets.find(
-          (timesheet) => timesheet.id === parseInt(timesheetId)
-        );
+      if (!timesheetId) {
+        setIsHydratingTimesheet(false);
+        return;
+      }
 
-        if (filteredTimesheet) {
-          setSelectedDate(getEndOfWeek(new Date(filteredTimesheet.week_ending)));
-          setTimesheet((prevTimesheet) => ({
-            ...prevTimesheet,
-            signed: filteredTimesheet.signed,
-            total_reg_hours: filteredTimesheet.total_reg_hours,
-            total_overtime: filteredTimesheet.total_overtime,
-            approved: filteredTimesheet.approved,
-          }));
-        } else {
-          try {
-            const response = await fetch(
-              `${BASE_URL}/admin/timesheet/${timesheetId}`,
-              {
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-              }
-            );
-            const data = await response.json();
-            if (response.ok) {
-              filteredTimesheet = data.data[0];
-              setSelectedUser(data.data[0].Employee);
-              setSelectedDate(
-                getEndOfWeek(new Date(filteredTimesheet.week_ending))
-              );
-              setTimesheet(filteredTimesheet);
-            } else {
-              console.error("Error fetching expense");
-              return;
-            }
-          } catch (error) {
-            console.error("Error fetching expense:", error);
+      setIsHydratingTimesheet(true);
+
+      let filteredTimesheet = timesheetCtx.timesheets.find(
+        (currentTimesheet) => currentTimesheet.id === parseInt(timesheetId)
+      );
+
+      if (filteredTimesheet) {
+        setSelectedDate(getEndOfWeek(new Date(filteredTimesheet.week_ending)));
+        setTimesheet((prevTimesheet) => ({
+          ...prevTimesheet,
+          signed: filteredTimesheet.signed,
+          total_reg_hours: filteredTimesheet.total_reg_hours,
+          total_overtime: filteredTimesheet.total_overtime,
+          approved: filteredTimesheet.approved,
+        }));
+      } else {
+        try {
+          const response = await fetch(`${BASE_URL}/admin/timesheet/${timesheetId}`, {
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          });
+          const data = await response.json();
+          if (response.ok) {
+            filteredTimesheet = data.data[0];
+            setSelectedUser(data.data[0].Employee);
+            setSelectedDate(getEndOfWeek(new Date(filteredTimesheet.week_ending)));
+            setTimesheet(filteredTimesheet);
+          } else {
+            console.error("Error fetching expense");
             return;
           }
+        } catch (error) {
+          console.error("Error fetching expense:", error);
+          return;
+        } finally {
+          setIsHydratingTimesheet(false);
         }
-        setRowData(timesheetEntriesData);
       }
+
+      setRowData(timesheetEntriesData);
+      setIsHydratingTimesheet(false);
     }
+
     init();
   }, [timesheetEntriesData, timesheetId, timesheetCtx.timesheets]);
 
-  async function handleSave() {
+  async function persistTimesheet() {
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
       const hours = calculateHours(rowData);
       timesheet.total_reg_hours = hours.totalRegHours;
       timesheet.total_overtime = hours.totalOvertime;
       timesheet.submitted_by = timesheet.signed
-        ? localStorage.getItem("user_name")
+        ? currentUserName || "None"
         : "None";
       timesheet.employee_id = isAdmin
         ? timesheet.employee_id
-        : localStorage.getItem("userId");
+        : currentUserId;
       timesheet.week_ending = getEndOfWeek(selectedDate);
       timesheet.id = timesheetId || timesheet.id;
 
@@ -251,14 +281,43 @@ export default function TimesheetForm({
         } failed!`
       );
       console.error("Error saving timesheet:", error);
+    } finally {
+      setIsSaving(false);
     }
+  }
+
+  async function handleSave() {
+    const shouldSave = await requestConfirmation({
+      title: timesheetId ? "Save Timesheet Changes?" : "Save New Timesheet?",
+      message:
+        "This will commit the current timesheet values and update records for this pay period.",
+      confirmLabel: "Save",
+    });
+    if (!shouldSave) return;
+
+    await persistTimesheet();
+  }
+
+  async function persistDeleteRow(index, row) {
+    if (!row) return;
+
+    if (row.id) {
+      try {
+        await deleteTimesheetEntryById(index, row);
+      } catch (error) {
+        console.error("Error deleting row from the server: ", error);
+        return;
+      }
+    }
+
+    setRowData((prevData) => prevData.filter((_, currentIndex) => currentIndex !== index));
   }
 
   function handleSign() {
     setTimesheet((prevTimesheet) => ({
       ...prevTimesheet,
       signed: !prevTimesheet.signed,
-      submitted_by: localStorage.getItem("user_name"),
+      submitted_by: currentUserName || "None",
     }));
   }
 
@@ -273,15 +332,16 @@ export default function TimesheetForm({
   }
 
   async function handleDeleteRow(index, row) {
-    if (row.id) {
-      try {
-        await deleteTimesheetEntryById(index, row);
-      } catch (error) {
-        console.error("Error deleting row from the server: ", error);
-        return;
-      }
-    }
-    setRowData((prevData) => prevData.filter((_, i) => i !== index));
+    const shouldDelete = await requestConfirmation({
+      title: "Delete This Row?",
+      message:
+        "This row entry will be removed from the timesheet. If it was already saved, it will also be deleted from the server.",
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
+
+    await persistDeleteRow(index, row);
   }
 
   function handleValueChange(index, field, value) {
@@ -351,83 +411,99 @@ export default function TimesheetForm({
 
   const weekDayDateLabels = getWeekDayDateLabels(selectedDate);
 
-  return (
-    <div className="pb-16 md:pb-20">
-      <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
-        <DatePickerComponent
-          onChange={(date) => date && setSelectedDate(getEndOfWeek(date))}
-          selected={selectedDate}
-          disabled={timesheet.approved}
-        />
-        {isAdmin && (
-          <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
-            {selectedUser.first_name} {selectedUser.last_name}
-          </p>
-        )}
-        <FormActionsButtons
-          handleSave={handleSave}
-          handleSign={handleSign}
-          signed={timesheet.signed}
-          disabled={timesheet.approved}
-          href={"/employee-portal/dashboard/timesheets/create-timesheet"}
-          // rowData={rowData}
-          handleCopy={handleCopy}
-        />
-      </div>
-      {!allow_overtime && (
-        <div className="flex items-center justify-center p-1 rounded-md bg-yellow-600 text-white mx-2  md:mx-5 mb-5 text-center">
-          <p>Overtime Not allowed</p>
-        </div>
-      )}
-      <div className="hidden md:block px-2 md:px-5">
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <FormTable
-            data={rowData}
-            onValueChange={handleValueChange}
-            onDeleteRow={handleDeleteRow}
-            disabled={timesheet.approved}
-            dayLabels={weekDayDateLabels}
-          />
-        </div>
-      </div>
-      <div className="md:hidden px-2">
-        <div className="rounded-lg border border-slate-200 overflow-hidden">
-          <FormTableMobile
-            data={rowData}
-            onValueChange={handleValueChange}
-            onDeleteRow={handleDeleteRow}
-            disabled={timesheet.approved}
-            dayLabels={weekDayDateLabels}
-          />
-        </div>
-      </div>
+  if (timesheetId && isHydratingTimesheet && rowData.length === 0) {
+    return <LoadingState label="Loading timesheet..." className="my-4" />;
+  }
 
-      <div
-        className={`flex md:flex-row flex-col ${
-          timesheet.approved
-            ? "justify-end my-5"
-            : "justify-center md:justify-between my-5 md:my-0"
-        } gap-5 items-center px-3 md:px-5`}
-      >
-        {timesheet.approved ? (
-          <> </>
-        ) : (
-          <>
-            <div>
-              <AddEntryButton onClick={handleAddRow} />
-            </div>
-          </>
+  return (
+    <>
+      <div className="pb-16 md:pb-20">
+        <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
+          <DatePickerComponent
+            onChange={(date) => date && setSelectedDate(getEndOfWeek(date))}
+            selected={selectedDate}
+            disabled={timesheet.approved}
+          />
+          {isAdmin && (
+            <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
+              {selectedUser.first_name} {selectedUser.last_name}
+            </p>
+          )}
+          <FormActionsButtons
+            handleSave={handleSave}
+            handleSign={handleSign}
+            signed={timesheet.signed}
+            disabled={timesheet.approved}
+            href={"/employee-portal/dashboard/timesheets/create-timesheet"}
+            handleCopy={handleCopy}
+            isSaving={isSaving}
+          />
+        </div>
+        {!allow_overtime && (
+          <div className="flex items-center justify-center p-1 rounded-md bg-yellow-600 text-white mx-2  md:mx-5 mb-5 text-center">
+            <p>Overtime Not allowed</p>
+          </div>
         )}
-        <div className="flex items-center justify-between md:justify-end gap-2">
-          <FormHoursTotal description={"Reg:"} textColor="text-blue-500">
-            {calculateHours(rowData).totalRegHours}
-          </FormHoursTotal>
-          <FormHoursTotal description={"OT:"} textColor="text-red-500">
-            {calculateHours(rowData).totalOvertime}
-          </FormHoursTotal>
+        <div className="hidden md:block px-2 md:px-5">
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <FormTable
+              data={rowData}
+              onValueChange={handleValueChange}
+              onDeleteRow={handleDeleteRow}
+              disabled={timesheet.approved}
+              dayLabels={weekDayDateLabels}
+            />
+          </div>
+        </div>
+        <div className="md:hidden px-2">
+          <div className="rounded-lg border border-slate-200 overflow-hidden">
+            <FormTableMobile
+              data={rowData}
+              onValueChange={handleValueChange}
+              onDeleteRow={handleDeleteRow}
+              disabled={timesheet.approved}
+              dayLabels={weekDayDateLabels}
+            />
+          </div>
+        </div>
+
+        <div
+          className={`flex md:flex-row flex-col ${
+            timesheet.approved
+              ? "justify-end my-5"
+              : "justify-center md:justify-between my-5 md:my-0"
+          } gap-5 items-center px-3 md:px-5`}
+        >
+          {timesheet.approved ? (
+            <> </>
+          ) : (
+            <>
+              <div>
+                <AddEntryButton onClick={handleAddRow} />
+              </div>
+            </>
+          )}
+          <div className="flex items-center justify-between md:justify-end gap-2">
+            <FormHoursTotal description={"Reg:"} textColor="text-blue-500">
+              {calculateHours(rowData).totalRegHours}
+            </FormHoursTotal>
+            <FormHoursTotal description={"OT:"} textColor="text-red-500">
+              {calculateHours(rowData).totalOvertime}
+            </FormHoursTotal>
+          </div>
         </div>
       </div>
-    </div>
+      <ConfirmActionModal
+        isOpen={confirmationDialog.isOpen}
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmLabel={confirmationDialog.confirmLabel}
+        cancelLabel={confirmationDialog.cancelLabel}
+        tone={confirmationDialog.tone}
+        onConfirm={confirmConfirmation}
+        onCancel={cancelConfirmation}
+      />
+    </>
   );
 }
 

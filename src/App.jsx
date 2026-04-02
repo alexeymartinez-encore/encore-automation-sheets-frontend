@@ -33,11 +33,11 @@ import PasswordResetPage from "./pages/PasswordReset";
 import ResetPasswordForm from "./components/Authentication/ResetPasswordForm";
 import AuthCheck from "./components/Authentication/AuthCheck";
 import UserContextProvider from "./store/user-context";
-import { checkIfAdmin, checkIfManager } from "./util/loaders";
 import ErrorPage from "./pages/Error";
 import CategoryEntriesReport from "./components/PortalComponents/AdminPage/Reports/CategoryEntriesReport";
 import EventConfiguration from "./components/PortalComponents/AdminPage/EventConfiguration/EventConfiguration";
 import PropTypes from "prop-types";
+import RoleGuard from "./components/Authentication/RoleGuard";
 
 function LegacyTimesheetDetailRedirect() {
   const { timesheetId } = useParams();
@@ -129,8 +129,11 @@ const router = createBrowserRouter([
           { path: "events", element: <Events /> },
           {
             path: "admin",
-            element: <AdminRootLayout />,
-            loader: checkIfAdmin,
+            element: (
+              <RoleGuard allowedRoles={[3]}>
+                <AdminRootLayout />
+              </RoleGuard>
+            ),
             children: [
               { index: true, element: <AdminHomePage /> },
               { path: "register-user", element: <RegisterNewUser /> },
@@ -159,8 +162,11 @@ const router = createBrowserRouter([
           },
           {
             path: "manager",
-            element: <ManagerHomePage />,
-            loader: checkIfManager,
+            element: (
+              <RoleGuard allowedRoles={[2, 3]}>
+                <ManagerHomePage />
+              </RoleGuard>
+            ),
           },
         ],
       },

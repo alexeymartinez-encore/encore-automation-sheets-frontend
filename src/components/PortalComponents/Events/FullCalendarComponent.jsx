@@ -9,6 +9,7 @@ import { FiChevronDown } from "react-icons/fi";
 import { MdDeleteForever } from "react-icons/md";
 import { EventContext } from "../../../store/events-context";
 import { UserContext } from "../../../store/user-context";
+import { AuthContext } from "../../../store/auth-context";
 import {
   addDaysToDateOnly,
   endOfMonthDateOnly,
@@ -84,6 +85,7 @@ function monthTitleFallback(dateOnly) {
 export default function FullCalendarComponent() {
   const eventCtx = useContext(EventContext);
   const userCtx = useContext(UserContext);
+  const authCtx = useContext(AuthContext);
 
   const calendarRef = useRef(null);
   const isMountedRef = useRef(true);
@@ -91,8 +93,8 @@ export default function FullCalendarComponent() {
 
   const today = toDateOnly(new Date());
   const todayYear = Number(today.slice(0, 4));
-  const currentUserId = Number(localStorage.getItem("userId")) || null;
-  const isAdmin = String(localStorage.getItem("role_id") || "") === "3";
+  const currentUserId = Number(authCtx.user?.id || 0) || null;
+  const isAdmin = Number(authCtx.roleId) === 3;
   const canSelectEventOwner = isAdmin;
   const emptyFilters = {
     userId: "",
@@ -195,14 +197,14 @@ export default function FullCalendarComponent() {
       return `${fromEmployees.last_name}, ${fromEmployees.first_name}`;
     }
 
-    const localFirst = String(localStorage.getItem("first_name") || "").trim();
-    const localLast = String(localStorage.getItem("last_name") || "").trim();
+    const localFirst = String(authCtx.user?.first_name || "").trim();
+    const localLast = String(authCtx.user?.last_name || "").trim();
     if (localFirst || localLast) {
       return [localLast, localFirst].filter(Boolean).join(", ");
     }
 
     return "Current User";
-  }, [employees, currentUserId]);
+  }, [employees, currentUserId, authCtx.user]);
 
   const selectedEmployeeLabel = useMemo(() => {
     const targetEmployeeId = Number(formData.employee_id || currentUserId);

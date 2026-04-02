@@ -1,22 +1,24 @@
+import { getSessionStorageValue } from "../store/session-store";
+
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 export function fetchUser() {
   const user = {
-    user_id: localStorage.getItem("token"),
-    user_name: localStorage.getItem("user_name"),
-    first_name: localStorage.getItem("first_name"),
-    last_name: localStorage.getItem("last_name"),
-    employee_number: localStorage.getItem("employee_number"),
-    home_phone: localStorage.getItem("home_phone"),
-    cell_phone: localStorage.getItem("cell_phone"),
-    email: localStorage.getItem("email"),
-    role_id: localStorage.getItem("role_id"),
-    manager_id: localStorage.getItem("manager_id"),
-    position: localStorage.getItem("position"),
-    manager_name: localStorage.getItem("manager_name"),
-    allow_overtime: localStorage.getItem("allow_overtime"),
-    is_active: localStorage.getItem("is_active"),
-    is_contractor: localStorage.getItem("is_contractor"),
+    user_id: getSessionStorageValue("userId"),
+    user_name: getSessionStorageValue("user_name"),
+    first_name: getSessionStorageValue("first_name"),
+    last_name: getSessionStorageValue("last_name"),
+    employee_number: getSessionStorageValue("employee_number"),
+    home_phone: getSessionStorageValue("home_phone"),
+    cell_phone: getSessionStorageValue("cell_phone"),
+    email: getSessionStorageValue("email"),
+    role_id: getSessionStorageValue("role_id"),
+    manager_id: getSessionStorageValue("manager_id"),
+    position: getSessionStorageValue("position"),
+    manager_name: getSessionStorageValue("manager_name"),
+    allow_overtime: getSessionStorageValue("allow_overtime"),
+    is_active: getSessionStorageValue("is_active"),
+    is_contractor: getSessionStorageValue("is_contractor"),
   };
 
   return user; // Return user data
@@ -38,27 +40,6 @@ export async function authRequest(requestBody, method, authType) {
   }
 
   const data = await response.json();
-  console.log(data);
-  if (authType === "login") {
-    // Store token in localStorage
-    // localStorage.setItem("token", data.token);
-    localStorage.setItem("userId", data.user.id);
-    localStorage.setItem("user_name", data.user.user_name);
-    localStorage.setItem("first_name", data.user.first_name);
-    localStorage.setItem("last_name", data.user.last_name);
-    localStorage.setItem("employee_number", data.user.employee_number);
-    localStorage.setItem("home_phone", data.user.home_phone);
-    localStorage.setItem("cell_phone", data.user.cell_phone);
-    localStorage.setItem("email", data.user.email);
-    localStorage.setItem("role_id", data.user.role_id);
-    localStorage.setItem("manager_id", data.user.manager_id);
-    localStorage.setItem("position", data.user.position);
-    localStorage.setItem("manager_name", data.user.manager_name);
-    localStorage.setItem("is_active", data.user.is_active);
-    localStorage.setItem("is_contractor", data.user.is_contractor);
-    localStorage.setItem("total_employees", data.totalEmployees);
-    localStorage.setItem("allow_overtime", data.user.allow_overtime);
-  }
   return data;
 }
 

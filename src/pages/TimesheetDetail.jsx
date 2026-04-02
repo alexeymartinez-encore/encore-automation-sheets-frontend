@@ -3,12 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import { TimesheetContext } from "../store/timesheet-context";
 import FormContainerCard from "../components/PortalComponents/Shared/FormContainerCard";
 import TimesheetForm from "../components/PortalComponents/TimeSheets/TimesheetForm";
+import LoadingState from "../components/PortalComponents/Shared/LoadingState";
 
 export default function TimesheetDetail() {
   const params = useParams();
   const [searchParams] = useSearchParams();
 
   const [timesheetEntriesData, setTimesheetEntriesData] = useState([]);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(true);
   const timesheetCtx = useContext(TimesheetContext);
   const adminMode = searchParams?.get("adminMode") === "true";
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -17,6 +19,7 @@ export default function TimesheetDetail() {
 
   useEffect(() => {
     async function fetchTimesheetEntriesData() {
+      setIsLoadingEntries(true);
       try {
         const response = await fetch(
           `${baseUrl}/timesheets/entries/${realId}`,
@@ -37,11 +40,21 @@ export default function TimesheetDetail() {
         setTimesheetEntriesData(data.data);
       } catch (error) {
         console.error("Error during fetching projects:", error);
+      } finally {
+        setIsLoadingEntries(false);
       }
     }
 
     fetchTimesheetEntriesData();
   }, [baseUrl, realId, timesheetCtx.timesheets]);
+
+  if (isLoadingEntries) {
+    return (
+      <FormContainerCard>
+        <LoadingState label="Loading timesheet details..." />
+      </FormContainerCard>
+    );
+  }
 
   return (
     <FormContainerCard>

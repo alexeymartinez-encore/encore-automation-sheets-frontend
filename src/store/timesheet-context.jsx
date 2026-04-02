@@ -5,6 +5,7 @@ import { isAuth } from "../util/fetching";
 // Create the context and provide default values
 export const TimesheetContext = createContext({
   timesheets: [],
+  isLoading: false,
   updated: null,
   triggerUpdate: () => {},
   fetchTimesheets: () => {}, // Expose a function to refetch timesheets
@@ -15,6 +16,7 @@ export const TimesheetContext = createContext({
 
 export default function TimesheetContextProvider({ children }) {
   const [timesheets, setTimesheets] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [updated, setUpdated] = useState(0);
   const [successOrFailMessage, setSuccessOrFailMessage] = useState({
     successStatus: "",
@@ -25,12 +27,12 @@ export default function TimesheetContextProvider({ children }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
   const fetchTimesheets = useCallback(async () => {
-    const userId = localStorage.getItem("userId");
     const fetchId = latestFetchIdRef.current + 1;
     latestFetchIdRef.current = fetchId;
+    setIsLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/timesheets/${userId}`, {
+      const response = await fetch(`${BASE_URL}/timesheets/me`, {
         headers: {
           // Authorization: "Bearer " + token,
         },
@@ -50,6 +52,10 @@ export default function TimesheetContextProvider({ children }) {
     } catch (error) {
       console.error("Error fetching timesheets:", error);
       return [];
+    } finally {
+      if (fetchId === latestFetchIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [BASE_URL]);
 
@@ -115,6 +121,7 @@ export default function TimesheetContextProvider({ children }) {
 
   const timesheetsCtxValues = {
     timesheets: timesheets,
+    isLoading: isLoading,
     fetchTimesheets: fetchTimesheets,
     triggerUpdate: triggerUpdate,
     triggerSucessOrFailMessage: triggerSucessOrFailMessage,

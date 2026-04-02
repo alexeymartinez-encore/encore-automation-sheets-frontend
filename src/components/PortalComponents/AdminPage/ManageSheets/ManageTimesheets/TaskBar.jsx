@@ -57,8 +57,7 @@ export default function TaskBar({
   missingButtonDisabled,
 }) {
   const isSunday = (date) => date.getDay() === 0;
-  const totalTimesheets =
-    totalEmployeesCount || Number(localStorage.getItem("total_employees")) || 0;
+  const totalTimesheets = Number(totalEmployeesCount) || 0;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 

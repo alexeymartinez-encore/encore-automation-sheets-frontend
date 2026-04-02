@@ -5,33 +5,52 @@ import TaskBar from "./TaskBar";
 import { getEndOfWeek } from "../../../../../util/helper";
 import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
+import { AuthContext } from "../../../../../store/auth-context";
+import { getAuthUserId, getAuthUserName } from "../../../../../util/authUser";
+import LoadingState from "../../../Shared/LoadingState";
+import ConfirmActionModal from "../../../Shared/ConfirmActionModal";
+import useActionConfirmation from "../../../../../hooks/useActionConfirmation";
 
 export default function ManageTimesheetsTable({ onViewOvertime }) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
+  const [isLoading, setIsLoading] = useState(false);
 
   const adminCtx = useContext(AdminContext);
   const timesheetCtx = useContext(TimesheetContext);
+  const authCtx = useContext(AuthContext);
+  const currentUserId = getAuthUserId(authCtx.user);
+  const currentUserName = getAuthUserName(authCtx.user) || "Unknown User";
+  const {
+    confirmationDialog,
+    requestConfirmation,
+    confirmConfirmation,
+    cancelConfirmation,
+  } = useActionConfirmation();
 
   useEffect(() => {
     async function getTimesheets() {
-      // console.log(selectedDate);
-      const res = await adminCtx.getUsersTimesheetsByDate(selectedDate);
+      setIsLoading(true);
+      if (!currentUserId) {
+        setTimesheets([]);
+        setIsLoading(false);
+        return;
+      }
 
-      const userId = Number(localStorage.getItem("userId")); // Fetch user_name from localStorage
-
-      // Filter timesheets where manager_id matches userId
-      const filtered = (res || []).filter(
-        (ts) => Number(ts.manager_id) === userId
-      );
-      setTimesheets(filtered || []);
+      try {
+        const res = await adminCtx.getUsersTimesheetsByDate(selectedDate);
+        const filtered = (res || []).filter(
+          (ts) => Number(ts.manager_id) === currentUserId
+        );
+        setTimesheets(filtered || []);
+      } finally {
+        setIsLoading(false);
+      }
     }
     getTimesheets();
-  }, [selectedDate]);
+  }, [adminCtx, currentUserId, selectedDate]);
 
   function handleValueChange(index, field, value) {
-    const userName = localStorage.getItem("user_name"); // Fetch user_name from localStorage
-
     setTimesheets((prevTimesheets) => {
       const updatedTimesheets = [...prevTimesheets];
       const isChecked =
@@ -40,9 +59,9 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       updatedTimesheets[index] = {
         ...updatedTimesheets[index],
         [field]: isChecked, // Update the checkbox field
-        ...(field === "signed" && isChecked && { submitted_by: userName }),
-        ...(field === "approved" && isChecked && { approved_by: userName }),
-        ...(field === "processed" && isChecked && { processed_by: userName }),
+        ...(field === "signed" && isChecked && { submitted_by: currentUserName }),
+        ...(field === "approved" && isChecked && { approved_by: currentUserName }),
+        ...(field === "processed" && isChecked && { processed_by: currentUserName }),
       };
 
       return updatedTimesheets;
@@ -72,9 +91,19 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
     }
   }
 
-  function handleSetAllApproved() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
+  async function handleSaveStatusChangesWithConfirmation() {
+    const shouldSave = await requestConfirmation({
+      title: "Save Status Changes?",
+      message:
+        "This will apply the modified signed/approved/processed status values to these timesheets.",
+      confirmLabel: "Save",
+    });
+    if (!shouldSave) return;
 
+    await handleSaveStatusChanges();
+  }
+
+  function handleSetAllApproved() {
     setTimesheets((prevTimesheets) => {
       const allApproved = prevTimesheets.every(
         (timesheet) => timesheet.approved
@@ -83,14 +112,24 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
         approved: !allApproved, // Toggle the approved state
-        approved_by: !allApproved ? userName : "", // Set approved_by only if approving
+        approved_by: !allApproved ? currentUserName : "", // Set approved_by only if approving
       }));
     });
   }
 
-  function handleSetAllProcessed() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
+  async function handleSetAllApprovedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Approved'?",
+      message:
+        "This will toggle the Approved status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
 
+    handleSetAllApproved();
+  }
+
+  function handleSetAllProcessed() {
     setTimesheets((prevTimesheets) => {
       const allProcessed = prevTimesheets.every(
         (timesheet) => timesheet.processed
@@ -99,9 +138,21 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
         processed: !allProcessed, // Toggle the processed state
-        processed_by: !allProcessed ? userName : "", // Set processed_by only if processing
+        processed_by: !allProcessed ? currentUserName : "", // Set processed_by only if processing
       }));
     });
+  }
+
+  async function handleSetAllProcessedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Processed'?",
+      message:
+        "This will toggle the Processed status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
+
+    handleSetAllProcessed();
   }
 
   async function generateLaborReport() {
@@ -210,14 +261,19 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
         goToPreviousWeek={goToPreviousWeek}
         goToNextWeek={goToNextWeek}
         viewOvertime={onViewOvertime}
-        saveChanges={handleSaveStatusChanges}
-        setAllApproved={handleSetAllApproved}
-        setAllPaid={handleSetAllProcessed}
+        saveChanges={handleSaveStatusChangesWithConfirmation}
+        setAllApproved={handleSetAllApprovedWithConfirmation}
+        setAllPaid={handleSetAllProcessedWithConfirmation}
         generateReport={generateLaborReport}
       />
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
-        {timesheets && timesheets.length > 0 ? (
+        {isLoading ? (
+          <LoadingState
+            label="Loading manager timesheets..."
+            className="bg-transparent py-6"
+          />
+        ) : timesheets && timesheets.length > 0 ? (
           timesheets.map((timesheet, index) => (
             <TableRow
               key={timesheet.id}
@@ -232,6 +288,16 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
           </p>
         )}
       </div>
+      <ConfirmActionModal
+        isOpen={confirmationDialog.isOpen}
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmLabel={confirmationDialog.confirmLabel}
+        cancelLabel={confirmationDialog.cancelLabel}
+        tone={confirmationDialog.tone}
+        onConfirm={confirmConfirmation}
+        onCancel={cancelConfirmation}
+      />
     </div>
   );
 }

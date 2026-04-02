@@ -7,6 +7,11 @@ import { getEndOfWeek } from "../../../../../util/helper";
 import { AdminContext } from "../../../../../store/admin-context";
 import { TimesheetContext } from "../../../../../store/timesheet-context";
 import MissingSubmissionPanel from "../ManageSheetsShared/MissingSubmissionPanel";
+import { AuthContext } from "../../../../../store/auth-context";
+import { getAuthUserName } from "../../../../../util/authUser";
+import LoadingState from "../../../Shared/LoadingState";
+import ConfirmActionModal from "../../../Shared/ConfirmActionModal";
+import useActionConfirmation from "../../../../../hooks/useActionConfirmation";
 
 function buildWeekIsoDate(date) {
   const normalizedDate = new Date(date);
@@ -39,6 +44,7 @@ export default function ManageTimesheetsTable({
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(weekDate);
   const [isToggled, setIsToggled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [signedCount, setSignedCount] = useState(0);
   const [isMissingPanelOpen, setIsMissingPanelOpen] = useState(false);
   const [isMissingLoading, setIsMissingLoading] = useState(false);
@@ -54,22 +60,35 @@ export default function ManageTimesheetsTable({
 
   const adminCtx = useContext(AdminContext);
   const timesheetCtx = useContext(TimesheetContext);
+  const authCtx = useContext(AuthContext);
+  const currentUserName = getAuthUserName(authCtx.user) || "Unknown User";
+  const {
+    confirmationDialog,
+    requestConfirmation,
+    confirmConfirmation,
+    cancelConfirmation,
+  } = useActionConfirmation();
 
   const loadTimesheets = useCallback(async () => {
-    const isoDate = buildWeekIsoDate(selectedDate);
-    const result = isToggled
-      ? await adminCtx.getOpenTimesheets()
-      : await adminCtx.getUsersTimesheetsByDate(isoDate);
+    setIsLoading(true);
+    try {
+      const isoDate = buildWeekIsoDate(selectedDate);
+      const result = isToggled
+        ? await adminCtx.getOpenTimesheets()
+        : await adminCtx.getUsersTimesheetsByDate(isoDate);
 
-    const sorted = (result || []).sort((a, b) => {
-      const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
-      const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
-      return lastNameA.localeCompare(lastNameB);
-    });
+      const sorted = (result || []).sort((a, b) => {
+        const lastNameA = a.Employee?.last_name?.toLowerCase() || "";
+        const lastNameB = b.Employee?.last_name?.toLowerCase() || "";
+        return lastNameA.localeCompare(lastNameB);
+      });
 
-    setTimesheets(sorted || []);
-    const count = (sorted || []).filter((timesheet) => timesheet.signed).length;
-    setSignedCount(count);
+      setTimesheets(sorted || []);
+      const count = (sorted || []).filter((timesheet) => timesheet.signed).length;
+      setSignedCount(count);
+    } finally {
+      setIsLoading(false);
+    }
   }, [adminCtx, isToggled, selectedDate]);
 
   useEffect(() => {
@@ -118,8 +137,6 @@ export default function ManageTimesheetsTable({
   }
 
   function handleValueChange(index, field, value) {
-    const userName = localStorage.getItem("user_name");
-
     setTimesheets((prevTimesheets) => {
       const updatedTimesheets = [...prevTimesheets];
       const isChecked =
@@ -128,9 +145,9 @@ export default function ManageTimesheetsTable({
       updatedTimesheets[index] = {
         ...updatedTimesheets[index],
         [field]: isChecked,
-        ...(field === "signed" && isChecked && { submitted_by: userName }),
-        ...(field === "approved" && isChecked && { approved_by: userName }),
-        ...(field === "processed" && isChecked && { processed_by: userName }),
+        ...(field === "signed" && isChecked && { submitted_by: currentUserName }),
+        ...(field === "approved" && isChecked && { approved_by: currentUserName }),
+        ...(field === "processed" && isChecked && { processed_by: currentUserName }),
       };
 
       return updatedTimesheets;
@@ -164,6 +181,18 @@ export default function ManageTimesheetsTable({
     }
   }
 
+  async function handleSaveStatusChangesWithConfirmation() {
+    const shouldSave = await requestConfirmation({
+      title: "Save Status Changes?",
+      message:
+        "This will apply the modified signed/approved/processed status values to these timesheets.",
+      confirmLabel: "Save",
+    });
+    if (!shouldSave) return;
+
+    await handleSaveStatusChanges();
+  }
+
   async function handleSendReminder(employeeId) {
     setSendingReminderIds((currentIds) =>
       currentIds.includes(employeeId) ? currentIds : [...currentIds, employeeId]
@@ -190,8 +219,6 @@ export default function ManageTimesheetsTable({
   }
 
   function handleSetAllApproved() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
-
     setTimesheets((prevTimesheets) => {
       const allApproved = prevTimesheets.every(
         (timesheet) => timesheet.approved
@@ -200,14 +227,24 @@ export default function ManageTimesheetsTable({
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
         approved: !allApproved,
-        approved_by: !allApproved ? userName : "",
+        approved_by: !allApproved ? currentUserName : "",
       }));
     });
   }
 
-  function handleSetAllProcessed() {
-    const userName = localStorage.getItem("user_name") || "Unknown User";
+  async function handleSetAllApprovedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Approved'?",
+      message:
+        "This will toggle the Approved status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
 
+    handleSetAllApproved();
+  }
+
+  function handleSetAllProcessed() {
     setTimesheets((prevTimesheets) => {
       const allProcessed = prevTimesheets.every(
         (timesheet) => timesheet.processed
@@ -216,9 +253,21 @@ export default function ManageTimesheetsTable({
       return prevTimesheets.map((timesheet) => ({
         ...timesheet,
         processed: !allProcessed,
-        processed_by: !allProcessed ? userName : "",
+        processed_by: !allProcessed ? currentUserName : "",
       }));
     });
+  }
+
+  async function handleSetAllProcessedWithConfirmation() {
+    const shouldProceed = await requestConfirmation({
+      title: "Apply 'Set All Processed'?",
+      message:
+        "This will toggle the Processed status for all rows currently shown in the table.",
+      confirmLabel: "Apply",
+    });
+    if (!shouldProceed) return;
+
+    handleSetAllProcessed();
   }
 
   async function generateLaborReport() {
@@ -348,9 +397,9 @@ export default function ManageTimesheetsTable({
         goToPreviousWeek={goToPreviousWeek}
         goToNextWeek={goToNextWeek}
         openReportModal={openReportModal}
-        saveChanges={handleSaveStatusChanges}
-        setAllApproved={handleSetAllApproved}
-        setAllPaid={handleSetAllProcessed}
+        saveChanges={handleSaveStatusChangesWithConfirmation}
+        setAllApproved={handleSetAllApprovedWithConfirmation}
+        setAllPaid={handleSetAllProcessedWithConfirmation}
         generateReport={generateLaborReport}
         handleToggle={handleToggle}
         timesheetMode={timesheetMode}
@@ -385,7 +434,12 @@ export default function ManageTimesheetsTable({
 
       <TableHeader />
       <div className="bg-white my-1 rounded-md shadow-sm">
-        {timesheets && timesheets.length > 0 ? (
+        {isLoading ? (
+          <LoadingState
+            label="Loading admin timesheets..."
+            className="bg-transparent py-6"
+          />
+        ) : timesheets && timesheets.length > 0 ? (
           timesheets.map((timesheet, index) => (
             <TableRow
               key={timesheet.id}
@@ -400,6 +454,16 @@ export default function ManageTimesheetsTable({
           </p>
         )}
       </div>
+      <ConfirmActionModal
+        isOpen={confirmationDialog.isOpen}
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmLabel={confirmationDialog.confirmLabel}
+        cancelLabel={confirmationDialog.cancelLabel}
+        tone={confirmationDialog.tone}
+        onConfirm={confirmConfirmation}
+        onCancel={cancelConfirmation}
+      />
     </div>
   );
 }

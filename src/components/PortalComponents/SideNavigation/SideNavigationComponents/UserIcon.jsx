@@ -1,9 +1,11 @@
+import { useContext } from "react";
 import { motion } from "framer-motion";
+import { AuthContext } from "../../../../store/auth-context";
 
-function getUserInitials() {
-  const firstName = (localStorage.getItem("first_name") || "").trim();
-  const lastName = (localStorage.getItem("last_name") || "").trim();
-  const userName = (localStorage.getItem("user_name") || "").trim();
+function getUserInitials(user) {
+  const firstName = (user?.first_name || "").trim();
+  const lastName = (user?.last_name || "").trim();
+  const userName = (user?.user_name || "").trim();
 
   if (firstName || lastName) {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`
@@ -23,7 +25,8 @@ function getUserInitials() {
 }
 
 export default function UserIcon({ onClick, isExpanded }) {
-  const initials = getUserInitials();
+  const { user } = useContext(AuthContext);
+  const initials = getUserInitials(user);
 
   return (
     <div className="p-2">

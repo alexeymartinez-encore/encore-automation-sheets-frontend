@@ -17,6 +17,11 @@ import MonthlyDatePicker from "../../Shared/MonthlyDatePicker";
 import { useNavigate } from "react-router-dom";
 import { FaReceipt } from "react-icons/fa";
 import AddReceiptModal from "./AddReceiptModal";
+import ConfirmActionModal from "../../Shared/ConfirmActionModal";
+import LoadingState from "../../Shared/LoadingState";
+import { AuthContext } from "../../../../store/auth-context";
+import { getAuthUserId, getAuthUserName } from "../../../../util/authUser";
+import useActionConfirmation from "../../../../hooks/useActionConfirmation";
 const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 function getInitialExpenseData(employeeId = null) {
@@ -162,6 +167,9 @@ export default function ExpenseForm({
   const [showModal, setShowModal] = useState(false);
   const [receiptFiles, setReceiptFiles] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isHydratingExpense, setIsHydratingExpense] = useState(
+    Boolean(expenseId)
+  );
 
   const [selectedUser, setSelectedUser] = useState({
     id: initialEmployeeId,
@@ -170,6 +178,15 @@ export default function ExpenseForm({
   });
 
   const expenseCtx = useContext(ExpensesContext);
+  const authCtx = useContext(AuthContext);
+  const currentUserId = getAuthUserId(authCtx.user);
+  const currentUserName = getAuthUserName(authCtx.user);
+  const {
+    confirmationDialog,
+    requestConfirmation,
+    confirmConfirmation,
+    cancelConfirmation,
+  } = useActionConfirmation();
   const navigate = useNavigate();
 
   const hydratedRef = useRef(null);
@@ -212,87 +229,103 @@ export default function ExpenseForm({
 
     setExpense((prevExpense) => ({
       ...prevExpense,
-      employee_id: "",
+      employee_id: currentUserId ?? "",
     }));
     setSelectedUser({
       id: null,
       first_name: "",
       last_name: "",
     });
-  }, [expenseId, initialEmployeeId, initialFirstName, initialLastName]);
+  }, [
+    currentUserId,
+    expenseId,
+    initialEmployeeId,
+    initialFirstName,
+    initialLastName,
+  ]);
 
   useEffect(() => {
     async function init() {
+      if (!expenseId) {
+        setIsHydratingExpense(false);
+        return;
+      }
+
       if (hydratedRef.current === expenseId) return; // already hydrated for this expenseId
       hydratedRef.current = expenseId;
 
-      let filteredExpense = null;
-      if (expenseEntriesRef.current && expenseId) {
-        filteredExpense = expensesRef.current.find(
-          (expense) => expense.id === parseInt(expenseId)
-        );
+      setIsHydratingExpense(true);
+      try {
+        let filteredExpense = null;
+        if (expenseEntriesRef.current && expenseId) {
+          filteredExpense = expensesRef.current.find(
+            (expense) => expense.id === parseInt(expenseId)
+          );
 
-        if (!filteredExpense) {
-          try {
-            const response = await fetch(
-              `${BASE_URL}/admin/expense/${expenseId}`,
-              {
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
+          if (!filteredExpense) {
+            try {
+              const response = await fetch(
+                `${BASE_URL}/admin/expense/${expenseId}`,
+                {
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                }
+              );
+              const data = await response.json();
+              if (response.ok) {
+                filteredExpense = data.data[0];
+                setSelectedUser(data.data[0].Employee);
+              } else {
+                console.error("Error fetching expense");
+                return;
               }
-            );
-            const data = await response.json();
-            if (response.ok) {
-              filteredExpense = data.data[0];
-              setSelectedUser(data.data[0].Employee);
-            } else {
-              console.error("Error fetching expense");
+            } catch (error) {
+              console.error("Error fetching expense:", error);
               return;
             }
-          } catch (error) {
-            console.error("Error fetching expense:", error);
-            return;
           }
-        }
 
-        if (filteredExpense) {
-          const monthStartDate =
-            toMonthStartDate(filteredExpense.date_start) || getStartOfMonth(new Date());
-          setSelectedDate(monthStartDate);
-          setExpense((prevExpense) => ({
-            ...prevExpense,
-            ...filteredExpense,
-            // employee_id: localStorage.getItem("userId"),
-            files: filteredExpense.ExpenseFiles || [],
-            signed: filteredExpense.signed,
-            total: filteredExpense.total,
-          }));
+          if (filteredExpense) {
+            const monthStartDate =
+              toMonthStartDate(filteredExpense.date_start) ||
+              getStartOfMonth(new Date());
+            setSelectedDate(monthStartDate);
+            setExpense((prevExpense) => ({
+              ...prevExpense,
+              ...filteredExpense,
+              files: filteredExpense.ExpenseFiles || [],
+              signed: filteredExpense.signed,
+              total: filteredExpense.total,
+            }));
 
-          const realDate = monthStartDate;
-          const daysInMonth = getDaysInMonth(realDate);
-          const fullRows = [];
+            const realDate = monthStartDate;
+            const daysInMonth = getDaysInMonth(realDate);
+            const fullRows = [];
 
-          for (let day = 1; day <= daysInMonth; day++) {
-            const matchingEntries = expenseEntriesRef.current.filter(
-              (entry) => entry.day === day
-            );
-            if (matchingEntries.length > 0) {
-              fullRows.push(...matchingEntries);
-            } else {
-              fullRows.push({
-                ...intitialEntriesData[0],
-                day,
-                date: new Date(
-                  realDate.getFullYear(),
-                  realDate.getMonth(),
-                  day
-                ),
-              });
+            for (let day = 1; day <= daysInMonth; day++) {
+              const matchingEntries = expenseEntriesRef.current.filter(
+                (entry) => entry.day === day
+              );
+              if (matchingEntries.length > 0) {
+                fullRows.push(...matchingEntries);
+              } else {
+                fullRows.push({
+                  ...intitialEntriesData[0],
+                  day,
+                  date: new Date(
+                    realDate.getFullYear(),
+                    realDate.getMonth(),
+                    day
+                  ),
+                });
+              }
             }
-          }
 
-          setRowData(fullRows);
+            setRowData(fullRows);
+          }
         }
+      } finally {
+        setIsHydratingExpense(false);
       }
     }
 
@@ -343,7 +376,7 @@ export default function ExpenseForm({
     );
   }
 
-  async function handleSave() {
+  async function persistExpense() {
     if (isSaving) return; // prevent double click
     setIsSaving(true);
     // ensure a Date instance goes to getDaysInMonth
@@ -378,9 +411,6 @@ export default function ExpenseForm({
       seen.add(key);
       dedupedRows.push(row);
     }
-
-    const currentUserId = localStorage.getItem("userId");
-    const currentUserName = localStorage.getItem("user_name");
 
     // Keep the original owner when admin; otherwise use existing or current user
     const employeeIdToSend = isAdmin
@@ -447,11 +477,23 @@ export default function ExpenseForm({
     }
   }
 
+  async function handleSave() {
+    const shouldSave = await requestConfirmation({
+      title: expenseId ? "Save Expense Changes?" : "Save New Expense?",
+      message:
+        "This will commit the current expense entries and update totals for this month.",
+      confirmLabel: "Save",
+    });
+    if (!shouldSave) return;
+
+    await persistExpense();
+  }
+
   function handleSign() {
     setExpense((prevExpense) => ({
       ...prevExpense, // Keep all other fields unchanged
       signed: !prevExpense.signed, // Toggle the signed field
-      submitted_by: localStorage.getItem("user_name"),
+      submitted_by: currentUserName || "None",
     }));
   }
 
@@ -471,8 +513,9 @@ export default function ExpenseForm({
     });
   }
 
-  async function handleDeleteRow(index) {
+  async function persistDeleteRow(index) {
     const row = rowData[index];
+    if (!row) return;
 
     // ORIGINAL ROW: delete from DB if persisted, keep row in UI (cleared)
     if (isFirstRowForDay(rowData, index)) {
@@ -542,6 +585,19 @@ export default function ExpenseForm({
     }
   }
 
+  async function handleDeleteRow(index) {
+    const shouldDelete = await requestConfirmation({
+      title: "Delete Expense Row?",
+      message:
+        "This row entry will be removed. If it was persisted, it will be deleted from the server.",
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
+
+    await persistDeleteRow(index);
+  }
+
   function toggleModal() {
     setShowModal((prev) => !prev);
   }
@@ -581,98 +637,112 @@ export default function ExpenseForm({
   const receiptButtonStyles =
     "inline-flex justify-center items-center gap-2 w-full sm:w-auto sm:min-w-[6.5rem] h-10 bg-blue-500 text-white rounded-md text-xs sm:text-sm px-3 hover:bg-blue-400 transition duration-300";
 
+  if (expenseId && isHydratingExpense && rowData.length === 0) {
+    return <LoadingState label="Loading expense..." className="my-4" />;
+  }
+
   return (
-    <div className="pb-16 md:pb-20">
-      <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
-        <MonthlyDatePicker
-          onChange={(date) => setSelectedDate(date)}
-          selected={selectedDate}
-          disabled={expense.approved}
-        />
-        <button
-          onClick={toggleModal}
-          title="Import Receipts"
-          className={receiptButtonStyles}
-        >
-          <FaReceipt size={16} />
-          <span>Receipts</span>
-        </button>
-        {isAdmin && (
-          <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
-            {selectedUser.first_name} {selectedUser.last_name}
-          </p>
+    <>
+      <div className="pb-16 md:pb-20">
+        <div className="relative flex flex-col xl:flex-row gap-3 xl:gap-5 justify-between px-2 md:px-5 pb-5 items-stretch xl:items-center">
+          <MonthlyDatePicker
+            onChange={(date) => setSelectedDate(date)}
+            selected={selectedDate}
+            disabled={expense.approved}
+          />
+          <button
+            onClick={toggleModal}
+            title="Import Receipts"
+            className={receiptButtonStyles}
+          >
+            <FaReceipt size={16} />
+            <span>Receipts</span>
+          </button>
+          {isAdmin && (
+            <p className="text-red-500 font-bold text-base md:text-xl text-center xl:text-left">
+              {selectedUser.first_name} {selectedUser.last_name}
+            </p>
+          )}
+          <FormActionsButtons
+            handleSave={handleSave}
+            isSaving={isSaving}
+            handleSign={handleSign}
+            signed={expense.signed}
+            disabled={expense.approved}
+            href={"/employee-portal/dashboard/expenses/create-expense"}
+            handleCopy={handleCopy}
+          />
+        </div>
+
+        {showModal && (
+          <div
+            className="fixed inset-0 z-50 bg-gray-900/55 flex justify-center items-center p-3 sm:p-4"
+            onClick={toggleModal}
+          >
+            <AddReceiptModal
+              toggleModal={toggleModal}
+              onSaveReceipts={handleSaveReceipts}
+              savedFiles={expense.files || []}
+              receiptFiles={receiptFiles}
+              setReceiptFiles={setReceiptFiles}
+              disabled={expense.approved}
+            />
+          </div>
         )}
-        <FormActionsButtons
-          handleSave={handleSave}
-          isSaving={isSaving}
-          handleSign={handleSign}
-          signed={expense.signed}
-          disabled={expense.approved}
-          href={"/employee-portal/dashboard/expenses/create-expense"}
-          handleCopy={handleCopy}
-        />
-      </div>
 
-      {showModal && (
-        <div
-          className="fixed inset-0 z-50 bg-gray-900/55 flex justify-center items-center p-3 sm:p-4"
-          onClick={toggleModal}
-        >
-          <AddReceiptModal
-            toggleModal={toggleModal}
-            onSaveReceipts={handleSaveReceipts}
-            savedFiles={expense.files || []}
-            receiptFiles={receiptFiles}
-            setReceiptFiles={setReceiptFiles}
-            disabled={expense.approved}
-          />
+        <div className="hidden md:block px-2 md:px-5">
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full min-w-[1280px] border-collapse table-auto">
+              <HeaderComponent />
+              <SubheaderComponent />
+              <tbody>
+                {rowData.map((row, index) => (
+                  <RowComponent
+                    key={`${row.id || "new"}-${index}`}
+                    row={row}
+                    index={index}
+                    onValueChange={handleValueChange}
+                    onAddSubRow={() => handleAddSubRow(index)}
+                    onDeleteRow={() => handleDeleteRow(index)}
+                    disabled={expense.approved}
+                  />
+                ))}
+              </tbody>
+              <TableFooterComponent totals={totals} />
+            </table>
+          </div>
         </div>
-      )}
-
-      <div className="hidden md:block px-2 md:px-5">
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="w-full min-w-[1280px] border-collapse table-auto">
-            <HeaderComponent />
-            <SubheaderComponent />
-            <tbody>
-              {rowData.map((row, index) => (
-                <RowComponent
-                  key={`${row.id || "new"}-${index}`}
-                  row={row}
-                  index={index}
-                  onValueChange={handleValueChange}
-                  onAddSubRow={() => handleAddSubRow(index)}
-                  onDeleteRow={() => handleDeleteRow(index)}
-                  disabled={expense.approved}
-                />
-              ))}
-            </tbody>
-            <TableFooterComponent totals={totals} />
-          </table>
+        <div className="md:hidden px-2">
+          <div className="rounded-lg border border-slate-200 overflow-hidden">
+            <FormTableMobile
+              data={rowData}
+              onValueChange={handleValueChange}
+              onAddSubRow={handleAddSubRow}
+              onDeleteRow={handleDeleteRow}
+              disabled={expense.approved}
+            />
+          </div>
+        </div>
+        <div className="md:hidden px-2 mt-3">
+          <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 flex items-center justify-between">
+            <p className="text-xs font-medium text-slate-600">Month Total</p>
+            <p className="text-sm font-semibold text-blue-600">
+              ${totals.grand_total.toFixed(2)}
+            </p>
+          </div>
         </div>
       </div>
-
-      <div className="md:hidden px-2">
-        <div className="rounded-lg border border-slate-200 overflow-hidden">
-          <FormTableMobile
-            data={rowData}
-            onValueChange={handleValueChange}
-            onAddSubRow={handleAddSubRow}
-            onDeleteRow={handleDeleteRow}
-            disabled={expense.approved}
-          />
-        </div>
-      </div>
-
-      <div className="md:hidden px-2 mt-3">
-        <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 flex items-center justify-between">
-          <p className="text-xs font-medium text-slate-600">Month Total</p>
-          <p className="text-sm font-semibold text-blue-600">
-            ${totals.grand_total.toFixed(2)}
-          </p>
-        </div>
-      </div>
-    </div>
+      <ConfirmActionModal
+        isOpen={confirmationDialog.isOpen}
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmLabel={confirmationDialog.confirmLabel}
+        cancelLabel={confirmationDialog.cancelLabel}
+        tone={confirmationDialog.tone}
+        onConfirm={confirmConfirmation}
+        onCancel={cancelConfirmation}
+      />
+    </>
   );
 }
 

@@ -1,23 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
 import SideNavCard from "./SideNavigationComponents/SideNavCard";
 import SideNavComponent from "./SideNavigationComponents/SideNavComponent";
 import { HiChevronLeft } from "react-icons/hi2";
+import { AuthContext } from "../../../store/auth-context";
 
 export default function SideNavigation({ isExpanded, setIsExpanded }) {
   const toggleMenu = () => setIsExpanded((prev) => !prev);
-  const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "";
+  const authCtx = useContext(AuthContext);
 
   const logoutHandler = async () => {
-    await fetch(`${BASE_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include", // Important to send the cookie
-    });
-
-    // Optionally clear any other data you stored in localStorage
-    navigate("/employee-portal");
-
-    localStorage.clear();
+    await authCtx.logout();
   };
 
   return (

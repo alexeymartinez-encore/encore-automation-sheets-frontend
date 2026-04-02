@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import LogoutButton from "../Shared/LogoutButton";
 import NavIcon from "./NavIcon";
 import NavIconsCard from "./NavIconsCard";
@@ -10,9 +11,11 @@ import {
   faClipboardUser,
 } from "@fortawesome/free-solid-svg-icons";
 import OuterCard from "./OuterCard";
+import { AuthContext } from "../../../../store/auth-context";
 
 export default function SideNavComponent({ onClick, isExpanded, padding }) {
-  const role_id = localStorage.getItem("role_id");
+  const authCtx = useContext(AuthContext);
+  const role_id = authCtx.roleId ? String(authCtx.roleId) : "1";
 
   return (
     <OuterCard padding={padding}>

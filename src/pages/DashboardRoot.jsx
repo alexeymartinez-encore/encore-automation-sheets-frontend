@@ -3,6 +3,7 @@ import WelcomeHeader from "../components/PortalComponents/PortalHome/WelcomeHead
 import { Outlet, useLocation, matchPath } from "react-router-dom";
 import { useEffect, useState } from "react";
 import MobileNavigation from "../components/PortalComponents/SideNavigation/MobileNavigation";
+import SessionTimeoutWarning from "../components/Authentication/SessionTimeoutWarning";
 
 const SIDENAV_STORAGE_KEY = "encore_sidebar_expanded";
 
@@ -54,6 +55,7 @@ export default function DashboardRootLayout() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-gray-100 relative">
+      <SessionTimeoutWarning />
       {/* Sidebar */}
       <SideNavigation
         isExpanded={isNavExpanded}

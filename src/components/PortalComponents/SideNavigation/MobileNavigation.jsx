@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { HiBars3, HiXMark } from "react-icons/hi2";
 import { getNavLinks } from "./navConfig";
+import { AuthContext } from "../../../store/auth-context";
 
 function sectionizeLinks(links) {
   return links.reduce((acc, link) => {
@@ -19,10 +20,10 @@ function sectionizeLinks(links) {
 export default function MobileNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "";
+  const authCtx = useContext(AuthContext);
 
   const [isOpen, setIsOpen] = useState(false);
-  const roleId = localStorage.getItem("role_id");
+  const roleId = authCtx.roleId ? String(authCtx.roleId) : "1";
 
   const navLinks = useMemo(() => getNavLinks(roleId), [roleId]);
   const linksBySection = useMemo(() => sectionizeLinks(navLinks), [navLinks]);
@@ -51,12 +52,7 @@ export default function MobileNavigation() {
   }, [isOpen]);
 
   const logoutHandler = async () => {
-    await fetch(`${BASE_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    localStorage.clear();
+    await authCtx.logout({ redirect: false });
     setIsOpen(false);
     navigate("/employee-portal");
   };

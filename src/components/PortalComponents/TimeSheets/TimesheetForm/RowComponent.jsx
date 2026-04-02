@@ -2,10 +2,12 @@ import React, { useContext } from "react";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MiscellaneousContext } from "../../../../store/miscellaneous-context";
+import { AuthContext } from "../../../../store/auth-context";
 import {
   phaseToAllowedCostCodes,
   projectsToAllowedMixPhasesCostCodes,
 } from "../../../../util/helper-vars";
+import { isUserOvertimeAllowed } from "../../../../util/authUser";
 
 export default function RowComponent({
   row,
@@ -14,7 +16,8 @@ export default function RowComponent({
   onDeleteRow,
   disabled,
 }) {
-  const allow_overtime = localStorage.getItem("allow_overtime") === "true";
+  const authCtx = useContext(AuthContext);
+  const allow_overtime = isUserOvertimeAllowed(authCtx.user);
   const miscCtx = useContext(MiscellaneousContext);
   const restrictedProjects = [
     "Admin",

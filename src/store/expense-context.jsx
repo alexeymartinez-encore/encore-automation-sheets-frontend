@@ -5,6 +5,7 @@ import { isAuth } from "../util/fetching";
 // Create the context and provide default values
 export const ExpensesContext = createContext({
   expenses: [],
+  isLoading: false,
   updated: null,
   triggerUpdate: () => {},
   fetchExpenses: () => {}, // Expose a function to refetch expenses
@@ -15,6 +16,7 @@ export const ExpensesContext = createContext({
 
 export default function ExpenseContextProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [updated, setUpdated] = useState(0);
   const [successOrFailMessage, setSuccessOrFailMessage] = useState({
     successStatus: "",
@@ -25,12 +27,12 @@ export default function ExpenseContextProvider({ children }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
   const fetchExpenses = useCallback(async () => {
-    const userId = localStorage.getItem("userId");
     const fetchId = latestFetchIdRef.current + 1;
     latestFetchIdRef.current = fetchId;
+    setIsLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/expenses/${userId}`, {
+      const response = await fetch(`${BASE_URL}/expenses/me`, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -50,6 +52,10 @@ export default function ExpenseContextProvider({ children }) {
     } catch (error) {
       console.error("Error fetching timesheets:", error);
       return [];
+    } finally {
+      if (fetchId === latestFetchIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [BASE_URL]);
 
@@ -116,6 +122,7 @@ export default function ExpenseContextProvider({ children }) {
 
   const expensesCtxValues = {
     expenses: expenses,
+    isLoading: isLoading,
     fetchExpenses: fetchExpenses,
     triggerUpdate: triggerUpdate,
     triggerSucessOrFailMessage: triggerSucessOrFailMessage,
