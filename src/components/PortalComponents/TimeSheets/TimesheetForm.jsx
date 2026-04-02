@@ -192,10 +192,19 @@ export default function TimesheetForm({
         }));
       } else {
         try {
-          const response = await fetch(`${BASE_URL}/admin/timesheet/${timesheetId}`, {
+          const adminResponse = await fetch(`${BASE_URL}/admin/timesheet/${timesheetId}`, {
             headers: { "Content-Type": "application/json" },
             credentials: "include",
           });
+
+          let response = adminResponse;
+          if (adminResponse.status === 403) {
+            response = await fetch(`${BASE_URL}/manager/timesheet/${timesheetId}`, {
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+            });
+          }
+
           const data = await response.json();
           if (response.ok) {
             filteredTimesheet = data.data[0];
@@ -203,11 +212,11 @@ export default function TimesheetForm({
             setSelectedDate(getEndOfWeek(new Date(filteredTimesheet.week_ending)));
             setTimesheet(filteredTimesheet);
           } else {
-            console.error("Error fetching expense");
+            console.error("Error fetching timesheet");
             return;
           }
         } catch (error) {
-          console.error("Error fetching expense:", error);
+          console.error("Error fetching timesheet:", error);
           return;
         } finally {
           setIsHydratingTimesheet(false);
