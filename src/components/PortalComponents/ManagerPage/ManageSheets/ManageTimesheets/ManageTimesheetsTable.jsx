@@ -11,7 +11,10 @@ import LoadingState from "../../../Shared/LoadingState";
 import ConfirmActionModal from "../../../Shared/ConfirmActionModal";
 import useActionConfirmation from "../../../../../hooks/useActionConfirmation";
 
-export default function ManageTimesheetsTable({ onViewOvertime }) {
+export default function ManageTimesheetsTable({
+  onViewOvertime,
+  refreshToken = 0,
+}) {
   const [timesheets, setTimesheets] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getEndOfWeek(new Date()));
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +51,7 @@ export default function ManageTimesheetsTable({ onViewOvertime }) {
       }
     }
     getTimesheets();
-  }, [adminCtx, currentUserId, selectedDate]);
+  }, [adminCtx, currentUserId, refreshToken, selectedDate]);
 
   function handleValueChange(index, field, value) {
     setTimesheets((prevTimesheets) => {

@@ -54,11 +54,30 @@ export default function AdminContextProvider({ children }) {
     return response;
   }
 
+  function toDateParam(value) {
+    if (value === null || value === undefined || value === "") {
+      return "";
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split("T")[0];
+    }
+
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString().split("T")[0];
+    }
+
+    return String(value);
+  }
+
   async function getUsersTimesheetsByDate(weekEnding) {
+    const normalizedWeekEnding = toDateParam(weekEnding);
+
     try {
       const response = await fetchWithRoleFallback(
-        `/admin/timesheets/${weekEnding}`,
-        `/manager/timesheets/${weekEnding}`,
+        `/admin/timesheets/${normalizedWeekEnding}`,
+        `/manager/timesheets/${normalizedWeekEnding}`,
         {
           method: "GET",
           headers: {
@@ -81,10 +100,12 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchOvertimeData(date) {
+    const normalizedDate = toDateParam(date);
+
     try {
       const response = await fetchWithRoleFallback(
-        `/admin/timesheets/overtime-report/${date}`,
-        `/manager/timesheets/overtime-report/${date}`,
+        `/admin/timesheets/overtime-report/${normalizedDate}`,
+        `/manager/timesheets/overtime-report/${normalizedDate}`,
         {
           method: "GET",
           headers: {
@@ -210,10 +231,12 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchLaborData(date) {
+    const normalizedDate = toDateParam(date);
+
     try {
       const response = await fetchWithRoleFallback(
-        `/admin/timesheets/labor-report/${date}`,
-        `/manager/timesheets/labor-report/${date}`,
+        `/admin/timesheets/labor-report/${normalizedDate}`,
+        `/manager/timesheets/labor-report/${normalizedDate}`,
         {
           method: "GET",
           headers: {
@@ -236,10 +259,12 @@ export default function AdminContextProvider({ children }) {
   }
 
   async function fetchExpenseReportData(date) {
+    const normalizedDate = toDateParam(date);
+
     try {
       const response = await fetchWithRoleFallback(
-        `/admin/expenses/expense-report/${date}`,
-        `/manager/timesheets/expense-report/${date}`,
+        `/admin/expenses/expense-report/${normalizedDate}`,
+        `/manager/timesheets/expense-report/${normalizedDate}`,
         {
           method: "GET",
           headers: {
@@ -480,10 +505,12 @@ export default function AdminContextProvider({ children }) {
     }
   }
   async function getUsersExpensesByDate(dateStart) {
+    const normalizedDateStart = toDateParam(dateStart);
+
     try {
       const response = await fetchWithRoleFallback(
-        `/admin/expenses/${dateStart}`,
-        `/manager/expenses/${dateStart}`,
+        `/admin/expenses/${normalizedDateStart}`,
+        `/manager/expenses/${normalizedDateStart}`,
         {
           method: "GET",
           headers: {
@@ -507,7 +534,7 @@ export default function AdminContextProvider({ children }) {
 
   async function getOpenExpenses(date) {
     try {
-      const selectedDate = date || new Date();
+      const selectedDate = toDateParam(date || new Date());
       const response = await fetchWithRoleFallback(
         `/admin/open-expenses/${selectedDate}`,
         "/manager/open-expenses",

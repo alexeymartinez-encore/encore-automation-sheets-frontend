@@ -11,7 +11,7 @@ import LoadingState from "../../../Shared/LoadingState";
 import ConfirmActionModal from "../../../Shared/ConfirmActionModal";
 import useActionConfirmation from "../../../../../hooks/useActionConfirmation";
 
-export default function ManageExpensesTable() {
+export default function ManageExpensesTable({ refreshToken = 0 }) {
   const [selectedDate, setSelectedDate] = useState(getStartOfMonth(new Date()));
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,33 +31,8 @@ export default function ManageExpensesTable() {
   const [isToggled, setIsToggled] = useState(false);
   const expenseMode = !isToggled ? "Open Expenses" : "Expenses By Date";
 
-  async function handleToggle() {
-    const nextState = !isToggled; // what we're switching to
-    setIsToggled(nextState);
-    setIsLoading(true);
-    if (!currentUserId) {
-      setExpenses([]);
-      setIsLoading(false);
-      return;
-    }
-    const isoDate = new Date(selectedDate).toISOString();
-
-    // Same logic as your first snippet:
-    // true  -> getOpenExpenses
-    // false -> getUsersExpensesByDate(selectedDate)
-    try {
-      const res = nextState
-        ? await adminCtx.getOpenExpenses()
-        : await adminCtx.getUsersExpensesByDate(isoDate);
-
-      const filtered = (res ?? []).filter(
-        (ts) => Number(ts.manager_id) === currentUserId
-      );
-
-      setExpenses(filtered);
-    } finally {
-      setIsLoading(false);
-    }
+  function handleToggle() {
+    setIsToggled((currentValue) => !currentValue);
   }
 
   function handleValueChange(index, field, value) {
@@ -105,7 +80,9 @@ export default function ManageExpensesTable() {
       const isoDate = new Date(selectedDate).toISOString();
 
       try {
-        const res = await adminCtx.getUsersExpensesByDate(isoDate);
+        const res = isToggled
+          ? await adminCtx.getOpenExpenses(selectedDate)
+          : await adminCtx.getUsersExpensesByDate(isoDate);
         const filtered = (res || []).filter(
           (ts) => Number(ts.manager_id) === currentUserId
         );
@@ -115,7 +92,7 @@ export default function ManageExpensesTable() {
       }
     }
     getExpenses();
-  }, [adminCtx, currentUserId, selectedDate]);
+  }, [adminCtx, currentUserId, isToggled, refreshToken, selectedDate]);
 
   //   useEffect(() => {
   //   async function getExpenses() {

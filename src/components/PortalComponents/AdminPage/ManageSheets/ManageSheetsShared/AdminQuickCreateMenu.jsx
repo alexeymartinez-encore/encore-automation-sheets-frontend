@@ -6,6 +6,7 @@ import { getDaysInMonth } from "date-fns";
 import { AdminContext } from "../../../../../store/admin-context";
 
 const DEFAULT_RECORD_TYPE = "timesheet";
+const SUPPORTED_RECORD_TYPES = ["timesheet", "expense"];
 
 function normalizeToLocalMidnight(value) {
   const candidate = value instanceof Date ? value : new Date(value);
@@ -48,9 +49,26 @@ export default function AdminQuickCreateMenu({
   employees,
   isLoading,
   onCreated,
+  allowedRecordTypes = SUPPORTED_RECORD_TYPES,
 }) {
+  const normalizedRecordTypes = useMemo(() => {
+    const allowed = Array.isArray(allowedRecordTypes)
+      ? allowedRecordTypes
+      : SUPPORTED_RECORD_TYPES;
+
+    const unique = [...new Set(allowed)]
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter((value) => SUPPORTED_RECORD_TYPES.includes(value));
+
+    return unique.length > 0 ? unique : SUPPORTED_RECORD_TYPES;
+  }, [allowedRecordTypes]);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [recordType, setRecordType] = useState(DEFAULT_RECORD_TYPE);
+  const [recordType, setRecordType] = useState(() =>
+    normalizedRecordTypes.includes(DEFAULT_RECORD_TYPE)
+      ? DEFAULT_RECORD_TYPE
+      : normalizedRecordTypes[0]
+  );
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [selectedWeekDate, setSelectedWeekDate] = useState(() =>
     normalizeToSunday(new Date())
@@ -76,6 +94,14 @@ export default function AdminQuickCreateMenu({
 
     setSelectedEmployeeId(String(activeEmployees[0].id));
   }, [activeEmployees, selectedEmployeeId]);
+
+  useEffect(() => {
+    if (normalizedRecordTypes.includes(recordType)) {
+      return;
+    }
+
+    setRecordType(normalizedRecordTypes[0]);
+  }, [normalizedRecordTypes, recordType]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -249,24 +275,30 @@ export default function AdminQuickCreateMenu({
           className="absolute right-0 z-50 mt-2 w-full rounded-md border border-slate-200 bg-white p-4 shadow-xl md:w-[22rem]"
         >
           <div className="space-y-3">
-            <div>
-              <label
-                htmlFor="admin-create-record-type"
-                className="mb-1 block text-xs font-medium text-slate-600"
-              >
-                Record Type
-              </label>
-              <select
-                id="admin-create-record-type"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                value={recordType}
+            {normalizedRecordTypes.length > 1 ? (
+              <div>
+                <label
+                  htmlFor="admin-create-record-type"
+                  className="mb-1 block text-xs font-medium text-slate-600"
+                >
+                  Record Type
+                </label>
+                <select
+                  id="admin-create-record-type"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  value={recordType}
                   onChange={(event) => setRecordType(event.target.value)}
                   disabled={isSubmitting}
                 >
-                  <option value="timesheet">Timecard</option>
-                  <option value="expense">Expense</option>
-              </select>
-            </div>
+                  {normalizedRecordTypes.includes("timesheet") ? (
+                    <option value="timesheet">Timecard</option>
+                  ) : null}
+                  {normalizedRecordTypes.includes("expense") ? (
+                    <option value="expense">Expense</option>
+                  ) : null}
+                </select>
+              </div>
+            ) : null}
 
             <div>
               <label
@@ -373,4 +405,7 @@ AdminQuickCreateMenu.propTypes = {
   ),
   isLoading: PropTypes.bool,
   onCreated: PropTypes.func,
+  allowedRecordTypes: PropTypes.arrayOf(
+    PropTypes.oneOf(SUPPORTED_RECORD_TYPES)
+  ),
 };
