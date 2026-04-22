@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
@@ -56,6 +56,14 @@ export default function ManageExpensesTable({
   const authCtx = useContext(AuthContext);
   const currentUserName = getAuthUserName(authCtx.user) || "Unknown User";
   const expenseMode = !isToggled ? "Go To Open" : "Go To By Date";
+  const totalExpenseAmount = useMemo(
+    () =>
+      (expenses || []).reduce(
+        (sum, expense) => sum + (Number(expense?.total) || 0),
+        0
+      ),
+    [expenses]
+  );
   const {
     confirmationDialog,
     requestConfirmation,
@@ -433,6 +441,7 @@ export default function ManageExpensesTable({
         expenseMode={expenseMode}
         completeExpenses={signedCount}
         totalEmployeesCount={activeEmployeeCount}
+        totalExpenseAmount={totalExpenseAmount}
         toggleMissingPanel={handleToggleMissingPanel}
         isMissingPanelOpen={isMissingPanelOpen}
         missingButtonDisabled={isToggled}

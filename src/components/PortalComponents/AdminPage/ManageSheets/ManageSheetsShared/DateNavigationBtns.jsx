@@ -8,10 +8,10 @@ export default function DateNavigationBtns({
   handleState,
 }) {
   return (
-    <div className="flex items-center space-x-4 h-3">
+    <div className="flex min-w-0 items-center justify-center gap-2 sm:gap-3">
       <button
         onClick={goToPrevious}
-        className={`px-1 md:px-2 py-1 text-white bg-blue-500 rounded-md
+        className={`shrink-0 px-1 md:px-2 py-1 text-white bg-blue-500 rounded-md
            hover:bg-blue-400 transition duration-300 ${
              handleState ? "cursor-not-allowed opacity-50" : ""
            }`}
@@ -20,13 +20,13 @@ export default function DateNavigationBtns({
         <MdKeyboardArrowLeft className="md:size-5" />
       </button>
 
-      <div className=" text-[0.6rem] md:text-xs font-medium text-gray-700">
+      <div className="min-w-[4.75rem] text-center text-[0.6rem] md:text-xs font-medium leading-tight text-gray-700 sm:min-w-[6.5rem]">
         {formatDate(date)}
       </div>
 
       <button
         onClick={goToNext}
-        className={`px-1 md:px-2 py-1 text-white bg-blue-500 rounded-md
+        className={`shrink-0 px-1 md:px-2 py-1 text-white bg-blue-500 rounded-md
           hover:bg-blue-400 transition duration-300 ${
             handleState ? "cursor-not-allowed opacity-50" : ""
           }`}

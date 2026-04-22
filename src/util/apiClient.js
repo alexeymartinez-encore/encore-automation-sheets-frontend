@@ -1,6 +1,5 @@
 const AUTH_ROUTE_ALLOWLIST = new Set([
   "/auth/login",
-  "/auth/signup",
   "/auth/request-reset",
   "/auth/reset-password",
   "/auth/refresh",
