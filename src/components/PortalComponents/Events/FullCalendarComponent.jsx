@@ -189,6 +189,24 @@ export default function FullCalendarComponent() {
     [activeEventTypes],
   );
 
+  const modalEventTypes = useMemo(
+    () =>
+      isAdmin
+        ? sortedEventTypes
+        : sortedEventTypes.filter((type) => !type.is_holiday),
+    [isAdmin, sortedEventTypes],
+  );
+
+  const selectedEventType = useMemo(
+    () =>
+      sortedEventTypes.find(
+        (type) => String(type.id) === String(formData.event_type_id),
+      ) || null,
+    [sortedEventTypes, formData.event_type_id],
+  );
+
+  const isHolidayTypeSelected = Boolean(selectedEventType?.is_holiday);
+
   const currentUserLabel = useMemo(() => {
     const fromEmployees = employees.find(
       (employee) => Number(employee.id) === currentUserId,
@@ -231,13 +249,17 @@ export default function FullCalendarComponent() {
   }, [sortedEmployees, userSearchText]);
 
   useEffect(() => {
-    if (!showModal && sortedEventTypes.length > 0) {
+    if (!showModal && modalEventTypes.length > 0) {
       setFormData((prev) => ({
         ...prev,
-        event_type_id: prev.event_type_id || String(sortedEventTypes[0].id),
+        event_type_id: modalEventTypes.some(
+          (type) => String(type.id) === String(prev.event_type_id),
+        )
+          ? prev.event_type_id
+          : String(modalEventTypes[0].id),
       }));
     }
-  }, [sortedEventTypes, showModal]);
+  }, [modalEventTypes, showModal]);
 
   useEffect(() => {
     async function loadEvents() {
@@ -356,13 +378,17 @@ export default function FullCalendarComponent() {
   }, [events, selectedDate]);
 
   function openCreateModal(dateString = today) {
+    const defaultEventType = modalEventTypes[0];
+    const defaultEmployeeId = defaultEventType?.is_holiday
+      ? currentUserId
+      : Number(appliedFilters.userId || draftFilters.userId) || currentUserId;
+
     setEditingId(null);
     setFormData({
-      employee_id:
-        Number(appliedFilters.userId || draftFilters.userId) || currentUserId,
+      employee_id: defaultEmployeeId,
       start: dateString,
       end_date: dateString,
-      event_type_id: sortedEventTypes[0] ? String(sortedEventTypes[0].id) : "",
+      event_type_id: defaultEventType ? String(defaultEventType.id) : "",
       long_description: "",
     });
     setShowModal(true);
@@ -391,6 +417,7 @@ export default function FullCalendarComponent() {
 
   function canEditEvent(eventObj) {
     if (!eventObj) return false;
+    if (eventObj.is_holiday) return isAdmin;
     return isAdmin || Number(eventObj.employee_id) === currentUserId;
   }
 
@@ -404,14 +431,16 @@ export default function FullCalendarComponent() {
 
   async function handleSaveEvent() {
     if (
-      !formData.employee_id ||
+      (!isHolidayTypeSelected && !formData.employee_id) ||
       !formData.start ||
       !formData.end_date ||
       !formData.event_type_id
     ) {
       eventCtx.triggerSucessOrFailMessage(
         "fail",
-        "Employee, start date, end date, and event type are required.",
+        isHolidayTypeSelected
+          ? "Start date, end date, and event type are required."
+          : "Employee, start date, end date, and event type are required.",
       );
       return;
     }
@@ -426,7 +455,9 @@ export default function FullCalendarComponent() {
 
     setIsSaving(true);
     const payload = {
-      employee_id: Number(formData.employee_id || currentUserId),
+      employee_id: isHolidayTypeSelected
+        ? Number(currentUserId || formData.employee_id)
+        : Number(formData.employee_id || currentUserId),
       start: formData.start,
       end_date: formData.end_date,
       event_type_id: Number(formData.event_type_id),
@@ -517,11 +548,6 @@ export default function FullCalendarComponent() {
               Calendar
             </p>
             <h2 className="text-3xl font-bold text-slate-800">{pageTitle}</h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              All employees can view the shared calendar. Event owners can
-              manage their own entries, and admins can manage events for any
-              employee.
-            </p>
           </div>
           <button
             type="button"
@@ -835,9 +861,11 @@ export default function FullCalendarComponent() {
                     <td className="px-4 py-2">{eventObj.start}</td>
                     <td className="px-4 py-2">{eventObj.end_date}</td>
                     <td className="px-4 py-2">
-                      {eventObj.Employee
-                        ? `${eventObj.Employee.last_name}, ${eventObj.Employee.first_name}`
-                        : "-"}
+                      {eventObj.is_holiday
+                        ? "Company-wide"
+                        : eventObj.Employee
+                          ? `${eventObj.Employee.last_name}, ${eventObj.Employee.first_name}`
+                          : "-"}
                     </td>
                     <td className="px-4 py-2">
                       {eventObj.long_description || "-"}
@@ -875,7 +903,21 @@ export default function FullCalendarComponent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <label className="flex flex-col gap-1 text-sm text-gray-700 md:col-span-2">
                 Employee
-                {canSelectEventOwner ? (
+                {isHolidayTypeSelected ? (
+                  <>
+                    <input
+                      type="text"
+                      value="Company-wide holiday"
+                      readOnly
+                      disabled
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                    <span className="text-xs text-gray-500">
+                      Holidays apply to everyone and do not show an employee
+                      name on the calendar.
+                    </span>
+                  </>
+                ) : canSelectEventOwner ? (
                   <select
                     value={String(formData.employee_id || "")}
                     onChange={(event) =>
@@ -940,15 +982,22 @@ export default function FullCalendarComponent() {
                 Event Type
                 <select
                   value={String(formData.event_type_id || "")}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const nextEventTypeId = event.target.value;
+                    const nextEventType = sortedEventTypes.find(
+                      (type) => String(type.id) === String(nextEventTypeId),
+                    );
                     setFormData((prev) => ({
                       ...prev,
-                      event_type_id: event.target.value,
-                    }))
-                  }
+                      employee_id: nextEventType?.is_holiday
+                        ? currentUserId
+                        : prev.employee_id || currentUserId,
+                      event_type_id: nextEventTypeId,
+                    }));
+                  }}
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm"
                 >
-                  {sortedEventTypes.map((eventType) => (
+                  {modalEventTypes.map((eventType) => (
                     <option key={eventType.id} value={eventType.id}>
                       {eventType.label}
                     </option>
@@ -985,7 +1034,10 @@ export default function FullCalendarComponent() {
 
               <div className="flex items-center gap-2">
                 {editingId &&
-                canEditEvent({ employee_id: formData.employee_id }) ? (
+                canEditEvent({
+                  employee_id: formData.employee_id,
+                  is_holiday: isHolidayTypeSelected,
+                }) ? (
                   <button
                     type="button"
                     className="inline-flex items-center gap-1 rounded-md bg-red-500 hover:bg-red-600 px-4 py-2 text-sm text-white transition"

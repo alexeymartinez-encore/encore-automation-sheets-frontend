@@ -51,12 +51,17 @@ export default function TaskBar({
   expenseMode,
   completeExpenses,
   totalEmployeesCount,
+  totalExpenseAmount,
   toggleMissingPanel,
   isMissingPanelOpen,
   missingButtonDisabled,
 }) {
   const isFirstDayOfMonth = (date) => date.getDate() === 1;
   const totalExpenses = Number(totalEmployeesCount) || 0;
+  const formattedExpenseTotal = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(Number(totalExpenseAmount) || 0);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -74,15 +79,15 @@ export default function TaskBar({
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-1 rounded-md border-b bg-white p-3 text-xs my-1 space-y-2">
-      <div className="flex items-center justify-between gap-0 w-full border-b py-3">
+    <div className="overflow-visible rounded-md border-b bg-white text-xs my-1">
+      <div className="flex flex-col items-center justify-center gap-3 border-b px-3 py-3 sm:flex-row lg:justify-between">
         <button
           onClick={handleToggle}
-          className="border py-2 w-full px-1 mr-5 rounded-md bg-blue-500 text-white hover:bg-blue-400 transition duration-400 text-[0.7rem] md:text-xs"
+          className="w-full max-w-44 rounded-md border bg-blue-500 px-3 py-2 text-[0.7rem] text-white transition duration-400 hover:bg-blue-400 md:text-xs lg:max-w-none lg:flex-1"
         >
           {expenseMode}
         </button>
-        <div className="flex items-center w-full">
+        <div className="flex w-full items-center justify-center sm:w-auto lg:flex-1">
           <DatePicker
             selected={selectedDate}
             onChange={onChange}
@@ -104,7 +109,7 @@ export default function TaskBar({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 w-full">
+      <div className="flex flex-col items-center gap-3 px-3 py-3 sm:flex-row sm:flex-wrap sm:justify-center">
         <div className="flex justify-center items-center gap-3 border px-5 py-1 rounded-md">
           <button
             type="button"
@@ -141,13 +146,20 @@ export default function TaskBar({
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 md:ml-auto">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-[0.7rem] md:text-xs font-medium text-blue-700">
             Signed{" "}
             <span className="font-semibold text-slate-900">
               {completeExpenses} / {totalExpenses}
             </span>{" "}
             active
+          </div>
+
+          <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2 text-[0.7rem] md:text-xs font-medium text-emerald-700">
+            {isToggled ? "Open Total" : "Month Total"}{" "}
+            <span className="font-semibold text-slate-900">
+              {formattedExpenseTotal}
+            </span>
           </div>
 
           <button
@@ -212,6 +224,7 @@ TaskBar.propTypes = {
   expenseMode: PropTypes.string.isRequired,
   completeExpenses: PropTypes.number.isRequired,
   totalEmployeesCount: PropTypes.number,
+  totalExpenseAmount: PropTypes.number.isRequired,
   toggleMissingPanel: PropTypes.func.isRequired,
   isMissingPanelOpen: PropTypes.bool.isRequired,
   missingButtonDisabled: PropTypes.bool.isRequired,
